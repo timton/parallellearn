@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Transaction History
+{% endblock %}
+
+{% block main %}
+    {% if transactions|length == 0 %}
+        <br>
+        <p>You don't have any transactions.</p>
+        <br>
+    {% else %}
+        <div class="row">
+            <div class="col-xs-1"><strong>Type</strong></div>
+            <div class="col-xs-3"><strong>Date & Time</strong></div>
+            <div class="col-xs-2"><strong>Stock</strong></div>
+            <div class="col-xs-2"><strong>Share Price</strong></div>
+            <div class="col-xs-1"><strong>Shares</strong></div>
+            <div class="col-xs-2"><strong>Stock Value</strong></div>
+        </div>
+        <hr>
+
+        {% for transaction in transactions %}
+            <div class="row">
+                <div class="col-xs-1"> {{ transaction["type"] }} </div>
+                <div class="col-xs-3"> {{ transaction["time"] }} </div>
+                <div class="col-xs-2"> {{ transaction["stock"] }} </div>
+                <div class="col-xs-2"> {{ "${:,.2f}".format(transaction["price"] / transaction["shares"]) }} </div>
+                <div class="col-xs-1"> {{ transaction["shares"] }} </div>
+                <div class="col-xs-2"> {{ "${:,.2f}".format(transaction["price"]) }} </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Welcome
+{% endblock %}
+
+{% block main %}
+    {% if stocks|length == 0 %}
+        <br>
+        <p>You don't have any stocks.</p>
+        <br>
+    {% else %}
+        <div class="row">
+            <div class="col-xs-3"><strong>Symbol</strong></div>
+            <div class="col-xs-3"><strong>Shares</strong></div>
+            <div class="col-xs-3"><strong>Price</strong></div>
+            <div class="col-xs-3"><strong>Stock Value</strong></div>
+        </div>
+        <hr>
+
+        {% for stock in stocks %}
+            <div class="row">
+                <div class="col-xs-3"> {{ stock["stock"] }} </div>
+                <div class="col-xs-3"> {{ stock["shares"] }} </div>
+                <div class="col-xs-3"> {{ "${:,.2f}".format(stock["price"]) }} </div>
+                <div class="col-xs-3"> {{ "${:,.2f}".format(stock["price"] * stock["shares"]) }} </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <table align="right">
+      <tr>
+        <td><strong>Cash</strong></td>
+        <td> {{ "${:,.2f}".format(cash) }} </td>
+      </tr>
+      <tr>
+        <td><strong>Stock Value</strong></td>
+        <td> {{ "${:,.2f}".format(stock_value) }} </td>
+      </tr>
+      <tr>
+        <td><strong>Grand Total</strong></td>
+        <td> {{ "${:,.2f}".format(cash + stock_value) }} </td>
+      </tr>
+    </table>
+
+{% endblock %}
