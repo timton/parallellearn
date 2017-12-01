@@ -29,10 +29,9 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+db = SQL("sqlite:///parallellearn.db")
 
 @app.route("/")
-@login_required
 def index():
 
     # get user's cash
@@ -53,6 +52,31 @@ def index():
 
     # render the user's home page, passing in his data
     return render_template("index.html", cash=cash, stocks=stocks, stock_value=stock_value)
+
+@app.route("/browse")
+def browse():
+    return
+
+@app.route("/faq")
+def faq():
+    return
+
+@app.route("/about")
+def about():
+    return
+
+@app.route("/contact")
+def contact():
+    return
+
+@app.route("/download")
+def download():
+    return
+
+@app.route("/upload")
+@login_required
+def upload():
+    return
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
@@ -137,8 +161,8 @@ def history():
     # render the history template
     return render_template("history.html", transactions=transactions)
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
+@app.route("/log_in", methods=["GET", "POST"])
+def log_in():
     """Log user in."""
 
     # forget any user_id
@@ -172,8 +196,8 @@ def login():
     else:
         return render_template("login.html")
 
-@app.route("/logout")
-def logout():
+@app.route("/log_out")
+def log_out():
     """Log user out."""
 
     # forget any user_id
@@ -299,8 +323,8 @@ def sell():
         # ... and render the selling interface
         return render_template("sell.html", stocks=stocks)
 
-@app.route("/account", methods=["GET", "POST"])
-def change_password():
+@app.route("/mamange_account", methods=["GET", "POST"])
+def manage_account():
     """Change password."""
 
     # if user reached route via POST (as by submitting a form via POST)
