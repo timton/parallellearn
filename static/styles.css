@@ -14,7 +14,7 @@ body, html {
 }
 
 .middlepane {
-    width: 50%;
+    width: 37.5%;
     height: 100%;
     float: left;
     background-color: royalblue;
@@ -22,7 +22,7 @@ body, html {
 }
 
 .rightpane {
-    width: 25%;
+    width: 37.5%;
     height: 100%;
     position: relative;
     float: right;
