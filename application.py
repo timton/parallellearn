@@ -107,6 +107,16 @@ def register():
     else:
         return render_template("register.html")
 
+# logout route
+@app.route("/log_out")
+def log_out():
+    """Log user out."""
+
+    # forget any user_id
+    session.clear()
+
+    # redirect user to welcome page
+    return redirect(url_for("index"))
 
 
 ######################
@@ -257,15 +267,6 @@ def log_in():
     else:
         return render_template("login.html")
 
-@app.route("/log_out")
-def log_out():
-    """Log user out."""
-
-    # forget any user_id
-    session.clear()
-
-    # redirect user to login form
-    return redirect(url_for("login"))
 
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
