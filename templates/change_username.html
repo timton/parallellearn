@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Change Username
+{% endblock %}
+
+{% block main %}
+    <form action="{{ url_for('change_username') }}" method="post">
+        <fieldset>
+            <div class="form-group">
+                <input class="form-control" name="new_username" placeholder="New username" type="text"/>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-default" type="submit">Change username</button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

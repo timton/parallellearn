@@ -44,7 +44,7 @@ def index():
     popular_projects = db.execute("SELECT * FROM (SELECT * FROM projects ORDER BY rating ASC LIMIT 5) \
                               ORDER BY rating DESC")
 
-    # render the user's home page, passing in his data
+    # render the home page, passing in the data
     return render_template("index.html", new_projects=new_projects, popular_projects=popular_projects)
 
 # register route
@@ -155,6 +155,175 @@ def log_in():
     else:
         return render_template("login.html")
 
+# view account details route
+@app.route("/view_details")
+@login_required
+def view_details():
+
+    # fetch the user
+    user = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
+
+    return render_template("account_details.html", user=user[0])
+
+# change password route
+@app.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure old password was submitted
+        if not request.form.get("old_password"):
+            return apology("must provide current password")
+
+        # ensure new password was submitted
+        elif not request.form.get("new_password"):
+            return apology("must provide new password")
+
+        # ensure new password was confirmed
+        elif not request.form.get("confirm_password"):
+            return apology("must confirm new password")
+
+        # ensure old password is correct
+        rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
+        if not pwd_context.verify(request.form.get("old_password"), rows[0]["hash"]):
+            return apology("current password incorrect")
+
+        # ensure new password is input twice
+        elif request.form.get("new_password") != request.form.get("confirm_password"):
+            return apology("new password must be input twice")
+
+        # insure new password is different from the old one
+        if pwd_context.verify(request.form.get("new_password"), rows[0]["hash"]):
+            return apology("new password must be different from current one")
+
+        # update new password hash
+        db.execute("UPDATE users SET hash = :hash WHERE id = :id",
+                   hash=pwd_context.hash(request.form.get("new_password")), id=session["user_id"])
+
+        # redirect user to home page
+        return redirect(url_for("index"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("change_password.html")
+
+# change email route
+@app.route("/change_email", methods=["GET", "POST"])
+@login_required
+def change_email():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure new email was submitted
+        if not request.form.get("new_email"):
+            return apology("must provide new email")
+
+        # ensure new email is different from the current one
+        user = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
+
+        if request.form.get("new_email") == user[0]["email"]:
+            return apology("new email must be different from current one")
+
+        # ensure email not already registered
+        row = db.execute("SELECT * FROM users WHERE email = :email",
+                         email=request.form.get("new_email"))
+        if row:
+            return apology("try another email")
+
+        # update new email
+        db.execute("UPDATE users SET email = :email WHERE id = :id",
+                   email=request.form.get("new_email"), id=session["user_id"])
+
+        # redirect user to home page
+        return redirect(url_for("view_details"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("change_email.html")
+
+# change username route
+@app.route("/change_username", methods=["GET", "POST"])
+@login_required
+def change_username():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure new username was submitted
+        if not request.form.get("new_username"):
+            return apology("must provide new username")
+
+        # ensure new username is different from the current one
+        user = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
+
+        if request.form.get("new_username") == user[0]["username"]:
+            return apology("new username must be different from current one")
+
+        # ensure username not already registered
+        row = db.execute("SELECT * FROM users WHERE username = :username",
+                         username=request.form.get("new_username"))
+        if row:
+            return apology("try another username")
+
+        # update new username
+        db.execute("UPDATE users SET username = :username WHERE id = :id",
+                   email=request.form.get("new_username"), id=session["user_id"])
+
+        # redirect user to home page
+        return redirect(url_for("view_details"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("change_username.html")
+
+# change account history route
+@app.route("/change_history", methods=["GET", "POST"])
+def change_history():
+    return
+
+    """
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure old password was submitted
+        if not request.form.get("old_password"):
+            return apology("must provide current password")
+
+        # ensure new password was submitted
+        elif not request.form.get("new_password"):
+            return apology("must provide new password")
+
+        # ensure new password was confirmed
+        elif not request.form.get("confirm_password"):
+            return apology("must confirm new password")
+
+        # ensure old password is correct
+        rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
+        if not pwd_context.verify(request.form.get("old_password"), rows[0]["hash"]):
+            return apology("current password incorrect")
+
+        # ensure new password is input twice
+        elif request.form.get("new_password") != request.form.get("confirm_password"):
+            return apology("new password must be input twice")
+
+        # insure new password is different from the old one
+        if pwd_context.verify(request.form.get("new_password"), rows[0]["hash"]):
+            return apology("new password must be different from current one")
+
+        # update new password hash
+        db.execute("UPDATE users SET hash = :hash WHERE id = :id",
+                   hash=pwd_context.hash(request.form.get("new_password")), id=session["user_id"])
+
+        # redirect user to home page
+        return redirect(url_for("index"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("my_account.html")
+    """
 
 ######################
 # DONE UP UNTIL HERE #
@@ -341,46 +510,3 @@ def sell():
 
         # ... and render the selling interface
         return render_template("sell.html", stocks=stocks)
-
-@app.route("/mamange_account", methods=["GET", "POST"])
-def manage_account():
-    """Change password."""
-
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure old password was submitted
-        if not request.form.get("old_password"):
-            return apology("must provide current password")
-
-        # ensure new password was submitted
-        elif not request.form.get("new_password"):
-            return apology("must provide new password")
-
-        # ensure new password was confirmed
-        elif not request.form.get("confirm_password"):
-            return apology("must confirm new password")
-
-        # ensure old password is correct
-        rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
-        if not pwd_context.verify(request.form.get("old_password"), rows[0]["hash"]):
-            return apology("current password incorrect")
-
-        # ensure new password is input twice
-        elif request.form.get("new_password") != request.form.get("confirm_password"):
-            return apology("new password must be input twice")
-
-        # insure new password is different from the old one
-        if pwd_context.verify(request.form.get("new_password"), rows[0]["hash"]):
-            return apology("new password must be different from current one")
-
-        # update new password hash
-        db.execute("UPDATE users SET hash = :hash WHERE id = :id",
-                   hash=pwd_context.hash(request.form.get("new_password")), id=session["user_id"])
-
-        # redirect user to home page
-        return redirect(url_for("index"))
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("account.html")

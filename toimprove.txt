@@ -1,0 +1,2 @@
+- live registration form validation
+jQuery http://www.geektantra.com/projects/jquery-form-validate/advanced_demo/

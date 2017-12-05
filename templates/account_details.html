@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Account Details
+{% endblock %}
+
+{% block main %}
+    <ol align="left">
+        <li>
+            Your email is <strong>{{ user["email"] }}</strong>.
+            <a href="{{ url_for('change_email') }}" class="btn btn-info" role="button">Change email</a>
+        </li>
+        </br>
+        <li>
+            Your username is <strong>{{ user["username"] }}</strong>.
+            <a href="{{ url_for('change_username') }}" class="btn btn-info" role="button">Change username</a>
+        </li>
+        </br>
+        <li>
+            Your password is <strong>********</strong>.
+            <a href="{{ url_for('change_password') }}" class="btn btn-info" role="button">Change password</a>
+        </li>
+    </ol>
+{% endblock %}
