@@ -34,24 +34,17 @@ db = SQL("sqlite:///parallellearn.db")
 @app.route("/")
 def index():
 
-    # get user's cash
-    rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
-    cash = rows[0]["cash"]
+    # get the 5 newest projects
+    # https://stackoverflow.com/questions/14018394/android-sqlite-query-getting-latest-10-records
+    new_projects = db.execute("SELECT * FROM (SELECT * FROM projects ORDER BY timestamp ASC LIMIT 5) \
+                              ORDER BY timestamp DESC")
 
-    # get user's stocks
-    stocks = db.execute("SELECT * FROM portfolios WHERE user_id = :id", id=session["user_id"])
-
-    # store the current price for each stock
-    # calculate the total stock value
-    stock_value = 0
-    if len(stocks) != 0:
-        for stock in stocks:
-            stock_updated = lookup(stock["stock"])
-            stock["price"] = stock_updated["price"]
-            stock_value += stock["shares"]*stock_updated["price"]
+    # get the 5 most popular projects
+    popular_projects = db.execute("SELECT * FROM (SELECT * FROM projects ORDER BY rating ASC LIMIT 5) \
+                              ORDER BY rating DESC")
 
     # render the user's home page, passing in his data
-    return render_template("index.html", cash=cash, stocks=stocks, stock_value=stock_value)
+    return render_template("index.html", new_projects=new_projects, popular_projects=popular_projects)
 
 @app.route("/browse")
 def browse():
