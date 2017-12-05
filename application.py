@@ -31,6 +31,7 @@ Session(app)
 # configure CS50 Library to use SQLite database
 db = SQL("sqlite:///parallellearn.db")
 
+# main page route
 @app.route("/")
 def index():
 
@@ -45,6 +46,73 @@ def index():
 
     # render the user's home page, passing in his data
     return render_template("index.html", new_projects=new_projects, popular_projects=popular_projects)
+
+# register route
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user."""
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure email was submitted
+        if not request.form.get("email"):
+            return apology("must provide email")
+
+        # ensure username was submitted
+        elif not request.form.get("username"):
+            return apology("must provide username")
+
+        # ensure password was submitted
+        elif not request.form.get("password"):
+            return apology("must provide password")
+
+        # ensure password was confirmed
+        elif not request.form.get("confirm_password"):
+            return apology("must confirm password")
+
+        # ensure passwords match
+        elif not request.form.get("password") == request.form.get("confirm_password"):
+            return apology("passwords do not match")
+
+        # ensure email uniqueness
+        row = db.execute("SELECT * FROM users WHERE email = :email",
+                         email=request.form.get("email"))
+        if row:
+            return apology("try another email")
+
+        # ensure username uniqueness
+        row = db.execute("SELECT * FROM users WHERE username = :username",
+                         username=request.form.get("username"))
+        if row:
+            return apology("try another username")
+
+        # try to register new user
+        try:
+            key = db.execute("INSERT INTO users (email, username, hash) VALUES(:email, :username, :hash)",
+                             email=request.form.get("email"),
+                             username=request.form.get("username"),
+                             hash=pwd_context.hash(request.form.get("password")))
+        except RuntimeError:
+            return apology("error while performing registration")
+
+
+        # once successfully registered, log user in automatically
+        session["user_id"] = key
+
+        # redirect user to home page
+        return redirect(url_for("index"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("register.html")
+
+
+
+######################
+# DONE UP UNTIL HERE #
+######################
+
 
 @app.route("/browse")
 def browse():
@@ -225,50 +293,6 @@ def quote():
     else:
         return render_template("quote.html")
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    """Register user."""
-
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username")
-
-        # ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password")
-
-        # ensure password was confirmed
-        elif not request.form.get("confirm_password"):
-            return apology("must confirm password")
-
-        # ensure passwords match
-        elif not request.form.get("password") == request.form.get("confirm_password"):
-            return apology("passwords do not match")
-
-        # try to register new user
-        try:
-            key = db.execute("INSERT INTO users (username, hash) VALUES(:username, :hash)",
-                              username=request.form.get("username"),
-                              hash=pwd_context.hash(request.form.get("password")))
-        except RuntimeError:
-            return apology("error while performing registration")
-
-        # ensure username's uniqueness
-        if not key:
-            return apology("try another username")
-
-        # once successfully registered, log user in automatically
-        session["user_id"] = key
-
-        # redirect user to home page
-        return redirect(url_for("index"))
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("register.html")
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
