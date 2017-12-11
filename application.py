@@ -5,6 +5,10 @@ from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
 from time import gmtime, strftime
 
+# for file uploading
+import os
+from werkzeug.utils import secure_filename
+
 from helpers import *
 
 # configure application
@@ -28,6 +32,12 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+# uploading files
+# http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
+UPLOAD_FOLDER = 'projects/'
+ALLOWED_EXTENSIONS = set(['xls', 'xlsx'])
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 # configure CS50 Library to use SQLite database
 db = SQL("sqlite:///parallellearn.db")
 
@@ -37,11 +47,11 @@ def index():
 
     # get the 5 newest projects
     # https://stackoverflow.com/questions/14018394/android-sqlite-query-getting-latest-10-records
-    new_projects = db.execute("SELECT * FROM (SELECT * FROM projects ORDER BY timestamp ASC LIMIT 5) \
+    new_projects = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY timestamp ASC LIMIT 5) \
                               ORDER BY timestamp DESC")
 
     # get the 5 most popular projects
-    popular_projects = db.execute("SELECT * FROM (SELECT * FROM projects ORDER BY rating ASC LIMIT 5) \
+    popular_projects = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY rating ASC LIMIT 5) \
                               ORDER BY rating DESC")
 
     # render the home page, passing in the data
@@ -270,7 +280,7 @@ def change_username():
 
         # update new username
         db.execute("UPDATE users SET username = :username WHERE id = :id",
-                   email=request.form.get("new_username"), id=session["user_id"])
+                   username=request.form.get("new_username"), id=session["user_id"])
 
         # redirect user to home page
         return redirect(url_for("view_details"))
@@ -278,6 +288,118 @@ def change_username():
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("change_username.html")
+
+@app.route("/upload_new", methods=["GET", "POST"])
+@login_required
+def upload_new():
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure type submitted and ...
+        if not request.form.get("type"):
+            return apology("must provide the type of this project")
+        else:
+            type = request.form.get("type").lower()
+
+        # ... ensure supported type submitted
+        if type not in ["book", "movie", "tv series", "song"]:
+            return apology("must provide correct type: book, movie, tv series, or song")
+
+        # ensure name of the project was submitted
+        if not request.form.get("name"):
+            return apology("must provide name for this project")
+        else:
+            name = request.form.get("name").lower()
+
+        # ensure author of the project was submitted
+        if not request.form.get("author"):
+            return apology("must provide author's name for this project")
+        else:
+            author = request.form.get("author").lower()
+
+        # ensure year of the project was submitted
+        if not request.form.get("year"):
+            return apology("must provide year for this project")
+        else:
+            year = request.form.get("year")
+
+        # ensure language submitted and ...
+        if not request.form.get("language"):
+            return apology("must provide the language of this project")
+        else:
+            language = request.form.get("language").lower()
+
+        # ... ensure supported language submitted
+        if language not in ["english", "french", "russian", "romanian"]:
+            return apology("must provide language: english, russian, french, or romanian")
+
+        # ENSURE FILE SELECTED FOR UPLOAD
+        # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return apology("must select file to upload")
+
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        file = request.files['file']
+        if not file or file.filename == '':
+            return apology("no selected file")
+
+        # ensure file name (extension) allowed
+        if allowed_file(file.filename):
+            return apology("must select .xls or .xlsx file")
+
+        # try to upload new project metadata
+        # get the project id if successful
+        try:
+            db.execute("INSERT INTO projects (type, name, author, year) \
+                       VALUES(:type, :name, :author, :year)",
+                       type=type, name=name, author=author, year=year)
+            rows = db.execute("SELECT * FROM projects WHERE name = :name", name=name)
+            project_id=rows[0]["id"]
+        except RuntimeError:
+            return apology("error while uploading new project metadata")
+
+        # try to upload the file
+        try:
+            filename = name + " - " + author + " - " + str(year) + " (" + language + ")" + "." + \
+                       file.filename.rsplit('.', 1)[1].lower()
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        except RuntimeError:
+            return apology("couldn't upload te selected file")
+
+        # try to upload new project language version
+        try:
+            key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath) \
+                             VALUES(:project_id, :user_id, :language, :timestamp, :filepath)",
+                             project_id=project_id, user_id=session["user_id"], language=language,
+                             timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
+                             filepath=UPLOAD_FOLDER+filename)
+        except RuntimeError:
+            return apology("error while uploading new project language version")
+
+        # once successful, back to home page
+        return redirect(url_for("index"))
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("upload_new.html")
+
+
+@app.route("/upload_existing", methods=["GET", "POST"])
+@login_required
+def upload_existing():
+    return
+
+# ensure selected file allowed
+# extension must present and allowed
+def allowed_file(filename):
+    return '.' not in filename or \
+           filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS
+
+######################
+# DONE UP UNTIL HERE #
+######################
 
 # change account history route
 @app.route("/change_history", methods=["GET", "POST"])
@@ -325,9 +447,6 @@ def change_history():
         return render_template("my_account.html")
     """
 
-######################
-# DONE UP UNTIL HERE #
-######################
 
 
 @app.route("/browse")
@@ -348,11 +467,6 @@ def contact():
 
 @app.route("/download")
 def download():
-    return
-
-@app.route("/upload")
-@login_required
-def upload():
     return
 
 @app.route("/buy", methods=["GET", "POST"])
