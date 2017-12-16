@@ -50,9 +50,30 @@ def index():
     new_projects = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY timestamp ASC LIMIT 5) \
                               ORDER BY timestamp DESC")
 
+    # get all the metadata
+    if len(new_projects) > 0:
+        for project in new_projects:
+            pj = db.execute("SELECT * FROM projects WHERE id = :id",
+                            id=project["project_id"])
+            project["type"] = pj[0]["type"]
+            project["title"] = pj[0]["title"]
+            project["author"] = pj[0]["author"]
+            project["year"] = pj[0]["year"]
+
+
     # get the 5 most popular projects
     popular_projects = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY rating ASC LIMIT 5) \
                               ORDER BY rating DESC")
+
+    # get all the metadata
+    if len(popular_projects) > 0:
+        for project in popular_projects:
+            pj = db.execute("SELECT * FROM projects WHERE id = :id",
+                            id=project["project_id"])
+            project["type"] = pj[0]["type"]
+            project["title"] = pj[0]["title"]
+            project["author"] = pj[0]["author"]
+            project["year"] = pj[0]["year"]
 
     # render the home page, passing in the data
     return render_template("index.html", new_projects=new_projects, popular_projects=popular_projects)
@@ -305,11 +326,11 @@ def upload_new():
         if type not in ["book", "movie", "tv series", "song"]:
             return apology("must provide correct type: book, movie, tv series, or song")
 
-        # ensure name of the project was submitted
-        if not request.form.get("name"):
-            return apology("must provide name for this project")
+        # ensure title of the project was submitted
+        if not request.form.get("title"):
+            return apology("must provide title for this project")
         else:
-            name = request.form.get("name").lower()
+            title = request.form.get("title").lower()
 
         # ensure author of the project was submitted
         if not request.form.get("author"):
@@ -352,17 +373,17 @@ def upload_new():
         # try to upload new project metadata
         # get the project id if successful
         try:
-            db.execute("INSERT INTO projects (type, name, author, year) \
-                       VALUES(:type, :name, :author, :year)",
-                       type=type, name=name, author=author, year=year)
-            rows = db.execute("SELECT * FROM projects WHERE name = :name", name=name)
+            db.execute("INSERT INTO projects (type, title, author, year) \
+                       VALUES(:type, :title, :author, :year)",
+                       type=type, title=title, author=author, year=year)
+            rows = db.execute("SELECT * FROM projects WHERE title = :title", title=title)
             project_id=rows[0]["id"]
         except RuntimeError:
             return apology("error while uploading new project metadata")
 
         # try to upload the file
         try:
-            filename = name + " - " + author + " - " + str(year) + " (" + language + ")" + "." + \
+            filename = title + " - " + author + " - " + str(year) + " (" + language + ")" + "." + \
                        file.filename.rsplit('.', 1)[1].lower()
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         except RuntimeError:

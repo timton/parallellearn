@@ -27,25 +27,22 @@
                     <p>No projects yet.</p>
                     <br>
                 {% else %}
-                    <p>whatever</p>
-                    <!--
                     <div class="row">
-                        <div class="col-xs-3"><strong>Symbol</strong></div>
-                        <div class="col-xs-3"><strong>Shares</strong></div>
-                        <div class="col-xs-3"><strong>Price</strong></div>
-                        <div class="col-xs-3"><strong>Stock Value</strong></div>
+                        <div class="col-xs-5"><strong>Title</strong></div>
+                        <div class="col-xs-3"><strong>Author</strong></div>
+                        <div class="col-xs-2"><strong>Year</strong></div>
+                        <div class="col-xs-2"><strong>Type</strong></div>
                     </div>
                     <hr>
 
-                    {% for stock in stocks %}
+                    {% for project in new_projects %}
                         <div class="row">
-                            <div class="col-xs-3"> {{ stock["stock"] }} </div>
-                            <div class="col-xs-3"> {{ stock["shares"] }} </div>
-                            <div class="col-xs-3"> {{ "${:,.2f}".format(stock["price"]) }} </div>
-                            <div class="col-xs-3"> {{ "${:,.2f}".format(stock["price"] * stock["shares"]) }} </div>
+                            <div class="col-xs-5"> {{ project["title"] }} </div>
+                            <div class="col-xs-3"> {{ project["author"] }} </div>
+                            <div class="col-xs-2"> {{ project["year"] }} </div>
+                            <div class="col-xs-2"> {{ project["type"] }} </div>
                         </div>
                     {% endfor %}
-                    -->
                 {% endif %}
         </div>
 
@@ -57,25 +54,24 @@
                 <p>No projects yet.</p>
                 <br>
             {% else %}
-                <p>whatever</p>
-                <!--
                 <div class="row">
-                    <div class="col-xs-3"><strong>Symbol</strong></div>
-                    <div class="col-xs-3"><strong>Shares</strong></div>
-                    <div class="col-xs-3"><strong>Price</strong></div>
-                    <div class="col-xs-3"><strong>Stock Value</strong></div>
+                        <div class="col-xs-4"><strong>Title</strong></div>
+                        <div class="col-xs-3"><strong>Author</strong></div>
+                        <div class="col-xs-1"><strong>Year</strong></div>
+                        <div class="col-xs-2"><strong>Type</strong></div>
+                        <div class="col-xs-2"><strong>Rating</strong></div>
                 </div>
                 <hr>
 
-                {% for stock in stocks %}
+                {% for project in popular_projects %}
                     <div class="row">
-                        <div class="col-xs-3"> {{ stock["stock"] }} </div>
-                        <div class="col-xs-3"> {{ stock["shares"] }} </div>
-                        <div class="col-xs-3"> {{ "${:,.2f}".format(stock["price"]) }} </div>
-                        <div class="col-xs-3"> {{ "${:,.2f}".format(stock["price"] * stock["shares"]) }} </div>
+                        <div class="col-xs-4"> {{ project["title"] }} </div>
+                        <div class="col-xs-3"> {{ project["author"] }} </div>
+                        <div class="col-xs-1"> {{ project["year"] }} </div>
+                        <div class="col-xs-2"> {{ project["type"] }} </div>
+                        <div class="col-xs-2"> {{ project["rating"] }} </div>
                     </div>
                 {% endfor %}
-                -->
             {% endif %}
         </div>
     </div>
