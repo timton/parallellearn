@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Account History
+{% endblock %}
+
+{% block main %}
+
+    <div class="container">
+
+        <div>
+            <h1>Started Projects</h1>
+
+                {% if started_projects|length == 0 %}
+                    <br>
+                    <p>You haven't started any projects yet.</p>
+                    <br>
+                {% else %}
+                    <div class="row">
+                        <div class="col-xs-3"><strong>Title</strong></div>
+                        <div class="col-xs-2"><strong>Author</strong></div>
+                        <div class="col-xs-1"><strong>Year</strong></div>
+                        <div class="col-xs-1"><strong>Type</strong></div>
+                        <div class="col-xs-2"><strong>Language</strong></div>
+                        <div class="col-xs-1"><strong>Progress</strong></div>
+                    </div>
+                    <hr>
+                    <ol>
+                    {% for project in started_projects %}
+                        <div class="row">
+                            <a href="#">
+                            <li>
+                            <div class="col-xs-3"> {{ project["title"] }} </div>
+                            <div class="col-xs-2"> {{ project["author"] }} </div>
+                            <div class="col-xs-1"> {{ project["year"] }} </div>
+                            <div class="col-xs-1"> {{ project["type"] }} </div>
+                            <div class="col-xs-2"> {{ project["language"] }} </div>
+                            <div class="col-xs-1"> {{ project["progress"] }} </div>
+                            </a>
+                            <div class="col-xs-1">
+                                <a href="#" class="resumeButton">Resume</a>
+                            </div>
+                            <div class="col-xs-1">
+                                <a href="#" class="discardButton">Discard</a>
+                            </div>
+                            </li>
+                        </div>
+
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+        </div>
+
+        <div>
+            <h1>Uploaded Projects</h1>
+
+                {% if uploaded_projects|length == 0 %}
+                    <br>
+                    <p>You haven't uploaded any projects yet.</p>
+                    <br>
+                {% else %}
+                    <div class="row">
+                        <div class="col-xs-3"><strong>Title</strong></div>
+                        <div class="col-xs-2"><strong>Author</strong></div>
+                        <div class="col-xs-1"><strong>Year</strong></div>
+                        <div class="col-xs-1"><strong>Type</strong></div>
+                        <div class="col-xs-2"><strong>Language</strong></div>
+                    </div>
+                    <hr>
+                    <ol>
+                    {% for project in uploaded_projects %}
+                        <div class="row">
+                            <a href="#">
+                            <li>
+                            <div class="col-xs-3"> {{ project["title"] }} </div>
+                            <div class="col-xs-2"> {{ project["author"] }} </div>
+                            <div class="col-xs-1"> {{ project["year"] }} </div>
+                            <div class="col-xs-1"> {{ project["type"] }} </div>
+                            <div class="col-xs-2"> {{ project["language"] }} </div>
+                            <div class="col-xs-1"> </div>
+                            </a>
+                            <div class="col-xs-1"> </div>
+                            <div class="col-xs-1">
+                                <a href="#" class="deleteButton">Delete</a>
+                            </div>
+                            </li>
+                        </div>
+
+                    {% endfor %}
+                    </ol>
+                {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

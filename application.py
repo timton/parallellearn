@@ -432,6 +432,44 @@ def view_project(title):
     return render_template("view_project.html", project=project)
 
 
+# view account history route
+@app.route("/view_history")
+@login_required
+def view_history():
+
+    # get user's started projects
+    started_projects = db.execute("SELECT * FROM history WHERE user_id = :user_id",
+                                  user_id=session["user_id"])
+
+    # get all the metadata
+    if len(started_projects) > 0:
+        for project in started_projects:
+            pj1 = db.execute("SELECT * FROM versions WHERE id = :id", id=project["version_id"])
+            project["language"] = pj1[0]["language"]
+            project["filepath"] = pj1[0]["filepath"]
+
+            pj2 = db.execute("SELECT * FROM projects WHERE id = :id", id=project["project_id"])
+            project["type"] = pj2[0]["type"]
+            project["title"] = pj2[0]["title"]
+            project["author"] = pj2[0]["author"]
+            project["year"] = pj2[0]["year"]
+
+    # get user's uploaded projects
+    uploaded_projects = db.execute("SELECT * FROM versions WHERE user_id = :user_id",
+                                   user_id=session["user_id"])
+
+    # get all the metadata
+    if len(uploaded_projects) > 0:
+        for project in uploaded_projects:
+            pj = db.execute("SELECT * FROM projects WHERE id = :id", id=project["project_id"])
+            project["type"] = pj[0]["type"]
+            project["title"] = pj[0]["title"]
+            project["author"] = pj[0]["author"]
+            project["year"] = pj[0]["year"]
+
+    # render the account history page, passing in the data
+    return render_template("account_history.html",
+                           started_projects=started_projects, uploaded_projects=uploaded_projects)
 
 
 # ensure selected file allowed
@@ -531,10 +569,6 @@ def about():
 
 @app.route("/contact")
 def contact():
-    return
-
-@app.route("/download")
-def download():
     return
 
 @app.route("/buy", methods=["GET", "POST"])
