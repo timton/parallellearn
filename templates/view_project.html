@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ project["title"] }}
+{% endblock %}
+
+{% block main %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-3"> {{ project["title"] }} </div>
+            <div class="col-xs-2"> {{ project["author"] }} </div>
+            <div class="col-xs-1"> {{ project["year"] }} </div>
+            <div class="col-xs-1"> {{ project["type"] }} </div>
+            <div class="col-xs-1"> {{ project["rating"] }} </div>
+            <div class="col-xs-2"> {{ project["languages"] }} </div>
+            <div class="col-xs-2"> <a href="#" class="quickTestButton">Practice</a> </div>
+        </div>
+    </div>
+
+{% endblock %}

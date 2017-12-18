@@ -36,12 +36,14 @@
                     <hr>
 
                     {% for project in new_projects %}
+                        <a href="{{ url_for('view_project', title=project['title']) }}">
                         <div class="row">
                             <div class="col-xs-5"> {{ project["title"] }} </div>
                             <div class="col-xs-3"> {{ project["author"] }} </div>
                             <div class="col-xs-2"> {{ project["year"] }} </div>
                             <div class="col-xs-2"> {{ project["type"] }} </div>
                         </div>
+                        </a>
                     {% endfor %}
                 {% endif %}
         </div>
@@ -64,6 +66,7 @@
                 <hr>
 
                 {% for project in popular_projects %}
+                    <a href="{{ url_for('view_project', title=project['title']) }}">
                     <div class="row">
                         <div class="col-xs-4"> {{ project["title"] }} </div>
                         <div class="col-xs-3"> {{ project["author"] }} </div>
@@ -71,6 +74,7 @@
                         <div class="col-xs-2"> {{ project["type"] }} </div>
                         <div class="col-xs-2"> {{ project["rating"] }} </div>
                     </div>
+                    </a>
                 {% endfor %}
             {% endif %}
         </div>

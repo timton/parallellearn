@@ -412,15 +412,62 @@ def upload_new():
 def upload_existing():
     return
 
+# route with parameters
+# https://stackoverflow.com/questions/14032066/can-flask-have-optional-url-parameters
+# display project info
+@app.route("/view_project/<title>")
+def view_project(title):
+
+    # get project metadata
+    rows = db.execute("SELECT * FROM projects WHERE title = :title", title=title)
+    project = rows[0]
+
+    # get project languages
+    rows = db.execute("SELECT * FROM versions WHERE project_id = :id", id=project["id"])
+    languages = ""
+    for row in rows:
+        languages += (row["language"] + "\n")
+    project["languages"] = languages
+
+    return render_template("view_project.html", project=project)
+
+
+
+
 # ensure selected file allowed
 # extension must present and allowed
 def allowed_file(filename):
     return '.' not in filename or \
            filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS
 
+
+
+
+
+
+
+
+
+
+
 ######################
 # DONE UP UNTIL HERE #
 ######################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # change account history route
 @app.route("/change_history", methods=["GET", "POST"])
