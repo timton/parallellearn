@@ -6,31 +6,31 @@
 
 {% block main %}
     <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
-    <form action="{{ url_for('upload_new') }}" method="post" enctype="multipart/form-data">
+    <form action="{{ url_for('upload_new') }}" method="post" enctype="multipart/form-data" id="upload_new">
         <fieldset>
 
-            <!-- https://www.w3schools.com/tags/att_input_list.asp -->
-            <!-- limit form input list of values -->
+            <!--
+            limit form input list of values - https://www.w3schools.com/tags/att_input_list.asp
+            Multiple level template inheritance in Jinja2?
+            https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+            -->
             <div class="form-group">
-                <input autofocus class="form-control" list="types" name="type" placeholder="Type (select)">
-                <datalist id="types">
-                    <option value="Book">
-                    <option value="Movie">
-                    <option value="TV Series">
-                    <option value="Song">
-                </datalist>
+                <input autofocus class="form-control" list="types" name="type" placeholder="Type (select or type)">
+                {% include 'select_type.html' %}
             </div>
             <div class="form-group">
                 <input autocomplete="off" autofocus class="form-control" name="title" placeholder="Title" type="text"/>
             </div>
             <div class="form-group">
-                <input autocomplete="off" autofocus class="form-control" name="author" placeholder="Author" type="text"/>
+                <input autocomplete="off" autofocus class="form-control"
+                 name="author" placeholder="Author / Artist / Director" type="text"/>
             </div>
             <div class="form-group">
                 <input autocomplete="off" autofocus class="form-control" name="year" placeholder="Year" type="number"/>
             </div>
             <div class="form-group">
-                <input autocomplete="off" autofocus class="form-control" name="language" placeholder="Language" type="text"/>
+                <input autofocus class="form-control" list="languages" name="language" placeholder="Language (select or type)">
+                {% include 'select_language.html' %}
             </div>
             <div class="form-group">
                 <input autocomplete="off" autofocus class="form-control" name="file" placeholder="File" type="file"/>

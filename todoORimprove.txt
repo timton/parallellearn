@@ -3,6 +3,8 @@
 - upload existing
 - upload new (minimum number of versions)
 
+- excel display / test translation / progress
+
 
 
 #########  IMPROVE
