@@ -472,6 +472,47 @@ def view_history():
                            started_projects=started_projects, uploaded_projects=uploaded_projects)
 
 
+# delete uploaded project route
+@app.route("/delete_project", methods=["GET", "POST"])
+@login_required
+def delete_project():
+
+    # if delete button pressed
+    # get submit button values
+    # https://stackoverflow.com/questions/19794695/flask-python-buttons
+    # Flask button passing variable back to python
+    # https://stackoverflow.com/questions/41026510/flask-button-passing-variable-back-to-python
+    if request.method == "POST":
+
+        # get project version metadata
+        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=request.form['delete_version'])
+        version = rows[0]
+
+        # delete the version
+        try:
+            db.execute("DELETE FROM 'versions' WHERE id = :id", id=request.form['delete_version'])
+        except RuntimeError:
+            return apology("couldn't delete this project version")
+
+        # delete the file as well
+        try:
+            os.remove(version['filepath'])
+        except RuntimeError:
+            return apology("couldn't delete this project version")
+
+        # check whether we have any more versions of the same project
+        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=version['id'])
+
+        # if no more versions of the same project, delete project metadata as well
+        if len(rows) == 0:
+            try:
+                db.execute("DELETE FROM 'projects' WHERE id = :id", id=version['project_id'])
+            except RuntimeError:
+                return apology("couldn't delete the project")
+
+    # back to account history after deletion
+    return view_history()
+
 # ensure selected file allowed
 # extension must present and allowed
 def allowed_file(filename):

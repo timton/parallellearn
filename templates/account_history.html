@@ -41,7 +41,7 @@
                                 <a href="#" class="resumeButton">Resume</a>
                             </div>
                             <div class="col-xs-1">
-                                <a href="#" class="discardButton">Discard</a>
+                                <a href="#"><button type="button" class="discardButton">Discard</button></a>
                             </div>
                             </li>
                         </div>
@@ -81,7 +81,11 @@
                             </a>
                             <div class="col-xs-1"> </div>
                             <div class="col-xs-1">
-                                <a href="#" class="deleteButton">Delete</a>
+                                <form action="{{ url_for('delete_project') }}" method="POST">
+                                    <button type="submit" name="delete_version" value="{{ project['id'] }}">
+                                        Delete
+                                    </button>
+                                </form>
                             </div>
                             </li>
                         </div>

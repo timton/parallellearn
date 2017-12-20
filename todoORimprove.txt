@@ -1,4 +1,11 @@
+######### TODO
+- scrape project info
+- upload existing
+- upload new (minimum number of versions)
+
+
+
+#########  IMPROVE
 - live registration form validation
 jQuery http://www.geektantra.com/projects/jquery-form-validate/advanced_demo/
-
 - download as ebook?
