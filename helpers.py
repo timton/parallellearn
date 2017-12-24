@@ -4,6 +4,14 @@ import urllib.request
 from flask import redirect, render_template, request, session, url_for
 from functools import wraps
 
+ALLOWED_EXTENSIONS = set(['xls', 'xlsx'])
+
+# ensure selected file allowed
+# extension must present and allowed
+def allowed_file(filename):
+    return '.' not in filename or \
+           filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS
+
 def apology(top="", bottom=""):
     """Renders message as an apology to user."""
     def escape(s):

@@ -35,6 +35,7 @@ Session(app)
 # uploading files
 # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
 UPLOAD_FOLDER = 'projects/'
+ALLOWED_EXTENSIONS = set(['xls', 'xlsx'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # configure CS50 Library to use SQLite database
@@ -388,7 +389,7 @@ def upload_new():
         except RuntimeError:
             return apology("couldn't upload te selected file")
 
-        # try to upload new project language versions
+        # try to upload new project language version
         try:
             key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath) \
                              VALUES(:project_id, :user_id, :language, :timestamp, :filepath)",
@@ -512,12 +513,11 @@ def delete_project():
     # back to account history after deletion
     return view_history()
 
-
-
-
-
-
-
+# ensure selected file allowed
+# extension must present and allowed
+def allowed_file(filename):
+    return '.' not in filename or \
+           filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS
 
 
 
@@ -532,9 +532,6 @@ def delete_project():
 ######################
 # DONE UP UNTIL HERE #
 ######################
-
-
-
 
 
 
