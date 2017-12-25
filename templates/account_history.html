@@ -59,30 +59,17 @@
                     <p>You haven't uploaded any projects yet.</p>
                     <br>
                 {% else %}
-                    <div class="row">
-                        <div class="col-xs-3"><strong>Title</strong></div>
-                        <div class="col-xs-2"><strong>Author</strong></div>
-                        <div class="col-xs-1"><strong>Year</strong></div>
-                        <div class="col-xs-1"><strong>Type</strong></div>
-                        <div class="col-xs-2"><strong>Language</strong></div>
-                    </div>
-                    <hr>
                     <ol>
                     {% for project in uploaded_projects %}
                         <div class="row">
                             <a href="#">
                             <li>
-                            <div class="col-xs-3"> {{ project["title"] }} </div>
-                            <div class="col-xs-2"> {{ project["author"] }} </div>
-                            <div class="col-xs-1"> {{ project["year"] }} </div>
-                            <div class="col-xs-1"> {{ project["type"] }} </div>
-                            <div class="col-xs-2"> {{ project["language"] }} </div>
-                            <div class="col-xs-1"> </div>
+                            <div class="col-xs-9"> {{ project }} </div>
                             </a>
-                            <div class="col-xs-1"> </div>
+                            <div class="col-xs-2"> </div>
                             <div class="col-xs-1">
                                 <form action="{{ url_for('delete_project') }}" method="POST">
-                                    <button type="submit" name="delete_version" value="{{ project['id'] }}">
+                                    <button type="submit" name="delete_project" value="{{ project }}">
                                         Delete
                                     </button>
                                 </form>

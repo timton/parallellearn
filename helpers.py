@@ -4,7 +4,22 @@ import urllib.request
 from flask import redirect, render_template, request, session, url_for
 from functools import wraps
 
+SUPPORTED_TYPES = ["book", "movie", "tv series", "song"]
 ALLOWED_EXTENSIONS = set(['xls', 'xlsx'])
+SUPPORTED_LANGUAGES = [
+        'afrikanns', 'albanian', 'arabic', 'armenian', 'basque', 'bengali',
+        'bulgarian', 'catalan', 'cambodian', 'chinese', 'croation', 'czech',
+        'danish', 'dutch', 'english', 'estonian', 'fiji', 'finnish', 'french',
+        'georgian', 'german', 'greek', 'gujarati', 'hebrew', 'hindi',
+        'hungarian', 'icelandic', 'indonesian', 'irish', 'italian', 'japanese',
+        'javanese', 'korean', 'latin', 'latvian', 'lithuanian', 'macedonian',
+        'malay', 'malayalam', 'maltese', 'maori', 'marathi', 'mongolian', 'nepali',
+        'norwegian', 'persian', 'polish', 'portuguese', 'punjabi', 'quechua',
+        'romanian', 'russian', 'samoan', 'serbian', 'slovak', 'slovenian',
+        'spanish', 'swahili', 'swedish', 'tamil', 'tatar', 'telugu', 'thai',
+        'tibetan', 'tonga', 'turkish', 'ukranian', 'urdu', 'uzbek', 'vietnamese',
+        'welsh', 'xhosa'
+    ]
 
 # ensure selected file allowed
 # extension must present and allowed

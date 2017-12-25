@@ -322,7 +322,7 @@ def upload_new():
             type = request.form.get("type").lower()
 
         # ... ensure supported type submitted
-        if type not in ["book", "movie", "tv series", "song"]:
+        if type not in SUPPORTED_TYPES:
             return apology("must provide correct type: book, movie, tv series, or song")
 
         # ensure title of the project was submitted
@@ -343,15 +343,17 @@ def upload_new():
         else:
             year = request.form.get("year")
 
-        # ensure language submitted and ...
-        if not request.form.get("language"):
-            return apology("must provide the language of this project")
+        # ensure number of language versions submitted
+        if not request.form.get("number_of_versions"):
+            return apology("must provide number of language versions for this project")
         else:
-            language = request.form.get("language").lower()
+            number_of_versions = int(request.form.get("number_of_versions"))
 
-        # ... ensure supported language submitted
-        if language not in ["english", "french", "russian", "romanian"]:
-            return apology("must provide language: english, russian, french, or romanian")
+        # ensure supported languages submitted
+        for i in range(number_of_versions):
+            if request.form.get("language_version" + str(i + 1)).lower() not in SUPPORTED_LANGUAGES:
+                return apology("must submit project in supported languages (better select)")
+
 
         # ENSURE FILE SELECTED FOR UPLOAD
         # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
@@ -380,23 +382,34 @@ def upload_new():
         except RuntimeError:
             return apology("error while uploading new project metadata")
 
+
+        # prepare to upload file (create name)
+        project_languages = " ("
+        for i in range(number_of_versions):
+            project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
+        project_languages = project_languages[:-2]
+        project_languages += ")"
+        filename = title + " - " + author + " - " + str(year) + project_languages + "." + \
+                       file.filename.rsplit('.', 1)[1].lower()
+
         # try to upload the file
         try:
-            filename = title + " - " + author + " - " + str(year) + " (" + language + ")" + "." + \
-                       file.filename.rsplit('.', 1)[1].lower()
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         except RuntimeError:
             return apology("couldn't upload te selected file")
 
         # try to upload new project language versions
-        try:
-            key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath) \
-                             VALUES(:project_id, :user_id, :language, :timestamp, :filepath)",
-                             project_id=project_id, user_id=session["user_id"], language=language,
-                             timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
-                             filepath=UPLOAD_FOLDER+filename)
-        except RuntimeError:
-            return apology("error while uploading new project language version")
+        for i in range(number_of_versions):
+            try:
+                key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath, column_number) \
+                                 VALUES(:project_id, :user_id, :language, :timestamp, :filepath, :column_number)",
+                                 project_id=project_id, user_id=session["user_id"],
+                                 language=request.form.get("language_version" + str(i + 1)).lower(),
+                                 timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
+                                 filepath=UPLOAD_FOLDER+filename,
+                                 column_number=(i + 1))
+            except RuntimeError:
+                return apology("error while uploading new project language version")
 
         # once successful, back to home page
         return redirect(url_for("index"))
@@ -453,18 +466,16 @@ def view_history():
             project["author"] = pj2[0]["author"]
             project["year"] = pj2[0]["year"]
 
-    # get user's uploaded projects
-    uploaded_projects = db.execute("SELECT * FROM versions WHERE user_id = :user_id",
+    # get user's uploaded versions
+    uploaded_versions = db.execute("SELECT * FROM versions WHERE user_id = :user_id",
                                    user_id=session["user_id"])
 
-    # get all the metadata
-    if len(uploaded_projects) > 0:
-        for project in uploaded_projects:
-            pj = db.execute("SELECT * FROM projects WHERE id = :id", id=project["project_id"])
-            project["type"] = pj[0]["type"]
-            project["title"] = pj[0]["title"]
-            project["author"] = pj[0]["author"]
-            project["year"] = pj[0]["year"]
+    # get user's uploaded projects (as different files)
+    uploaded_projects = []
+    if len(uploaded_versions) > 0:
+        for version in uploaded_versions:
+            if version["filepath"] not in uploaded_projects:
+                uploaded_projects.append(version["filepath"])
 
     # render the account history page, passing in the data
     return render_template("account_history.html",
@@ -483,31 +494,36 @@ def delete_project():
     # https://stackoverflow.com/questions/41026510/flask-button-passing-variable-back-to-python
     if request.method == "POST":
 
-        # get project version metadata
-        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=request.form['delete_version'])
+        file_to_delete = request.form['delete_project']
+
+        # save the project metadata first (for project deletion purposes afterwards)
+        rows = db.execute("SELECT * FROM versions WHERE filepath = :filepath",
+                          filepath=file_to_delete)
         version = rows[0]
 
-        # delete the version
+        # delete the project
         try:
-            db.execute("DELETE FROM 'versions' WHERE id = :id", id=request.form['delete_version'])
+            db.execute("DELETE FROM 'versions' WHERE filepath = :filepath",
+                       filepath=file_to_delete)
         except RuntimeError:
-            return apology("couldn't delete this project version")
+            return apology("couldn't delete this project")
 
         # delete the file as well
         try:
-            os.remove(version['filepath'])
+            os.remove(file_to_delete)
         except RuntimeError:
-            return apology("couldn't delete this project version")
+            return apology("couldn't delete this project")
 
         # check whether we have any more versions of the same project
-        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=version['id'])
+        rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
+                          project_id=version['project_id'])
 
         # if no more versions of the same project, delete project metadata as well
         if len(rows) == 0:
             try:
                 db.execute("DELETE FROM 'projects' WHERE id = :id", id=version['project_id'])
             except RuntimeError:
-                return apology("couldn't delete the project")
+                return apology("couldn't delete this project")
 
     # back to account history after deletion
     return view_history()

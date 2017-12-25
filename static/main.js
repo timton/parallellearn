@@ -28,8 +28,8 @@ function addLanguages(){
         input.autofocus;
         input.setAttribute("class", "form-control");
         input.setAttribute("list", "languages");
-        input.name = "language_version" + i;
-        input.id = "language_version" + i;
+        input.name = "language_version" + (i + 1);
+        input.id = "language_version" + (i + 1);
         input.placeholder = "Version " + (i + 1) + " (select/type)";
 
         // space out each language
@@ -41,8 +41,10 @@ function addLanguages(){
 }
 
 // adds dropdown languages menu for different versions
-function addDropdownLanguages(element) {
+function addDropdownLanguages(language_container) {
 
+    // List of all country languages for dropdown select menu HTML FORM [closed]
+    // https://stackoverflow.com/questions/38909766/list-of-all-country-languages-for-dropdown-select-menu-html-form
     var language_list = ' \
         <datalist id="languages"> \
             <option value="Afrikanns">Afrikanns</option> \
@@ -103,7 +105,7 @@ function addDropdownLanguages(element) {
             <option value="Slovenian">Slovenian</option> \
             <option value="Spanish">Spanish</option> \
             <option value="Swahili">Swahili</option> \
-            <option value="Swedish ">Swedish </option> \
+            <option value="Swedish">Swedish </option> \
             <option value="Tamil">Tamil</option> \
             <option value="Tatar">Tatar</option> \
             <option value="Telugu">Telugu</option> \
@@ -121,5 +123,5 @@ function addDropdownLanguages(element) {
     ';
 
     // add dropdown list to each language version
-    element.insertAdjacentHTML('beforeend', language_list);
+    language_container.insertAdjacentHTML('beforeend', language_list);
 }
