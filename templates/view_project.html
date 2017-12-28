@@ -14,7 +14,13 @@
             <div class="col-xs-1"> {{ project["type"] }} </div>
             <div class="col-xs-1"> {{ project["rating"] }} </div>
             <div class="col-xs-2"> {{ project["languages"] }} </div>
-            <div class="col-xs-2"> <a href="#" class="quickTestButton">Practice</a> </div>
+            <div class="col-xs-2">
+                <form action="#" method="POST">
+                    <button type="submit" name="practice" value="{{ project['filepath'] }}">
+                        Practice
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 

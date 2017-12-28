@@ -21,7 +21,8 @@
                         <div class="col-xs-2"><strong>Author</strong></div>
                         <div class="col-xs-1"><strong>Year</strong></div>
                         <div class="col-xs-1"><strong>Type</strong></div>
-                        <div class="col-xs-2"><strong>Language</strong></div>
+                        <div class="col-xs-1"><strong>From</strong></div>
+                        <div class="col-xs-1"><strong>To</strong></div>
                         <div class="col-xs-1"><strong>Progress</strong></div>
                     </div>
                     <hr>
@@ -34,7 +35,8 @@
                             <div class="col-xs-2"> {{ project["author"] }} </div>
                             <div class="col-xs-1"> {{ project["year"] }} </div>
                             <div class="col-xs-1"> {{ project["type"] }} </div>
-                            <div class="col-xs-2"> {{ project["language"] }} </div>
+                            <div class="col-xs-1"> {{ project["from_language"] }} </div>
+                            <div class="col-xs-1"> {{ project["to_language"] }} </div>
                             <div class="col-xs-1"> {{ project["progress"] }} </div>
                             </a>
                             <div class="col-xs-1">
@@ -61,21 +63,25 @@
                 {% else %}
                     <ol>
                     {% for project in uploaded_projects %}
-                        <div class="row">
-                            <a href="#">
-                            <li>
-                            <div class="col-xs-9"> {{ project }} </div>
-                            </a>
-                            <div class="col-xs-2"> </div>
-                            <div class="col-xs-1">
-                                <form action="{{ url_for('delete_project') }}" method="POST">
-                                    <button type="submit" name="delete_project" value="{{ project }}">
-                                        Delete
-                                    </button>
-                                </form>
+
+                        <a href="{{ url_for('view_project', title=project['title']) }}">
+                            <div class="row">
+                                <li>
+                                    <div class="col-xs-3"> {{ project["title"] }} </div>
+                                    <div class="col-xs-3"> {{ project["author"] }} </div>
+                                    <div class="col-xs-1"> {{ project["year"] }} </div>
+                                    <div class="col-xs-1"> {{ project["type"] }} </div>
+                                    <div class="col-xs-3"> {{ project["languages"] }} </div>
+                                    <div class="col-xs-1">
+                                        <form action="{{ url_for('delete_project') }}" method="POST">
+                                            <button type="submit" name="delete_project" value="{{ project['filepath'] }}">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
                             </div>
-                            </li>
-                        </div>
+                        </a>
 
                     {% endfor %}
                     </ol>

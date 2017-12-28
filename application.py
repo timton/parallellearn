@@ -44,38 +44,66 @@ db = SQL("sqlite:///parallellearn.db")
 @app.route("/")
 def index():
 
-    # get the 5 newest projects
-    # https://stackoverflow.com/questions/14018394/android-sqlite-query-getting-latest-10-records
-    new_projects = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY timestamp ASC LIMIT 5) \
-                              ORDER BY timestamp DESC")
+    # get the newest versions
+    new_versions = db.execute("SELECT * FROM versions ORDER BY timestamp DESC")
+    new_projects = []
 
-    # get all the metadata
-    if len(new_projects) > 0:
+    if len(new_versions) > 0:
+
+        # get only distinct files
+        different_files = []
+        for version in new_versions:
+            if version["filepath"] not in different_files:
+                different_files.append(version["filepath"])
+            else:
+                continue
+
+        # get the corresponding different projects
+        different_projects = []
+        for file in different_files:
+            for version in new_versions:
+                if version["filepath"] == file:
+                    different_projects.append(version)
+                    break
+            continue
+
+        # get the newest 10 different projects
+        new_projects = different_projects[:10]
+
+        # get all the metadata
         for project in new_projects:
-            pj = db.execute("SELECT * FROM projects WHERE id = :id",
+            projects = db.execute("SELECT * FROM projects WHERE id = :id",
                             id=project["project_id"])
-            project["type"] = pj[0]["type"]
-            project["title"] = pj[0]["title"]
-            project["author"] = pj[0]["author"]
-            project["year"] = pj[0]["year"]
+            project["type"] = projects[0]["type"]
+            project["title"] = projects[0]["title"]
+            project["author"] = projects[0]["author"]
+            project["year"] = projects[0]["year"]
 
 
-    # get the 5 most popular projects
-    popular_projects = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY rating ASC LIMIT 5) \
+            # get project languages
+            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
+                              project_id=project["project_id"])
+            languages = ""
+            for row in rows:
+                languages += (row["language"] + ", ")
+            languages = languages[:-2]
+            project["languages"] = languages
+
+    # get the 5 most popular language versions
+    popular_versions = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY rating ASC LIMIT 10) \
                               ORDER BY rating DESC")
 
     # get all the metadata
-    if len(popular_projects) > 0:
-        for project in popular_projects:
-            pj = db.execute("SELECT * FROM projects WHERE id = :id",
-                            id=project["project_id"])
-            project["type"] = pj[0]["type"]
-            project["title"] = pj[0]["title"]
-            project["author"] = pj[0]["author"]
-            project["year"] = pj[0]["year"]
+    if len(popular_versions) > 0:
+        for version in popular_versions:
+            projects = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
+            version["type"] = projects[0]["type"]
+            version["title"] = projects[0]["title"]
+            version["author"] = projects[0]["author"]
+            version["year"] = projects[0]["year"]
 
     # render the home page, passing in the data
-    return render_template("index.html", new_projects=new_projects, popular_projects=popular_projects)
+    return render_template("index.html", new_projects=new_projects, popular_versions=popular_versions)
 
 # register route
 @app.route("/register", methods=["GET", "POST"])
@@ -351,6 +379,8 @@ def upload_new():
 
         # ensure supported languages submitted
         for i in range(number_of_versions):
+            if not request.form.get("language_version" + str(i + 1)):
+                return apology("must provide languages for this project")
             if request.form.get("language_version" + str(i + 1)).lower() not in SUPPORTED_LANGUAGES:
                 return apology("must submit project in supported languages (better select)")
 
@@ -438,7 +468,8 @@ def view_project(title):
     rows = db.execute("SELECT * FROM versions WHERE project_id = :id", id=project["id"])
     languages = ""
     for row in rows:
-        languages += (row["language"] + "\n")
+        languages += (row["language"] + ", ")
+    languages = languages[:-2]
     project["languages"] = languages
 
     return render_template("view_project.html", project=project)
@@ -456,30 +487,68 @@ def view_history():
     # get all the metadata
     if len(started_projects) > 0:
         for project in started_projects:
-            pj1 = db.execute("SELECT * FROM versions WHERE id = :id", id=project["version_id"])
-            project["language"] = pj1[0]["language"]
-            project["filepath"] = pj1[0]["filepath"]
 
-            pj2 = db.execute("SELECT * FROM projects WHERE id = :id", id=project["project_id"])
-            project["type"] = pj2[0]["type"]
-            project["title"] = pj2[0]["title"]
-            project["author"] = pj2[0]["author"]
-            project["year"] = pj2[0]["year"]
+            # add "from_version" metadata
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=project["from_version_id"])
+            project["from_language"] = rows[0]["from_version_id"]
+
+            # add "to_version" metadata
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=project["to_version_id"])
+            project["to_language"] = rows[0]["to_version_id"]
+
+            # add project metadata
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project["project_id"])
+            project["type"] = rows[0]["type"]
+            project["title"] = rows[0]["title"]
+            project["author"] = rows[0]["author"]
+            project["year"] = rows[0]["year"]
+
 
     # get user's uploaded versions
     uploaded_versions = db.execute("SELECT * FROM versions WHERE user_id = :user_id",
                                    user_id=session["user_id"])
+    different_projects = []
 
-    # get user's uploaded projects (as different files)
-    uploaded_projects = []
     if len(uploaded_versions) > 0:
+
+        # get only distinct files
+        different_files = []
         for version in uploaded_versions:
-            if version["filepath"] not in uploaded_projects:
-                uploaded_projects.append(version["filepath"])
+            if version["filepath"] not in different_files:
+                different_files.append(version["filepath"])
+            else:
+                continue
+
+        # get the corresponding different projects
+        for file in different_files:
+            for version in uploaded_versions:
+                if version["filepath"] == file:
+                    different_projects.append(version)
+                    break
+            continue
+
+        # get projects' metadata
+        for project in different_projects:
+            projects = db.execute("SELECT * FROM projects WHERE id = :id",
+                            id=project["project_id"])
+            project["type"] = projects[0]["type"]
+            project["title"] = projects[0]["title"]
+            project["author"] = projects[0]["author"]
+            project["year"] = projects[0]["year"]
+
+
+            # get project languages
+            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
+                              project_id=project["project_id"])
+            languages = ""
+            for row in rows:
+                languages += (row["language"] + ", ")
+            languages = languages[:-2]
+            project["languages"] = languages
 
     # render the account history page, passing in the data
     return render_template("account_history.html",
-                           started_projects=started_projects, uploaded_projects=uploaded_projects)
+                           started_projects=started_projects, uploaded_projects=different_projects)
 
 
 # delete uploaded project route

@@ -6,7 +6,7 @@ body, html {
 }
 
 .leftpane {
-    width: 15%;
+    width: 10%;
     height: 100%;
     float: left;
     background-color: #713D99;
@@ -22,7 +22,7 @@ body, html {
 }
 
 .rightpane {
-    width: 45%;
+    width: 50%;
     height: 100%;
     position: relative;
     float: right;
