@@ -50,30 +50,23 @@ def index():
 
     if len(new_versions) > 0:
 
-        # get only distinct files
-        different_files = []
+        # get only distinct projects
+        different_projects = []
         for version in new_versions:
-            if version["filepath"] not in different_files:
-                different_files.append(version["filepath"])
+            if version["project_id"] not in different_projects:
+                different_projects.append(version["project_id"])
             else:
                 continue
 
-        # get the corresponding different projects
-        different_projects = []
-        for file in different_files:
-            for version in new_versions:
-                if version["filepath"] == file:
-                    different_projects.append(version)
-                    break
-            continue
-
         # get the newest 10 different projects
-        new_projects = different_projects[:10]
+        for id in different_projects:
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=id)
+            new_projects.append(rows[0])
+        new_projects = new_projects[:10]
 
         # get all the metadata
         for project in new_projects:
-            projects = db.execute("SELECT * FROM projects WHERE id = :id",
-                            id=project["project_id"])
+            projects = db.execute("SELECT * FROM projects WHERE id = :id", id=project["id"])
             project["type"] = projects[0]["type"]
             project["title"] = projects[0]["title"]
             project["author"] = projects[0]["author"]
@@ -82,7 +75,7 @@ def index():
 
             # get project languages
             rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
-                              project_id=project["project_id"])
+                              project_id=project["id"])
             languages = ""
             for row in rows:
                 languages += (row["language"] + ", ")
@@ -452,7 +445,101 @@ def upload_new():
 @app.route("/upload_existing", methods=["GET", "POST"])
 @login_required
 def upload_existing():
-    return
+
+    # query for all the existing projects
+    existing_projects = db.execute("SELECT * FROM projects")
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure project submitted and ...
+        if not request.form.get("project"):
+            return apology("must choose project to update")
+        else:
+            project_name = request.form.get("project").lower()
+
+        # ... ensure project exists
+        project_id = -1
+        for project in existing_projects:
+            name = "[" + project["type"] + "] " + project["title"] + " - " + project["author"] + " (" + str(project["year"]) + ")"
+            if name == project_name:
+                project_id = project["id"]
+                break
+        if project_id == -1:
+            return apology("must choose among existing projects")
+
+        # ensure number of language versions submitted
+        if not request.form.get("number_of_versions"):
+            return apology("must provide number of language versions for this project")
+        else:
+            number_of_versions = int(request.form.get("number_of_versions"))
+
+        # ensure supported language(s) submitted
+        for i in range(number_of_versions):
+            if not request.form.get("language_version" + str(i + 1)):
+                return apology("must provide languages for this project")
+            if request.form.get("language_version" + str(i + 1)).lower() not in SUPPORTED_LANGUAGES:
+                return apology("must submit project in supported languages (better select)")
+
+
+        # ENSURE FILE SELECTED FOR UPLOAD
+        # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return apology("must select file to upload")
+
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        file = request.files['file']
+        if not file or file.filename == '':
+            return apology("no selected file")
+
+        # ensure file name (extension) allowed
+        if allowed_file(file.filename):
+            return apology("must select .xls or .xlsx file")
+
+        # get project metadata
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+        project = rows[0]
+
+        # prepare to upload file (create name)
+        project_languages = " ("
+        for i in range(number_of_versions):
+            project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
+        project_languages = project_languages[:-2]
+        project_languages += ")"
+        filename = project["title"] + " - " + project["author"] + " - " + str(project["year"]) + \
+                   project_languages + "." + file.filename.rsplit('.', 1)[1].lower()
+
+        # try to upload the file
+        try:
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        except RuntimeError:
+            return apology("couldn't upload te selected file")
+
+        # try to upload new project language versions
+        for i in range(number_of_versions):
+            try:
+                key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath, column_number) \
+                                 VALUES(:project_id, :user_id, :language, :timestamp, :filepath, :column_number)",
+                                 project_id=project_id, user_id=session["user_id"],
+                                 language=request.form.get("language_version" + str(i + 1)).lower(),
+                                 timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
+                                 filepath=UPLOAD_FOLDER+filename,
+                                 column_number=(i + 1))
+            except RuntimeError:
+                return apology("error while uploading new project language version")
+
+        # once successful, back to home page
+        return redirect(url_for("index"))
+
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+
+        # return the list of projects for the user to choose from
+        return render_template("upload_existing.html", existing_projects=existing_projects)
+
 
 # route with parameters
 # https://stackoverflow.com/questions/14032066/can-flask-have-optional-url-parameters
@@ -516,35 +603,29 @@ def view_history():
         for version in uploaded_versions:
             if version["filepath"] not in different_files:
                 different_files.append(version["filepath"])
-            else:
-                continue
 
-        # get the corresponding different projects
+        different_projects = []
         for file in different_files:
+            project = {}
+            project["filepath"] = file
+            languages = ""
             for version in uploaded_versions:
                 if version["filepath"] == file:
-                    different_projects.append(version)
-                    break
-            continue
+                    project["id"] = version["project_id"]
+                    languages += (version["language"] + ", ")
+            languages = languages[:-2]
+            project["languages"] = languages
+            different_projects.append(project)
+
 
         # get projects' metadata
         for project in different_projects:
-            projects = db.execute("SELECT * FROM projects WHERE id = :id",
-                            id=project["project_id"])
-            project["type"] = projects[0]["type"]
-            project["title"] = projects[0]["title"]
-            project["author"] = projects[0]["author"]
-            project["year"] = projects[0]["year"]
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project["id"])
+            project["type"] = rows[0]["type"]
+            project["title"] = rows[0]["title"]
+            project["author"] = rows[0]["author"]
+            project["year"] = rows[0]["year"]
 
-
-            # get project languages
-            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
-                              project_id=project["project_id"])
-            languages = ""
-            for row in rows:
-                languages += (row["language"] + ", ")
-            languages = languages[:-2]
-            project["languages"] = languages
 
     # render the account history page, passing in the data
     return render_template("account_history.html",

@@ -9,31 +9,40 @@
     <form action="{{ url_for('upload_new') }}" method="post" enctype="multipart/form-data" id="upload_new">
         <fieldset>
 
-            <!--
-            limit form input list of values - https://www.w3schools.com/tags/att_input_list.asp
-            Multiple level template inheritance in Jinja2?
-            https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
-            -->
             <div class="form-group">
-                <input autofocus class="form-control" list="types" name="type" placeholder="Type (select/type)">
-                {% include 'select_type.html' %}
-            </div>
-            <div class="form-group">
-                <input autocomplete="off" autofocus class="form-control" name="title" placeholder="Title" type="text"/>
-            </div>
-            <div class="form-group">
+                <label class="sr-only" for="type">Type</label>
                 <input autocomplete="off" autofocus class="form-control"
-                 name="author" placeholder="Author / Artist / Director" type="text"/>
+                       list="types" name="type" id="type" placeholder="Type (select/type)">
+                <datalist id="types">
+                    <option value="Book">
+                    <option value="Movie">
+                    <option value="TV Series">
+                    <option value="Song">
+                </datalist>
             </div>
             <div class="form-group">
-                <input autocomplete="off" autofocus class="form-control" name="year" placeholder="Year" type="number"/>
+                <label class="sr-only" for="title">Title</label>
+                <input autocomplete="off" name="title" class="form-control"
+                       id="title" placeholder="Title" type="text"/>
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="author">Author / Artist / Director</label>
+                <input autocomplete="off" name="author" class="form-control"
+                       id="author" placeholder="Author / Artist / Director" type="text"/>
+            </div>
+            <div class="form-group">
+                <label class="sr-only" for="year">Year</label>
+                <input autocomplete="off" name="year" class="form-control"
+                       id="year" placeholder="Year" type="text"/>
             </div>
 
             <div class="form-group">
+                <label class="sr-only" for="number_of_versions">Number of language versions (min. 2)</label>
                 <input autocomplete="off" autofocus class="form-control" name="number_of_versions"
-                 placeholder="Number of language versions (min. 2)" type="number" min="2" id="number_of_versions" value="">
+                       id="number_of_versions" placeholder="Languages (min. 2)"
+                       type="number" min="2" id="number_of_versions" value="">
                 <span>   </span>
-                <a href="#" id="add_languages" onclick="addLanguages()">Select</a>
+                <a href="#" id="add_languages" onclick="addLanguages(2)">Select</a>
                 <div class="form-group" id="language_container"></div>
             </div>
             <br />

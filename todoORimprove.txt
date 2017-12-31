@@ -1,7 +1,8 @@
 ######### TODO
 - scrape project info
 - upload existing
-- upload new (minimum number of versions)
+- edit project
+- autocomplete form
 
 - excel display / test translation / progress
 

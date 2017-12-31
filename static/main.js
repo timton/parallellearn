@@ -1,14 +1,20 @@
 // Adding input elements dynamically to form
 // https://stackoverflow.com/questions/14853779/adding-input-elements-dynamically-to-form
-function addLanguages(){
+function addLanguages(n){
 
     // Number of inputs to create
     var number = document.getElementById("number_of_versions").value;
 
     // ensure at least two versions for new project
-    if (number < 2) {
+    if (n == 2 && number < 2) {
         window.alert('A new project has to have at least two languages.');
-        return
+        return;
+    }
+
+    // ensure at least two versions for new project
+    if (n == 1 && number < 1) {
+        window.alert('Must add at least one language version to an existing project.');
+        return;
     }
 
     // Container <div> where dynamic content will be placed
