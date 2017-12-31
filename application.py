@@ -646,7 +646,24 @@ def delete_project():
 
         file_to_delete = request.form['delete_project']
 
-        # save the project metadata first (for project deletion purposes afterwards)
+        # make sure none or 2+ different language versions left for project if deleting current file
+        # How do I count unique values inside an array in Python?
+        # https://stackoverflow.com/questions/12282232/how-do-i-count-unique-values-inside-an-array-in-python
+        rows = db.execute("SELECT project_id FROM versions WHERE filepath = :filepath",
+                          filepath=file_to_delete)
+        project = rows[0]
+        rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
+                          project_id=project["project_id"])
+        languages_left = []
+        for project in rows:
+            if project["filepath"] != file_to_delete:
+                languages_left.append(project["language"])
+                if len(set(languages_left)) >= 2:
+                    break
+        if len(set(languages_left)) == 1:
+            return apology("can't delete project if only one language version remains")
+
+        # save the project metadata (for project deletion purposes afterwards)
         rows = db.execute("SELECT * FROM versions WHERE filepath = :filepath",
                           filepath=file_to_delete)
         version = rows[0]
