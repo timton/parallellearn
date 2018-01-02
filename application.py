@@ -391,15 +391,15 @@ def upload_new():
             return apology("no selected file")
 
         # ensure file name (extension) allowed
-        if allowed_file(file.filename):
+        if forbidden_file(file.filename):
             return apology("must select .xls or .xlsx file")
 
         # try to upload new project metadata
         # get the project id if successful
         try:
-            db.execute("INSERT INTO projects (type, title, author, year) \
-                       VALUES(:type, :title, :author, :year)",
-                       type=type, title=title, author=author, year=year)
+            db.execute("INSERT INTO projects (type, title, author, year, user_id) \
+                       VALUES(:type, :title, :author, :year, :user_id)",
+                       type=type, title=title, author=author, year=year, user_id=session["user_id"])
             rows = db.execute("SELECT * FROM projects WHERE title = :title", title=title)
             project_id=rows[0]["id"]
         except RuntimeError:
@@ -495,7 +495,7 @@ def upload_existing():
             return apology("no selected file")
 
         # ensure file name (extension) allowed
-        if allowed_file(file.filename):
+        if forbidden_file(file.filename):
             return apology("must select .xls or .xlsx file")
 
         # get project metadata
@@ -692,12 +692,148 @@ def delete_project():
             except RuntimeError:
                 return apology("couldn't delete this project")
 
-    # back to account history after deletion
-    return view_history()
+        # back to account history after deletion
+        return view_history()
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to account history to choose project to delete
+    else:
+        return view_history()
 
 
+# edit uploaded project route
+@app.route("/edit_project/", methods=["GET", "POST"])
+@login_required
+def edit_project():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    # Different types of POST requests in the same route in Flask
+    # https://stackoverflow.com/questions/43333440/different-types-of-post-requests-in-the-same-route-in-flask
+    if request.method == "POST":
+
+        # if user prepares to edit project from the account history page
+        if len(request.form['edit_project']) > 0:
+
+            file_to_edit = request.form['edit_project']
+            versions = db.execute("SELECT * FROM versions WHERE filepath = :filepath ORDER BY column_number ASC",
+                                  filepath=file_to_edit)
+            version = versions[0]
+            projects = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
+            project = projects[0]
+
+            # saving the values in session variables for outside use
+            session["versions"] = versions
+            session["project"] = project
+
+            return render_template("edit_project.html", project=project, versions=versions)
+
+        # if user is actually trying to edit the project from the edit project page
+        else:
+
+            # ensure something is being changed
+            nothing_changed = True
+            if session["project"]["id"] == session["user_id"]:
+                if request.form["change_title"] or request.form["change_author"] or \
+                   request.form["change_year"] or request.form["change_type"]:
+                       nothing_changed = False
+
+            if nothing_changed:
+                for version in session["versions"]:
+                    language_version = "change_language" + str(version["column_number"])
+                    if request.form[language_version]:
+                        nothing_changed = False
+                        break
+
+            if nothing_changed:
+                return apology("must change something")
+
+            # change title only if original project created by user
+            if session["project"]["id"] == session["user_id"]:
+
+                # change title
+                if request.form["change_title"]:
+                    try:
+                        db.execute("UPDATE projects SET title = :title WHERE id = :id",
+                                   title=request.form["change_title"].lower(), id=session["project"]["id"])
+                    except RuntimeError:
+                        return apology("error while changing project title")
+
+                # change author
+                if request.form["change_author"]:
+                    try:
+                        db.execute("UPDATE projects SET author = :author WHERE id = :id",
+                                   author=request.form["change_author"].lower(), id=session["project"]["id"])
+                    except RuntimeError:
+                        return apology("error while changing project author")
+
+                # change year
+                if request.form["change_year"]:
+                    try:
+                        db.execute("UPDATE projects SET year = :year WHERE id = :id",
+                                   year=request.form["change_year"], id=session["project"]["id"])
+                    except RuntimeError:
+                        return apology("error while changing project year")
+
+                # change type
+                if request.form["change_type"]:
+                    try:
+                        db.execute("UPDATE projects SET type = :type WHERE id = :id",
+                                   type=request.form["change_type"].lower(), id=session["project"]["id"])
+                    except RuntimeError:
+                        return apology("error while changing project type")
+
+            # change language versions
+            for version in session["versions"]:
+                language_version = "change_language" + str(version["column_number"])
+                if request.form[language_version]:
+                    try:
+                        db.execute("UPDATE versions SET language = :language WHERE id = :id",
+                                   language=request.form[language_version].lower(), id=version["id"])
+                    except RuntimeError:
+                        return apology("error while changing language(s)")
 
 
+            # prepare to rename file (recreate name)
+            projects = db.execute("SELECT * FROM projects WHERE id = :id", id=session["project"]["id"])
+            project = projects[0]
+            versions = db.execute("SELECT * FROM versions WHERE filepath = :filepath ORDER BY column_number ASC",
+                                  filepath=session["versions"][0]["filepath"])
+
+            project_languages = " ("
+            for version in versions:
+                project_languages += (version["language"] + ", ")
+            project_languages = project_languages[:-2]
+            project_languages += ")"
+            filename = project["title"] + " - " + project["author"] + " - " + str(project["year"]) + \
+                       project_languages + "." + session["versions"][0]["filepath"].rsplit('.', 1)[1].lower()
+            old_name = session["versions"][0]["filepath"]
+            new_name = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+            # rename the file
+            try:
+                os.rename(old_name, new_name)
+            except OSError:
+                return apology("couldn't rename the changed project")
+
+            # update the filepath for all the language versions
+            for version in session["versions"]:
+                try:
+                    db.execute("UPDATE versions SET filepath = :filepath WHERE id = :id",
+                               filepath=new_name, id=version["id"])
+                except RuntimeError:
+                    return apology("error while changing language(s)")
+
+            # release session variables
+            session.pop('project', None)
+            session.pop('versions', None)
+
+            # return to account history
+            return view_history()
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to account history to choose project to edit
+    else:
+        return view_history()
 
 
 

@@ -3,7 +3,9 @@
 - upload existing
 - edit project
 - autocomplete form
-- can't delete if lss than 2 lang remain
+- what if uploading new but existing
+- edit project
+- delete separate versions, not entire files
 
 - excel display / test translation / progress
 

@@ -68,10 +68,18 @@
                             <div class="row">
                                 <li>
                                     <div class="col-xs-3"> {{ project["title"] }} </div>
-                                    <div class="col-xs-3"> {{ project["author"] }} </div>
+                                    <div class="col-xs-2"> {{ project["author"] }} </div>
                                     <div class="col-xs-1"> {{ project["year"] }} </div>
                                     <div class="col-xs-1"> {{ project["type"] }} </div>
                                     <div class="col-xs-3"> {{ project["languages"] }} </div>
+                        </a>
+                                    <div class="col-xs-1">
+                                        <form action="{{ url_for('edit_project') }}" method="POST">
+                                            <button type="submit" name="edit_project" value="{{ project['filepath'] }}">
+                                                Edit
+                                            </button>
+                                        </form>
+                                    </div>
                                     <div class="col-xs-1">
                                         <form action="{{ url_for('delete_project') }}" method="POST">
                                             <button type="submit" name="delete_project" value="{{ project['filepath'] }}">
@@ -81,8 +89,6 @@
                                     </div>
                                 </li>
                             </div>
-                        </a>
-
                     {% endfor %}
                     </ol>
                 {% endif %}

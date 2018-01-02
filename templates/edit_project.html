@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Project
+{% endblock %}
+
+{% block main %}
+    <form action="{{ url_for('edit_project') }}" method="post">
+        <fieldset>
+            <ol align="left">
+
+                {% if project["user_id"] == session["user_id"] %}
+                    <li>
+                        <div class="form-group">
+                            Project title is <strong>{{ project["title"] }}</strong>.
+                            <br>
+                            <label class="sr-only" for="change_title">Change title</label>
+                            <input autocomplete="off" name="change_title" class="form-control"
+                                   id="change_title" placeholder="Change title" type="text"/>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="form-group">
+                            Project author is <strong>{{ project["author"] }}</strong>.
+                            <br>
+                            <label class="sr-only" for="change_author">Change author</label>
+                            <input autocomplete="off" name="change_author" class="form-control"
+                                   id="change_title" placeholder="Change author" type="text"/>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="form-group">
+                            Project year is <strong>{{ project["year"] }}</strong>.
+                            <br>
+                            <label class="sr-only" for="change_year">Change year</label>
+                            <input autocomplete="off" name="change_year" class="form-control"
+                                   id="change_year" placeholder="Change year" type="number"/>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="form-group">
+                            Project type is <strong>{{ project["type"] }}</strong>.
+                            <br>
+                            <label class="sr-only" for="change_type">Change type</label>
+                            <input autocomplete="off" name="change_type" class="form-control"
+                                   list="types" id="change_type" placeholder="Change type" type="text"/>
+                            {% include "select_type.html" %}
+                        </div>
+                    </li>
+                {% else %}
+                    <br>
+                    You cannot change the metadata for a project that wasn't originally uploaded by you,
+                    only the language versions you have contributed with.
+                    <br><br>
+                {% endif %}
+
+                {% for version in versions %}
+                    <li>
+                        <div class="form-group">
+                        Language {{ version["column_number"] }} is <strong>{{ version["language"] }}</strong>.
+                        <br>
+                        <label class="sr-only" for="change_language{{version['column_number']}}">
+                            Change language {{ version["column_number"] }}
+                        </label>
+                        <input autocomplete="on" name="change_language{{version['column_number']}}" class="form-control"
+                               list="languages" id="change_language{{version['column_number']}}"
+                               placeholder="Change language {{version['column_number']}}" type="text"/>
+                        {% include "select_language.html" %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ol>
+            <div class="form-group">
+                <button class="btn" type="submit" style="float: left;" name="edit_project" value="">
+                    Edit Project
+                </button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

@@ -23,7 +23,7 @@ SUPPORTED_LANGUAGES = [
 
 # ensure selected file allowed
 # extension must present and allowed
-def allowed_file(filename):
+def forbidden_file(filename):
     return '.' not in filename or \
            filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS
 
