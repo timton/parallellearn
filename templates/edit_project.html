@@ -19,6 +19,26 @@
                                    id="change_title" placeholder="Change title" type="text"/>
                         </div>
                     </li>
+
+                    {% if project["type"] != "tv series" %}
+                        <div class="form-group" id="edit_episode_container"></div>
+                    {% endif %}
+
+                    {% if project["type"] == "tv series" %}
+                        <li>
+                            <div class="form-group">
+                                Season: <strong>{{ project["season"] }}</strong>. Episode: <strong>{{ project["episode"] }}</strong>.
+                                <br>
+                                <label class="sr-only" for="change_season">Change season</label>
+                                <input autocomplete="off" name="change_season" class="form-control"
+                                       id="change_season" placeholder="Change season" type="number"/>
+                                <label class="sr-only" for="change_episode">Change episode</label>
+                                <input autocomplete="off" name="change_episode" class="form-control"
+                                       id="change_episode" placeholder="Change episode" type="number"/>
+                            </div>
+                        </li>
+                    {% endif %}
+
                     <li>
                         <div class="form-group">
                             Project author is <strong>{{ project["author"] }}</strong>.
@@ -45,8 +65,14 @@
                             <input autocomplete="off" name="change_type" class="form-control"
                                    list="types" id="change_type" placeholder="Change type" type="text"/>
                             {% include "select_type.html" %}
+
+                            {% if project["type"] != "tv series" %}
+                                <span>   </span>
+                                <a href="#" id="edit_episode" onclick="addEpisode(2)">Click if TV Series</a>
+                            {% endif %}
                         </div>
                     </li>
+
                 {% else %}
                     <br>
                     You cannot change the metadata for a project that wasn't originally uploaded by you,

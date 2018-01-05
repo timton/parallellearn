@@ -1,11 +1,9 @@
 ######### TODO
 - scrape project info
-- upload existing
-- edit project
 - autocomplete form
 - what if uploading new but existing
-- edit project
 - delete separate versions, not entire files
+- tv series: episode, series
 
 - excel display / test translation / progress
 

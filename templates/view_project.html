@@ -8,13 +8,25 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-xs-3"> {{ project["title"] }} </div>
+            <div class="col-xs-2"><strong>Title</strong></div>
+            <div class="col-xs-1"><strong>Season</strong></div>
+            <div class="col-xs-1"><strong>Episode</strong></div>
+            <div class="col-xs-2"><strong>Author</strong></div>
+            <div class="col-xs-1"><strong>Year</strong></div>
+            <div class="col-xs-1"><strong>Type</strong></div>
+            <div class="col-xs-3"><strong>Languages</strong></div>
+            <div class="col-xs-1"></div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-2"> {{ project["title"] }} </div>
+            <div class="col-xs-1"> {{ project["season"] }} </div>
+            <div class="col-xs-1"> {{ project["episode"] }} </div>
             <div class="col-xs-2"> {{ project["author"] }} </div>
             <div class="col-xs-1"> {{ project["year"] }} </div>
             <div class="col-xs-1"> {{ project["type"] }} </div>
-            <div class="col-xs-1"> {{ project["rating"] }} </div>
-            <div class="col-xs-2"> {{ project["languages"] }} </div>
-            <div class="col-xs-2">
+            <div class="col-xs-3"> {{ project["languages"] }} </div>
+            <div class="col-xs-1">
                 <form action="#" method="POST">
                     <button type="submit" name="practice" value="{{ project['filepath'] }}">
                         Practice

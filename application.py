@@ -94,6 +94,8 @@ def index():
             version["title"] = projects[0]["title"]
             version["author"] = projects[0]["author"]
             version["year"] = projects[0]["year"]
+            version["season"] = projects[0]["season"]
+            version["episode"] = projects[0]["episode"]
 
     # render the home page, passing in the data
     return render_template("index.html", new_projects=new_projects, popular_versions=popular_versions)
@@ -346,6 +348,14 @@ def upload_new():
         if type not in SUPPORTED_TYPES:
             return apology("must provide correct type: book, movie, tv series, or song")
 
+        # if tv series, ensure season and episode submitted
+        if type == "tv series":
+            if not request.form.get("season") or not request.form.get("episode"):
+                return apology("must provide season and episode for tv series")
+            else:
+                season = int(request.form.get("season"))
+                episode = int(request.form.get("episode"))
+
         # ensure title of the project was submitted
         if not request.form.get("title"):
             return apology("must provide title for this project")
@@ -400,8 +410,13 @@ def upload_new():
             db.execute("INSERT INTO projects (type, title, author, year, user_id) \
                        VALUES(:type, :title, :author, :year, :user_id)",
                        type=type, title=title, author=author, year=year, user_id=session["user_id"])
-            rows = db.execute("SELECT * FROM projects WHERE title = :title", title=title)
+            rows = db.execute("SElECT * FROM projects WHERE user_id = :user_id ORDER BY id DESC",
+                              user_id=session["user_id"])
             project_id=rows[0]["id"]
+
+            if type == "tv series":
+                db.execute("UPDATE projects SET season = :season, episode = :episode \
+                            WHERE id = :id", season=season, episode=episode, id=project_id)
         except RuntimeError:
             return apology("error while uploading new project metadata")
 
@@ -412,7 +427,13 @@ def upload_new():
             project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
         project_languages = project_languages[:-2]
         project_languages += ")"
-        filename = title + " - " + author + " - " + str(year) + project_languages + "." + \
+
+        if type == "tv series":
+            seasep = " [s" + str(season) + "-e" + str(episode) + "]"
+            filename = title + seasep + " - " + author + " - " + str(year) + project_languages + \
+                       "." + file.filename.rsplit('.', 1)[1].lower()
+        else:
+            filename = title + " - " + author + " - " + str(year) + project_languages + "." + \
                        file.filename.rsplit('.', 1)[1].lower()
 
         # try to upload the file
@@ -448,6 +469,12 @@ def upload_existing():
 
     # query for all the existing projects
     existing_projects = db.execute("SELECT * FROM projects")
+
+    # modify title for tv series
+    for project in existing_projects:
+        if project["type"] == "tv series":
+            project["title"] = (project["title"] + " - s" + str(project["season"]) + \
+                               "e" + str(project["episode"]))
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -589,6 +616,8 @@ def view_history():
             project["title"] = rows[0]["title"]
             project["author"] = rows[0]["author"]
             project["year"] = rows[0]["year"]
+            project["season"] = rows[0]["season"]
+            project["episode"] = rows[0]["episode"]
 
 
     # get user's uploaded versions
@@ -625,6 +654,8 @@ def view_history():
             project["title"] = rows[0]["title"]
             project["author"] = rows[0]["author"]
             project["year"] = rows[0]["year"]
+            project["season"] = rows[0]["season"]
+            project["episode"] = rows[0]["episode"]
 
 
     # render the account history page, passing in the data
@@ -732,10 +763,15 @@ def edit_project():
 
             # ensure something is being changed
             nothing_changed = True
-            if session["project"]["id"] == session["user_id"]:
+            if session["project"]["user_id"] == session["user_id"]:
                 if request.form["change_title"] or request.form["change_author"] or \
                    request.form["change_year"] or request.form["change_type"]:
                        nothing_changed = False
+
+            if nothing_changed:
+                if session["project"]["type"] == "tv series":
+                    if request.form["change_season"] or request.form["change_episode"]:
+                        nothing_changed = False
 
             if nothing_changed:
                 for version in session["versions"]:
@@ -746,6 +782,21 @@ def edit_project():
 
             if nothing_changed:
                 return apology("must change something")
+
+            if session["project"]["type"] == "tv series":
+                if request.form["change_type"].lower() != "tv series":
+                    if request.form["change_season"] or request.form["change_episode"]:
+                        return apology("seasons/episodes apply for tv series only")
+
+            if session["project"]["type"] != "tv series":
+                if request.form["change_type"].lower() == "tv series":
+                    if not request.form["add_season"] or not request.form["add_episode"]:
+                        return apology("must provide season and episode for tv series")
+                else:
+                    if request.form["add_season"] or request.form["add_episode"]:
+                        return apology("can provide season/episode only for tv series")
+
+
 
             # change title only if original project created by user
             if session["project"]["id"] == session["user_id"]:
@@ -776,11 +827,20 @@ def edit_project():
 
                 # change type
                 if request.form["change_type"]:
-                    try:
-                        db.execute("UPDATE projects SET type = :type WHERE id = :id",
-                                   type=request.form["change_type"].lower(), id=session["project"]["id"])
-                    except RuntimeError:
-                        return apology("error while changing project type")
+                    if request.form["change_type"] != "tv series":
+                        try:
+                            db.execute("UPDATE projects SET type = :type WHERE id = :id",
+                                       type=request.form["change_type"].lower(), id=session["project"]["id"])
+                        except RuntimeError:
+                            return apology("error while changing project type")
+                    else:
+                        try:
+                            db.execute("UPDATE projects SET type = :type, season = :season, episode = :episode \
+                                        WHERE id = :id", type=request.form["change_type"].lower(),
+                                                         id=session["project"]["id"])
+                        except RuntimeError:
+                            return apology("error while changing project type")
+
 
             # change language versions
             for version in session["versions"]:

@@ -6,26 +6,32 @@ body, html {
 }
 
 .leftpane {
-    width: 10%;
-    height: 100%;
+    width: 15%;
+    position: relative;
     float: left;
     background-color: #713D99;
     border-collapse: collapse;
 }
 
 .middlepane {
-    width: 40%;
-    height: 100%;
-    float: left;
+    width: 0%;
+}
+
+.rightpane {
+    width: 85%;
+    position: relative;
+    float: right;
+    border-collapse: collapse;
+}
+
+.toppane {
+    width: 100%;
     background-color: #A68753;
     border-collapse: collapse;
 }
 
-.rightpane {
-    width: 50%;
-    height: 100%;
-    position: relative;
-    float: right;
+.bottompane {
+    width: 100%;
     background-color: #1F663B;
     border-collapse: collapse;
 }

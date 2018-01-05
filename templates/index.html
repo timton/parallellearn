@@ -12,79 +12,86 @@
     -->
 
     <div class="container">
-
         <div class="leftpane">
-
             <a href="#" class="quickTestButton">Quick Test</a>
-
         </div>
+        <div class="middlepane"></div>
+        <div class="rightpane">
+            <div class="toppane">
+                <h1>Recently updated projects</h1>
 
-        <div class="middlepane">
-            <h1>Recently updated projects</h1>
+                    {% if new_projects|length == 0 %}
+                        <br>
+                        <p>No projects yet.</p>
+                        <br>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-xs-3"><strong>Title</strong></div>
+                            <div class="col-xs-1"><strong>Season</strong></div>
+                            <div class="col-xs-1"><strong>Episode</strong></div>
+                            <div class="col-xs-2"><strong>Author</strong></div>
+                            <div class="col-xs-1"><strong>Year</strong></div>
+                            <div class="col-xs-1"><strong>Type</strong></div>
+                            <div class="col-xs-3"><strong>Languages</strong></div>
+                        </div>
+                        <hr>
 
-                {% if new_projects|length == 0 %}
+                        {% for project in new_projects %}
+                            <a href="{{ url_for('view_project', title=project['title']) }}">
+                            <div class="row">
+                                <div class="col-xs-3"> {{ project["title"] }} </div>
+                                <div class="col-xs-1"> {{ project["season"] }} </div>
+                                <div class="col-xs-1"> {{ project["episode"] }} </div>
+                                <div class="col-xs-2"> {{ project["author"] }} </div>
+                                <div class="col-xs-1"> {{ project["year"] }} </div>
+                                <div class="col-xs-1"> {{ project["type"] }} </div>
+                                <div class="col-xs-3"> {{ project["languages"] }} </div>
+                            </div>
+                            </a>
+                        {% endfor %}
+
+                    {% endif %}
+            </div>
+
+            <div class="bottompane">
+                <h1>Most popular projects</h1>
+
+                {% if popular_versions|length == 0 %}
                     <br>
                     <p>No projects yet.</p>
                     <br>
                 {% else %}
                     <div class="row">
-                        <div class="col-xs-3"><strong>Title</strong></div>
-                        <div class="col-xs-3"><strong>Author</strong></div>
-                        <div class="col-xs-2"><strong>Year</strong></div>
-                        <div class="col-xs-2"><strong>Type</strong></div>
-                        <div class="col-xs-2"><strong>Languages</strong></div>
+                            <div class="col-xs-2"><strong>Title</strong></div>
+                            <div class="col-xs-2"><strong>Author</strong></div>
+                            <div class="col-xs-1"><strong>Season</strong></div>
+                            <div class="col-xs-1"><strong>Episode</strong></div>
+                            <div class="col-xs-1"><strong>Year</strong></div>
+                            <div class="col-xs-2"><strong>Language</strong></div>
+                            <div class="col-xs-1"><strong>Type</strong></div>
+                            <div class="col-xs-1"><strong>Rating</strong></div>
                     </div>
                     <hr>
 
-                    {% for project in new_projects %}
-                        <a href="{{ url_for('view_project', title=project['title']) }}">
+                    {% for version in popular_versions %}
+                        <a href="{{ url_for('view_project', title=version['title']) }}">
                         <div class="row">
-                            <div class="col-xs-3"> {{ project["title"] }} </div>
-                            <div class="col-xs-3"> {{ project["author"] }} </div>
-                            <div class="col-xs-2"> {{ project["year"] }} </div>
-                            <div class="col-xs-2"> {{ project["type"] }} </div>
-                            <div class="col-xs-2"> {{ project["languages"] }} </div>
+
+                            <div class="col-xs-2"> {{ version["title"] }} </div>
+                            <div class="col-xs-2"> {{ version["author"] }} </div>
+                            <div class="col-xs-1"> {{ version["season"] }} </div>
+                            <div class="col-xs-1"> {{ version["episode"] }} </div>
+                            <div class="col-xs-1"> {{ version["year"] }} </div>
+                            <div class="col-xs-2"> {{ version["language"] }} </div>
+                            <div class="col-xs-1"> {{ version["type"] }} </div>
+                            <div class="col-xs-1"> {{ version["rating"] }} </div>
+
                         </div>
                         </a>
                     {% endfor %}
 
                 {% endif %}
-        </div>
-
-        <div class="rightpane">
-            <h1>Most popular projects</h1>
-
-            {% if popular_versions|length == 0 %}
-                <br>
-                <p>No projects yet.</p>
-                <br>
-            {% else %}
-                <div class="row">
-                        <div class="col-xs-3"><strong>Title</strong></div>
-                        <div class="col-xs-3"><strong>Author</strong></div>
-                        <div class="col-xs-1"><strong>Year</strong></div>
-                        <div class="col-xs-2"><strong>Language</strong></div>
-                        <div class="col-xs-1"><strong>Type</strong></div>
-                        <div class="col-xs-1"><strong>Rating</strong></div>
-                </div>
-                <hr>
-
-                {% for version in popular_versions %}
-                    <a href="{{ url_for('view_project', title=version['title']) }}">
-                    <div class="row">
-
-                        <div class="col-xs-3"> {{ version["title"] }} </div>
-                        <div class="col-xs-3"> {{ version["author"] }} </div>
-                        <div class="col-xs-1"> {{ version["year"] }} </div>
-                        <div class="col-xs-2"> {{ version["language"] }} </div>
-                        <div class="col-xs-1"> {{ version["type"] }} </div>
-                        <div class="col-xs-1"> {{ version["rating"] }} </div>
-
-                    </div>
-                    </a>
-                {% endfor %}
-
-            {% endif %}
+            </div>
         </div>
     </div>
 

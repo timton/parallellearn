@@ -1,5 +1,150 @@
 // Adding input elements dynamically to form
 // https://stackoverflow.com/questions/14853779/adding-input-elements-dynamically-to-form
+function addEpisode(n){
+
+    // uploading new project scenario
+    if (n == 1) {
+
+        // Container <div> where dynamic content will be placed
+        var upload_episode_container = document.getElementById("upload_episode_container");
+
+        // ensure type tv series
+        var type = document.getElementById("type").value;
+        var type1 = type.toLowerCase();
+        var type2 = "tv series";
+        var n = type1.localeCompare(type2)
+        if (n != 0) {
+
+            // Clear previous contents of the container
+            while (upload_episode_container.hasChildNodes()) {
+                upload_episode_container.removeChild(upload_episode_container.lastChild);
+            }
+
+            window.alert('Only for TV Series.');
+            return;
+        }
+
+        // Clear previous contents of the container
+        while (upload_episode_container.hasChildNodes()) {
+            upload_episode_container.removeChild(upload_episode_container.lastChild);
+        }
+
+
+        // Create an label and input for season and episode
+        var add_season_label = document.createElement("label");
+        add_season_label.setAttribute("class", "sr-only");
+        add_season_label.setAttribute("for", "season");
+        add_season_label.innerHTML = "Season";
+
+        var add_season_input = document.createElement("input");
+        add_season_input.autofocus;
+        add_season_input.setAttribute("class", "form-control");
+        add_season_input.name = "season";
+        add_season_input.id = "season";
+        add_season_input.placeholder = "Season";
+        add_season_input.type = "number";
+        add_season_input.setAttribute("min", "1");
+
+        var add_episode_label = document.createElement("label");
+        add_episode_label.setAttribute("class", "sr-only");
+        add_episode_label.setAttribute("for", "episode");
+        add_episode_label.innerHTML = "Episode";
+
+        var add_episode_input = document.createElement("input");
+        add_episode_input.autofocus;
+        add_episode_input.setAttribute("class", "form-control");
+        add_episode_input.name = "episode";
+        add_episode_input.id = "episode";
+        add_episode_input.placeholder = "Episode";
+        add_episode_input.type = "number";
+        add_episode_input.setAttribute("min", "1");
+
+        // add the newly created tags
+        upload_episode_container.appendChild(document.createElement("br"));
+        upload_episode_container.appendChild(add_season_label);
+        upload_episode_container.appendChild(add_season_input);
+        upload_episode_container.appendChild(add_episode_label);
+        upload_episode_container.appendChild(add_episode_input);
+        upload_episode_container.appendChild(document.createElement("br"));
+    }
+
+    // editing existing project scenario
+    if (n == 2) {
+
+        // Container <div> where dynamic content will be placed
+        var edit_episode_container = document.getElementById("edit_episode_container");
+
+        // ensure type tv series
+        var type = document.getElementById("change_type").value;
+        var type1 = type.toLowerCase();
+        var type2 = "tv series";
+        var n = type1.localeCompare(type2)
+        if (n != 0) {
+
+            // Clear previous contents of the container
+            while (edit_episode_container.hasChildNodes()) {
+                edit_episode_container.removeChild(edit_episode_container.lastChild);
+            }
+
+            window.alert('Only for TV Series.');
+            return;
+        }
+
+        // Clear previous contents of the container
+        while (edit_episode_container.hasChildNodes()) {
+            edit_episode_container.removeChild(edit_episode_container.lastChild);
+        }
+
+        // create a list item
+        var list_item = document.createElement("li");
+        list_item.setAttribute("id", "edit_episode_li");
+
+        // Create an label and input for adding season and episode
+        var add_season_label = document.createElement("label");
+        add_season_label.setAttribute("class", "sr-only");
+        add_season_label.setAttribute("for", "add_season");
+        add_season_label.innerHTML = "Add season";
+
+        var add_season_input = document.createElement("input");
+        add_season_input.autofocus;
+        add_season_input.setAttribute("class", "form-control");
+        add_season_input.name = "add_season";
+        add_season_input.id = "add_season";
+        add_season_input.placeholder = "Add season";
+        add_season_input.type = "number";
+        add_season_input.setAttribute("min", "1");
+
+        var add_episode_label = document.createElement("label");
+        add_episode_label.setAttribute("class", "sr-only");
+        add_episode_label.setAttribute("for", "add_episode");
+        add_episode_label.innerHTML = "Add episode";
+
+        var add_episode_input = document.createElement("input");
+        add_episode_input.autofocus;
+        add_episode_input.setAttribute("class", "form-control");
+        add_episode_input.name = "add_episode";
+        add_episode_input.id = "add_episode";
+        add_episode_input.placeholder = "Add episode";
+        add_episode_input.type = "number";
+        add_episode_input.setAttribute("min", "1");
+
+        // add the newly created tags
+        edit_episode_container.appendChild(list_item);
+
+        var edit_episode_li = document.getElementById("edit_episode_li");
+
+        edit_episode_li.appendChild(add_season_label);
+        edit_episode_li.appendChild(add_season_input);
+        edit_episode_li.appendChild(add_episode_label);
+        edit_episode_li.appendChild(add_episode_input);
+
+    }
+
+}
+
+
+// Adding input elements dynamically to form
+// https://stackoverflow.com/questions/14853779/adding-input-elements-dynamically-to-form
 function addLanguages(n){
 
     // Number of inputs to create
