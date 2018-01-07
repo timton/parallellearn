@@ -1,9 +1,8 @@
 ######### TODO
 - scrape project info
 - autocomplete form
-- what if uploading new but existing
 - delete separate versions, not entire files
-- tv series: episode, series
+- if multiple versions with same language
 
 - excel display / test translation / progress
 

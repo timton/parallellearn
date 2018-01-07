@@ -356,6 +356,11 @@ def upload_new():
                 season = int(request.form.get("season"))
                 episode = int(request.form.get("episode"))
 
+        # if someone is trying to be cheeky and uploads season/episode for non-tv series:
+        if type != "tv series":
+            if request.form.get("season") or request.form.get("episode"):
+                return apology("season/episode for tv series only")
+
         # ensure title of the project was submitted
         if not request.form.get("title"):
             return apology("must provide title for this project")
@@ -404,6 +409,32 @@ def upload_new():
         if forbidden_file(file.filename):
             return apology("must select .xls or .xlsx file")
 
+        # make sure project doesn't exist already
+        if type == "tv series":
+            rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
+                              year = :year AND season = :season AND episode = :episode",
+                              type=type, title=title, author=author, year=year, season=season, episode=episode)
+        else:
+            rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
+                              year = :year", type=type, title=title, author=author, year=year)
+        if len(rows) > 0:
+            return apology("this project already exists; try to update existing instead.")
+
+        # prepare to upload file (create name)
+        project_languages = " ("
+        for i in range(number_of_versions):
+            project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
+        project_languages = project_languages[:-2]
+        project_languages += ")"
+
+        if type == "tv series":
+            seasep = " [s" + str(season) + "e" + str(episode) + "]"
+            filename = "[" + type + "] " + title + seasep + " - " + author + " - " + \
+                       str(year) + project_languages + "." + file.filename.rsplit('.', 1)[1].lower()
+        else:
+            filename = "[" + type + "] " + title + " - " + author + " - " + \
+                       str(year) + project_languages + "." + file.filename.rsplit('.', 1)[1].lower()
+
         # try to upload new project metadata
         # get the project id if successful
         try:
@@ -419,22 +450,6 @@ def upload_new():
                             WHERE id = :id", season=season, episode=episode, id=project_id)
         except RuntimeError:
             return apology("error while uploading new project metadata")
-
-
-        # prepare to upload file (create name)
-        project_languages = " ("
-        for i in range(number_of_versions):
-            project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
-        project_languages = project_languages[:-2]
-        project_languages += ")"
-
-        if type == "tv series":
-            seasep = " [s" + str(season) + "-e" + str(episode) + "]"
-            filename = title + seasep + " - " + author + " - " + str(year) + project_languages + \
-                       "." + file.filename.rsplit('.', 1)[1].lower()
-        else:
-            filename = title + " - " + author + " - " + str(year) + project_languages + "." + \
-                       file.filename.rsplit('.', 1)[1].lower()
 
         # try to upload the file
         try:
@@ -535,8 +550,17 @@ def upload_existing():
             project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
         project_languages = project_languages[:-2]
         project_languages += ")"
-        filename = project["title"] + " - " + project["author"] + " - " + str(project["year"]) + \
-                   project_languages + "." + file.filename.rsplit('.', 1)[1].lower()
+
+
+        if project["type"] == "tv series":
+            seasep = " [s" + str(project["season"]) + "e" + str(project["episode"]) + "]"
+            filename = "[" + project["type"] + "] " + project["title"] + seasep + " - " + \
+                       project["author"] + " - " + str(project["year"]) + project_languages + "." + \
+                       file.filename.rsplit('.', 1)[1].lower()
+        else:
+            filename = "[" + project["type"] + "] " + project["title"] + " - " + \
+                       project["author"] + " - " + str(project["year"]) + project_languages + "." + \
+                       file.filename.rsplit('.', 1)[1].lower()
 
         # try to upload the file
         try:
@@ -796,10 +820,57 @@ def edit_project():
                     if request.form["add_season"] or request.form["add_episode"]:
                         return apology("can provide season/episode only for tv series")
 
+            # make sure project to-be-changed isn't changed into an existing project
+            if request.form["change_title"]:
+                title = request.form["change_title"].lower()
+            else:
+                title = session["project"]["title"].lower()
 
+            if request.form["change_author"]:
+                author = request.form["change_author"].lower()
+            else:
+                author = session["project"]["author"].lower()
 
-            # change title only if original project created by user
-            if session["project"]["id"] == session["user_id"]:
+            if request.form["change_year"]:
+                year = request.form["change_year"]
+            else:
+                year = session["project"]["year"]
+
+            if request.form["change_type"]:
+                type = request.form["change_type"].lower()
+
+                if type == "tv series":
+                    season = request.form["add_season"]
+                    episode = request.form["add_episode"]
+                else:
+                    if session["project"]["type"].lower() == "tv series":
+                        season = session["project"]["season"]
+                        episode = session["project"]["episode"]
+            else:
+                type = session["project"]["type"].lower()
+
+                if type == "tv series":
+                    if request.form["change_season"] and request.form["change_episode"]:
+                        season = request.form["change_season"]
+                        episode = request.form["change_episode"]
+                    else:
+                        season = session["project"]["season"]
+                        episode = session["project"]["episode"]
+
+            # make sure project in its changed version doesn't exist already
+            if type == "tv series":
+                rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND \
+                                  author = :author AND year = :year AND season = :season AND episode = :episode",
+                                  type=type, title=title, author=author, year=year, season=season, episode=episode)
+            else:
+                rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
+                                  year = :year", type=type, title=title, author=author, year=year)
+            if len(rows) > 0:
+                return apology("this project already exists; try to update existing instead.")
+
+            # after we made sure something is being changed and the changed project doesn't already exist
+            # change metadata only if original project created by user
+            if session["project"]["user_id"] == session["user_id"]:
 
                 # change title
                 if request.form["change_title"]:
@@ -825,22 +896,35 @@ def edit_project():
                     except RuntimeError:
                         return apology("error while changing project year")
 
-                # change type
+                # change type and season/episode
                 if request.form["change_type"]:
-                    if request.form["change_type"] != "tv series":
-                        try:
-                            db.execute("UPDATE projects SET type = :type WHERE id = :id",
-                                       type=request.form["change_type"].lower(), id=session["project"]["id"])
-                        except RuntimeError:
-                            return apology("error while changing project type")
+                    if request.form["change_type"].lower() != "tv series":
+                        if session["project"]["type"].lower() == "tv series":
+                            try:
+                                db.execute("UPDATE projects SET type = :type, season = '', episode = '' \
+                                           WHERE id = :id", type=request.form["change_type"].lower(),
+                                           id=session["project"]["id"])
+                            except RuntimeError:
+                                return apology("error while changing project type")
+                        else:
+                            try:
+                                db.execute("UPDATE projects SET type = :type WHERE id = :id",
+                                           type=request.form["change_type"].lower(),
+                                           id=session["project"]["id"])
+                            except RuntimeError:
+                                return apology("error while changing project type")
                     else:
                         try:
                             db.execute("UPDATE projects SET type = :type, season = :season, episode = :episode \
                                         WHERE id = :id", type=request.form["change_type"].lower(),
-                                                         id=session["project"]["id"])
+                                        season=request.form["add_season"], episode=request.form["add_episode"],
+                                        id=session["project"]["id"])
                         except RuntimeError:
                             return apology("error while changing project type")
 
+            # else if project not originally uploaded by current user
+            else:
+                return apology("can only change metadata for your projects")
 
             # change language versions
             for version in session["versions"]:
@@ -859,13 +943,17 @@ def edit_project():
             versions = db.execute("SELECT * FROM versions WHERE filepath = :filepath ORDER BY column_number ASC",
                                   filepath=session["versions"][0]["filepath"])
 
+            if project["type"] == "tv series":
+                project["title"] += (" [s" + str(project["season"]) + "e" + str(project["episode"]) + "]")
+
             project_languages = " ("
             for version in versions:
                 project_languages += (version["language"] + ", ")
             project_languages = project_languages[:-2]
             project_languages += ")"
-            filename = project["title"] + " - " + project["author"] + " - " + str(project["year"]) + \
-                       project_languages + "." + session["versions"][0]["filepath"].rsplit('.', 1)[1].lower()
+            filename = "[" + project["type"] + "] " + project["title"] + " - " + project["author"] + " - " + \
+                       str(project["year"]) + project_languages + "." + \
+                       session["versions"][0]["filepath"].rsplit('.', 1)[1].lower()
             old_name = session["versions"][0]["filepath"]
             new_name = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
