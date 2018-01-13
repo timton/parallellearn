@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    PRACTICE:
+    {{ project["title"].title() }}
+    {% if project["type"].lower() == "tv series" %}
+        [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
+    {% endif %}
+    - {{ project["author"].title() }} -
+    ({{ project["year"] }})
+{% endblock %}
+
+{% block main %}
+
+    <!--
+    How do I divide a page in three vertical sections?
+    https://stackoverflow.com/questions/36662712/how-do-i-divide-a-page-in-three-vertical-sections
+    -->
+
+    <div class="container">
+
+        <table style="width:100%">
+            <tr>
+                <th style="width:33%"><span style="text-align: centre;">{{ project["from_language"].upper() }}</span></th>
+                <th style="width:33%">Practice</th>
+                <th style="width:33%">{{ project["to_language"].upper() }}</th>
+            </tr>
+            {% for i in range(size) %}
+                <tr>
+                    <td>{{ from_lines[i] }}</td>
+                    <td>
+                        <form action="#" onsubmit="event.preventDefault(); removeBlur({{ i }});">
+                            <input type="text" style="width: 100%" id="{{ from_ids[i] }}" autofocus>
+                        </form>
+                    </td>
+
+                    <!-- https://css-tricks.com/fun-with-blurred-text/ -->
+                    <td id="{{ to_ids[i] }}" class="blurry">
+                        {{ to_lines[i] }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <!--
+        <div class="leftpractice">
+            <ul>
+                {% for line in from_lines %}
+                    <li>{{ line }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="middlepractice">
+            <ul>
+                {% for line in to_lines %}
+                    <li><span>                    </span></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="rightpractice">
+            <ul>
+                {% for line in to_lines %}
+                    <li>{{ line }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        -->
+
+    </div>
+
+{% endblock %}

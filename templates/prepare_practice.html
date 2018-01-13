@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Prepare to practice
+{% endblock %}
+
+{% block main %}
+    <h2>
+        {{ project["title"].title() }}
+        {% if project["type"].lower() == "tv series" %}
+            [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
+        {% endif %}
+        - {{ project["author"].title() }} -
+        ({{ project["year"] }})
+    </h2>
+    <form action="{{ url_for('practice') }}" method="post">
+        <fieldset>
+            <div class="form-group">
+                Translate from:
+                <span> </span>
+                <label class="sr-only" for="from_version_id">From language</label>
+                <input autocomplete="off" autofocus class="form-control"
+                       list="languages" name="from_version_id" id="from_version_id" placeholder="From language">
+                    <datalist id="languages">
+                        {% for version in versions %}
+                            <option value="{{ version['id'] }}">{{ version["language"] }} - {{ version["rating"] }}</option>
+                        {% endfor %}
+                    </datalist>
+            </div>
+            <div class="form-group">
+                Translate to:
+                <span> </span>
+                <label class="sr-only" for="to_version_id">To language</label>
+                <input autocomplete="off" autofocus class="form-control"
+                       list="languages" name="to_version_id" id="to_version_id" placeholder="To language">
+                    <datalist id="languages">
+                        {% for version in versions %}
+                            <option value="{{ version['id'] }}">{{ version["language"] }} - {{ version["rating"] }}</option>
+                        {% endfor %}
+                    </datalist>
+            </div>
+
+            <!--
+            <div class="form-group">
+                Start from:
+                <span> </span>
+                <label class="sr-only" for="start_from">Start from</label>
+                <input autocomplete="off" autofocus class="form-control"
+                       list="starting_points" name="start_from" id="start_from" placeholder="Start from">
+                    <datalist id="starting_points">
+                        <option value="From the beginning">
+                        {% if session.user_id %}
+                            <option value="From where I left">
+                        {% endif %}
+                        <option value="From a specific point">
+                    </datalist>
+                <span> </span>
+                <a href="#" id="specific_start" onclick="getStartingPoint()">Click for specific point</a>
+            </div>
+
+            <div class="form-group" id="specific_start_container"></div>
+
+            -->
+
+            <div class="form-group">
+                <button class="btn btn-default" type="submit">Let's go!</button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

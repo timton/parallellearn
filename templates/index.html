@@ -12,12 +12,15 @@
     -->
 
     <div class="container">
-        <div class="leftpane">
+
+        <div class="leftindex">
             <a href="#" class="quickTestButton">Quick Test</a>
         </div>
-        <div class="middlepane"></div>
-        <div class="rightpane">
-            <div class="toppane">
+
+        <div class="middleindex"></div>
+
+        <div class="rightindex">
+            <div class="topindex">
                 <h1>Recently updated projects</h1>
 
                     {% if new_projects|length == 0 %}
@@ -53,7 +56,7 @@
                     {% endif %}
             </div>
 
-            <div class="bottompane">
+            <div class="bottomindex">
                 <h1>Most popular projects</h1>
 
                 {% if popular_versions|length == 0 %}
@@ -63,9 +66,9 @@
                 {% else %}
                     <div class="row">
                             <div class="col-xs-2"><strong>Title</strong></div>
-                            <div class="col-xs-2"><strong>Author</strong></div>
                             <div class="col-xs-1"><strong>Season</strong></div>
                             <div class="col-xs-1"><strong>Episode</strong></div>
+                            <div class="col-xs-2"><strong>Author</strong></div>
                             <div class="col-xs-1"><strong>Year</strong></div>
                             <div class="col-xs-2"><strong>Language</strong></div>
                             <div class="col-xs-1"><strong>Type</strong></div>
@@ -78,9 +81,9 @@
                         <div class="row">
 
                             <div class="col-xs-2"> {{ version["title"] }} </div>
-                            <div class="col-xs-2"> {{ version["author"] }} </div>
                             <div class="col-xs-1"> {{ version["season"] }} </div>
                             <div class="col-xs-1"> {{ version["episode"] }} </div>
+                            <div class="col-xs-2"> {{ version["author"] }} </div>
                             <div class="col-xs-1"> {{ version["year"] }} </div>
                             <div class="col-xs-2"> {{ version["language"] }} </div>
                             <div class="col-xs-1"> {{ version["type"] }} </div>

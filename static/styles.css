@@ -5,7 +5,7 @@ body, html {
     margin: 0;
 }
 
-.leftpane {
+.leftindex {
     width: 15%;
     position: relative;
     float: left;
@@ -13,25 +13,50 @@ body, html {
     border-collapse: collapse;
 }
 
-.middlepane {
+.middleindex {
     width: 0%;
 }
 
-.rightpane {
+.rightindex {
     width: 85%;
     position: relative;
     float: right;
     border-collapse: collapse;
 }
 
-.toppane {
+.topindex {
     width: 100%;
     background-color: #A68753;
     border-collapse: collapse;
 }
 
-.bottompane {
+.bottomindex {
     width: 100%;
+    background-color: #1F663B;
+    border-collapse: collapse;
+}
+
+.leftpractice {
+    width: 33%;
+    height: 100%;
+    float: left;
+    background-color: #713D99;
+    border-collapse: collapse;
+}
+
+.middlepractice {
+    width: 33%;
+    height: 100%;
+    float: left;
+    background-color: #A68753;
+    border-collapse: collapse;
+}
+
+.rightpane {
+    width: 33%;
+    height: 100%;
+    position: relative;
+    float: right;
     background-color: #1F663B;
     border-collapse: collapse;
 }
@@ -142,5 +167,9 @@ table {
 td {
     border: 1px solid black;
     padding: 5px;
+}
 
+.blurry {
+    color: transparent;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
 }

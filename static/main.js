@@ -1,3 +1,64 @@
+// How to trigger enter key press of textbox?
+// https://stackoverflow.com/questions/13987300/how-to-trigger-enter-key-press-of-textbox
+function removeBlur(i){
+    var x = "to_line";
+    var y = i.toString();
+    var z = x.concat(y);
+
+    var line_to_clear = document.getElementById(z);
+
+    line_to_clear.removeAttribute("class");
+}
+
+// Get specific starting point when preparing to practice
+function getStartingPoint() {
+
+    // Container <div> where dynamic content will be placed
+    var specific_start_container = document.getElementById("specific_start_container");
+
+    // ensure option "specific starting point"
+    var start = document.getElementById("start_from").value;
+    var start1 = start.toLowerCase();
+    var start2 = "from a specific point";
+    var n = start1.localeCompare(start2)
+    if (n != 0) {
+
+        // Clear previous contents of the container
+        while (specific_start_container.hasChildNodes()) {
+            specific_start_container.removeChild(specific_start_container.lastChild);
+        }
+
+        window.alert('Only for specific starting point.');
+        return;
+    }
+
+    // Clear previous contents of the container
+    while (specific_start_container.hasChildNodes()) {
+        specific_start_container.removeChild(specific_start_container.lastChild);
+    }
+
+    // Create an label and input for specific starting point
+    var specific_start_label = document.createElement("label");
+    specific_start_label.setAttribute("class", "sr-only");
+    specific_start_label.setAttribute("for", "specific_start");
+    specific_start_label.innerHTML = "Starting line";
+
+    var specific_start_input = document.createElement("input");
+    specific_start_input.autofocus;
+    specific_start_input.setAttribute("class", "form-control");
+    specific_start_input.name = "specific_start";
+    specific_start_input.id = "specific_start";
+    specific_start_input.placeholder = "Starting line";
+    specific_start_input.type = "number";
+    specific_start_input.setAttribute("min", "1");
+
+    // add the newly created tags
+    specific_start_container.appendChild(document.createElement("br"));
+    specific_start_container.appendChild(specific_start_label);
+    specific_start_container.appendChild(specific_start_input);
+    specific_start_container.appendChild(document.createElement("br"));
+}
+
 // Adding input elements dynamically to form
 // https://stackoverflow.com/questions/14853779/adding-input-elements-dynamically-to-form
 function addEpisode(n){

@@ -83,14 +83,14 @@
                 {% for version in versions %}
                     <li>
                         <div class="form-group">
-                        Language {{ version["column_number"] }} is <strong>{{ version["language"] }}</strong>.
+                        Language {{ version["sheet_number"] }} is <strong>{{ version["language"] }}</strong>.
                         <br>
-                        <label class="sr-only" for="change_language{{version['column_number']}}">
-                            Change language {{ version["column_number"] }}
+                        <label class="sr-only" for="change_language{{version['sheet_number']}}">
+                            Change language {{ version["sheet_number"] }}
                         </label>
-                        <input autocomplete="on" name="change_language{{version['column_number']}}" class="form-control"
-                               list="languages" id="change_language{{version['column_number']}}"
-                               placeholder="Change language {{version['column_number']}}" type="text"/>
+                        <input autocomplete="on" name="change_language{{version['sheet_number']}}" class="form-control"
+                               list="languages" id="change_language{{version['sheet_number']}}"
+                               placeholder="Change language {{version['sheet_number']}}" type="text"/>
                         {% include "select_language.html" %}
                         </div>
                     </li>

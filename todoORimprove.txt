@@ -5,7 +5,10 @@
 - if multiple versions with same language
 
 - excel display / test translation / progress
-
+- make sure all versions have the same number of lines
+- save the number of lines in the project metadata
+- start from history/specific later
+- choose between different versions of the same language
 
 
 #########  IMPROVE
