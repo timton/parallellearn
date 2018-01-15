@@ -174,3 +174,11 @@ td {
     color: transparent;
     text-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
+
+/* https://stackoverflow.com/questions/618097/how-do-you-easily-horizontally-center-a-div-using-css */
+.progress {
+    width: 25%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

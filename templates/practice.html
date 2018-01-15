@@ -12,11 +12,10 @@
 
 {% block main %}
 
-    <!--
-    How do I divide a page in three vertical sections?
-    https://stackoverflow.com/questions/36662712/how-do-i-divide-a-page-in-three-vertical-sections
-    -->
-
+    <div class="progress">
+        <span id="progress_line" style="text-align: left;">Line 1/{{ size }} </span>
+        <progress value="1" max="{{ size - 1 }}" id="progress_bar"></progress>
+    </div>
     <div class="container">
 
         <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
@@ -43,44 +42,9 @@
             </tr>
         </table>
         </br>
-        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}); ">
+        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}, {{ size }}); ">
             <button class="btn btn-default" type="submit" id="next_line" value="0">Next</button>
         </form>
-
-        <!--
-        <div id="from_line">
-            <h3>{{ project["from_language"].upper() }}: </h3>{{ from_lines[0] }}
-        </div>
-        <div id="practice_line">
-            <h3><input type="text" style="width: 100%" id="{{ from_ids[i] }}" autofocus></h3>
-        </div>
-        <div id="to_line">
-            <h3>{{ project["to_language"].upper() }}: </h3><span class="blurry">{{ to_lines[0] }}</span>
-        </div>
-        -->
-        <!--
-        <table style="width:100%">
-            <tr>
-                <th style="width:33%"><span style="text-align: centre;">{{ project["from_language"].upper() }}</span></th>
-                <th style="width:33%">Practice</th>
-                <th style="width:33%">{{ project["to_language"].upper() }}</th>
-            </tr>
-            {% for i in range(size) %}
-                <tr>
-                    <td>{{ from_lines[i] }}</td>
-                    <td>
-                        <form action="#" onsubmit="event.preventDefault(); removeBlur({{ i }});">
-                            <input type="text" style="width: 100%" id="{{ from_ids[i] }}" autofocus>
-                        </form>
-                    </td>
-
-                    <td id="{{ to_ids[i] }}" class="blurry">
-                        {{ to_lines[i] }}
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-        -->
 
     </div>
 

@@ -1,34 +1,61 @@
-// remove the blur from the translated line
-// move focus to the 'next line' button
+/* upon submitting the practice line , removes the blur from the translated line*/
 function removeBlur() {
 
-    var z = "to_line";
-    var line_to_clear = document.getElementById(z);
-    line_to_clear.removeAttribute("class");
+    // remove the blur from the translated line
+    document.getElementById("to_line").removeAttribute("class");
+
+    // move focus to the 'next line' button
     document.getElementById("next_line").focus();
 }
 
-function displayNextLine(from_lines, to_lines) {
+/* displays the next line */
+function displayNextLine(from_lines, to_lines, size) {
 
+    // get the index of the current line, increment it
     var x = document.getElementById("next_line").getAttribute("value");
     var y = parseInt(x);
     y += 1;
 
+    // update the progress line
+    var progress_line1 = "Line ";
+    var progress_line2 = y.toString();
+    var progress_line3 = "/";
+    var progress_line4 = size.toString();
+    var progress_line = progress_line1 + progress_line2 + progress_line3 + progress_line4;
+    document.getElementById("progress_line").innerHTML = progress_line;
+
+    // alert, if no more lines
+    if (y >= size) {
+        alert("You finished this project!");
+        return;
+    }
+
+    // set the incremented index as the value of the next line button
     document.getElementById("next_line").removeAttribute("value");
     document.getElementById("next_line").setAttribute("value", y);
 
+    // update the progress bar
+    document.getElementById("progress_bar").removeAttribute("value");
+    document.getElementById("progress_bar").setAttribute("value", y);
+
+    // get the next from & to lines
     var from_line = from_lines[y];
     var to_line = to_lines[y];
 
-    from_line_tag = document.getElementById("from_line")
+    // display the next from & to lines, empty the practice field
+    from_line_tag = document.getElementById("from_line");
     from_line_tag.innerHTML = from_line;
-    to_line_tag = document.getElementById("to_line")
+    to_line_tag = document.getElementById("to_line");
     to_line_tag.innerHTML = to_line;
+    practice_line_tag = document.getElementById("practice_line");
+    practice_line_tag.value="";
 
+    // blur the to line
     var line_to_blur = document.getElementById("to_line");
     line_to_blur.setAttribute("class", "blurry");
 
-    document.getElementById("practice_line").focus();
+    // return focus to the practice line
+    practice_line_tag.focus();
 }
 
 // Get specific starting point when preparing to practice

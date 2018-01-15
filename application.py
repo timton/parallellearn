@@ -1136,21 +1136,11 @@ def practice():
         # number of lines
         size = len(from_lines)
 
-        # prepare the ids for easy line identification
-        from_ids = []
-        to_ids = []
-        for i in range(size):
-            x = "from_line" + str(i)
-            y = "to_line" + str(i)
-            from_ids.append(x)
-            to_ids.append(y)
-
         # release session variables
         session.pop('project', None)
         session.pop('versions', None)
 
-        return render_template("practice.html", from_lines=from_lines, to_lines=to_lines, project=project,
-                                                size=size, from_ids=from_ids, to_ids=to_ids)
+        return render_template("practice.html", from_lines=from_lines, to_lines=to_lines, project=project, size=size)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
