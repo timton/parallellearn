@@ -169,6 +169,7 @@ td {
     padding: 5px;
 }
 
+/* https://css-tricks.com/fun-with-blurred-text/ */
 .blurry {
     color: transparent;
     text-shadow: 0 0 5px rgba(0,0,0,0.5);

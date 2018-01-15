@@ -1,13 +1,34 @@
-// How to trigger enter key press of textbox?
-// https://stackoverflow.com/questions/13987300/how-to-trigger-enter-key-press-of-textbox
-function removeBlur(i){
-    var x = "to_line";
-    var y = i.toString();
-    var z = x.concat(y);
+// remove the blur from the translated line
+// move focus to the 'next line' button
+function removeBlur() {
 
+    var z = "to_line";
     var line_to_clear = document.getElementById(z);
-
     line_to_clear.removeAttribute("class");
+    document.getElementById("next_line").focus();
+}
+
+function displayNextLine(from_lines, to_lines) {
+
+    var x = document.getElementById("next_line").getAttribute("value");
+    var y = parseInt(x);
+    y += 1;
+
+    document.getElementById("next_line").removeAttribute("value");
+    document.getElementById("next_line").setAttribute("value", y);
+
+    var from_line = from_lines[y];
+    var to_line = to_lines[y];
+
+    from_line_tag = document.getElementById("from_line")
+    from_line_tag.innerHTML = from_line;
+    to_line_tag = document.getElementById("to_line")
+    to_line_tag.innerHTML = to_line;
+
+    var line_to_blur = document.getElementById("to_line");
+    line_to_blur.setAttribute("class", "blurry");
+
+    document.getElementById("practice_line").focus();
 }
 
 // Get specific starting point when preparing to practice

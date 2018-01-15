@@ -19,6 +19,46 @@
 
     <div class="container">
 
+        <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
+        <table style="margin: auto;">
+            <tr>
+                <th>{{ project["from_language"].upper() }} </th>
+                <td id="from_line">{{ from_lines[0] }}</td>
+            </tr>
+            <tr>
+                <th>PRACTICE </th>
+                <td>
+                    <!--
+                    javascript prevent form submission on submit
+                    https://stackoverflow.com/questions/8664486/javascript-code-to-stop-form-submission
+                    -->
+                    <form action="#" onsubmit="event.preventDefault(); removeBlur();">
+                        <input type="text" style="width: 100%" autofocus id="practice_line">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ project["to_language"].upper() }} </th>
+                <td class="blurry" id="to_line">{{ to_lines[0] }}</td>
+            </tr>
+        </table>
+        </br>
+        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}); ">
+            <button class="btn btn-default" type="submit" id="next_line" value="0">Next</button>
+        </form>
+
+        <!--
+        <div id="from_line">
+            <h3>{{ project["from_language"].upper() }}: </h3>{{ from_lines[0] }}
+        </div>
+        <div id="practice_line">
+            <h3><input type="text" style="width: 100%" id="{{ from_ids[i] }}" autofocus></h3>
+        </div>
+        <div id="to_line">
+            <h3>{{ project["to_language"].upper() }}: </h3><span class="blurry">{{ to_lines[0] }}</span>
+        </div>
+        -->
+        <!--
         <table style="width:100%">
             <tr>
                 <th style="width:33%"><span style="text-align: centre;">{{ project["from_language"].upper() }}</span></th>
@@ -34,39 +74,12 @@
                         </form>
                     </td>
 
-                    <!-- https://css-tricks.com/fun-with-blurred-text/ -->
                     <td id="{{ to_ids[i] }}" class="blurry">
                         {{ to_lines[i] }}
                     </td>
                 </tr>
             {% endfor %}
         </table>
-
-        <!--
-        <div class="leftpractice">
-            <ul>
-                {% for line in from_lines %}
-                    <li>{{ line }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="middlepractice">
-            <ul>
-                {% for line in to_lines %}
-                    <li><span>                    </span></li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="rightpractice">
-            <ul>
-                {% for line in to_lines %}
-                    <li>{{ line }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-
         -->
 
     </div>
