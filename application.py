@@ -448,12 +448,21 @@ def upload_new():
         except RuntimeError:
             return apology("couldn't upload te selected file")
 
-        # make sure all versions have the same number of lines
-        # otherwise, delete the file and throw an error
+        # make sure we have as many worksheets as language versions
         # get_sheet_names() deprecated
         # get worksheets: https://stackoverflow.com/questions/23527887/getting-sheet-names-from-openpyxl
         # loop through sheets https://media.readthedocs.org/pdf/openpyxl/latest/openpyxl.pdf
         workbook = openpyxl.load_workbook(UPLOAD_FOLDER+filename)
+        number_of_worksheets = len(workbook.worksheets)
+        if number_of_worksheets != number_of_versions:
+            try:
+                os.remove(UPLOAD_FOLDER+filename)
+            except RuntimeError:
+                return apology("number of versions and number of worksheets differ; couldn't delete the file")
+
+            return apology("number of versions and number of worksheets differ")
+
+        # make sure all versions have the same number of lines
         line_count = workbook.worksheets[0].max_row
         for worksheet in workbook:
             if worksheet.max_row != line_count:
@@ -593,21 +602,28 @@ def upload_existing():
         except RuntimeError:
             return apology("couldn't upload te selected file")
 
-        # make sure all versions have the same number of lines as the original project
-        # otherwise, delete the file and throw an error
-        # get_sheet_names() deprecated
-        # get worksheets: https://stackoverflow.com/questions/23527887/getting-sheet-names-from-openpyxl
-        # loop through sheets https://media.readthedocs.org/pdf/openpyxl/latest/openpyxl.pdf
+        # make sure we have as many worksheets as language versions
         workbook = openpyxl.load_workbook(UPLOAD_FOLDER+filename)
+        number_of_worksheets = len(workbook.worksheets)
+        if number_of_worksheets != number_of_versions:
+            try:
+                os.remove(UPLOAD_FOLDER+filename)
+            except RuntimeError:
+                return apology("number of versions and number of worksheets differ; couldn't delete the file")
+
+            return apology("number of versions and number of worksheets differ")
+
+        # make sure all versions have the same number of lines as the original project
         for worksheet in workbook:
             if worksheet.max_row != project["line_count"]:
 
                 try:
                     os.remove(UPLOAD_FOLDER+filename)
                 except RuntimeError:
-                    return apology("versions have a different number of lines; couldn't delete them")
+                    return apology("versions have a different number of lines than the original project; \
+                                   couldn't delete them")
 
-                return apology("versions have a different number of lines")
+                return apology("versions have a different number of lines than the original project")
 
         # try to upload new project language versions
         for i in range(number_of_versions):
@@ -1174,57 +1190,6 @@ def practice():
 
 
 
-
-
-
-# change account history route
-@app.route("/change_history", methods=["GET", "POST"])
-def change_history():
-    return
-
-    """
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure old password was submitted
-        if not request.form.get("old_password"):
-            return apology("must provide current password")
-
-        # ensure new password was submitted
-        elif not request.form.get("new_password"):
-            return apology("must provide new password")
-
-        # ensure new password was confirmed
-        elif not request.form.get("confirm_password"):
-            return apology("must confirm new password")
-
-        # ensure old password is correct
-        rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
-        if not pwd_context.verify(request.form.get("old_password"), rows[0]["hash"]):
-            return apology("current password incorrect")
-
-        # ensure new password is input twice
-        elif request.form.get("new_password") != request.form.get("confirm_password"):
-            return apology("new password must be input twice")
-
-        # insure new password is different from the old one
-        if pwd_context.verify(request.form.get("new_password"), rows[0]["hash"]):
-            return apology("new password must be different from current one")
-
-        # update new password hash
-        db.execute("UPDATE users SET hash = :hash WHERE id = :id",
-                   hash=pwd_context.hash(request.form.get("new_password")), id=session["user_id"])
-
-        # redirect user to home page
-        return redirect(url_for("index"))
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("my_account.html")
-    """
-
-
-
 @app.route("/browse")
 def browse():
     return
@@ -1240,159 +1205,3 @@ def about():
 @app.route("/contact")
 def contact():
     return
-
-@app.route("/buy", methods=["GET", "POST"])
-@login_required
-def buy():
-    """Buy shares of stock."""
-
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure stock symbol was submitted
-        if not request.form.get("symbol"):
-            return apology("must provide stock symbol")
-
-        # ensure number of shares was submitted
-        if not request.form.get("shares"):
-            return apology("must provide number of shares to buy")
-
-        # ensure number of shares was submitted
-        try:
-            shares = int(request.form.get("shares"))
-        except ValueError:
-            return apology("must provide a number of shares")
-
-        # ensure valid number of shares was submitted
-        if shares <= 0:
-            return apology("must provide a valid number of shares")
-
-        # look up stock
-        stock = lookup(request.form.get("symbol"))
-
-        # ensure valid stock
-        if stock == None:
-            return apology("must provide valid stock")
-
-        # get user's cash
-        rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
-        cash = rows[0]["cash"]
-
-        # insufficient cash scenario
-        stock_value = shares * stock["price"]
-        if stock_value > cash:
-            return apology("not enough cash")
-
-        # if enough money, update user's portfolio, ...
-        rows = db.execute("SELECT * FROM portfolios WHERE user_id = :user_id AND stock = :stock",
-                          user_id=session["user_id"], stock=stock["symbol"])
-        if len(rows) == 1:
-            db.execute("UPDATE portfolios SET shares = shares + :shares WHERE id = :id",
-                       shares=shares, id=rows[0]["id"])
-        else:
-            db.execute("INSERT INTO portfolios (user_id, stock, shares) VALUES(:user_id, :stock, :shares)",
-                       user_id=session["user_id"], stock=stock["symbol"], shares=shares)
-
-        # ... update user's cash amount, ...
-        db.execute("UPDATE users SET cash = cash - :stock_value WHERE id = :id",
-                   stock_value=stock_value, id=session["user_id"])
-
-        # ..., log the transaction, ...
-        # timestamp format https://stackoverflow.com/questions/415511/how-to-get-current-time-in-python
-        db.execute("INSERT INTO transactions (user_id, stock, shares, type, time, price) \
-                                       VALUES(:user_id, :stock, :shares, :type, :time, :price)",
-                    user_id=session["user_id"], stock=stock["symbol"], shares=shares,
-                    type="BUY", time=strftime("%H:%M:%S %Y-%m-%d", gmtime()), price=stock_value)
-
-        # ... and redirect user to home page
-        return redirect(url_for("index"))
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("buy.html")
-
-
-@app.route("/history")
-@login_required
-def history():
-    """Show history of transactions."""
-
-    # fetch user's transactions, latest first
-    transactions = db.execute("SELECT * FROM transactions WHERE user_id = :user_id ORDER BY time DESC",
-                              user_id=session["user_id"])
-
-    # render the history template
-    return render_template("history.html", transactions=transactions)
-
-@app.route("/quote", methods=["GET", "POST"])
-@login_required
-def quote():
-    """Get stock quote."""
-
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure stock symbol was submitted
-        if not request.form.get("symbol"):
-            return apology("must provide stock symbol")
-
-        # look up stock
-        stock = lookup(request.form.get("symbol"))
-
-        # ensure valid stock
-        if stock == None:
-            return apology("must provide valid stock")
-
-        # if stock valid, display it
-        return render_template("quoted.html", stock=stock)
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("quote.html")
-
-
-@app.route("/sell", methods=["GET", "POST"])
-@login_required
-def sell():
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure stock symbol was submitted
-        if not request.form.get("symbol"):
-            return apology("must provide stock symbol")
-
-        # fetch the stock to sell
-        rows = db.execute("SELECT * FROM portfolios WHERE user_id = :user_id AND stock = :stock",
-                          user_id=session["user_id"], stock=request.form.get("symbol"))
-        stock = rows[0]
-
-        # get stock's current value
-        stock_update = lookup(request.form.get("symbol"))
-        stock_value = stock["shares"] * stock_update["price"]
-
-        # update user's cash amount
-        db.execute("UPDATE users SET cash = cash + :stock_value WHERE id = :id",
-                   stock_value=stock_value, id=session["user_id"])
-
-        # delete stock from user's portfolio
-        rows = db.execute("DELETE FROM portfolios WHERE user_id = :user_id AND stock = :stock",
-                          user_id=session["user_id"], stock=stock["stock"])
-
-        # log the transaction
-        # timestamp format https://stackoverflow.com/questions/415511/how-to-get-current-time-in-python
-        db.execute("INSERT INTO transactions (user_id, stock, shares, type, time, price) \
-                                       VALUES(:user_id, :stock, :shares, :type, :time, :price)",
-                    user_id=session["user_id"], stock=stock["stock"], shares=stock["shares"],
-                    type="SELL", time=strftime("%H:%M:%S %Y-%m-%d", gmtime()), price=stock_value)
-
-        # ... and redirect user to home page
-        return redirect(url_for("index"))
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-
-        # get the current user's stocks ...
-        stocks = db.execute("SELECT * FROM portfolios WHERE user_id = :user_id", user_id=session["user_id"])
-
-        # ... and render the selling interface
-        return render_template("sell.html", stocks=stocks)

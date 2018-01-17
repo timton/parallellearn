@@ -16,21 +16,23 @@
             <div class="form-group">
                 <label class="sr-only" for="type">Type</label>
                 <input autocomplete="off" autofocus class="form-control"
-                       list="types" name="type" id="type" placeholder="Type (select/type)">
-                {% include "select_type.html" %}
+                       list="types" name="type" id="type" placeholder="Type (select/type)" type="text">
+                <datalist id="types">{% include "select_type.html" %}</datalist>
                 <span>   </span>
                 <a href="#" id="upload_episode" onclick="addEpisode(1)">Click if TV Series</a>
             </div>
             <div class="form-group">
                 <label class="sr-only" for="title">Title</label>
                 <input autocomplete="off" name="title" class="form-control"
-                       id="title" placeholder="Title" type="text"/>
+                       list="titles" id="title" placeholder="Title (type/select)" type="text"/>
+                <datalist id="titles">{% include "select_title.html" %}</datalist>
                 <div class="form-group" id="upload_episode_container"></div>
             </div>
             <div class="form-group">
                 <label class="sr-only" for="author">Author / Artist / Director</label>
-                <input autocomplete="off" name="author" class="form-control"
+                <input autocomplete="off" name="author" class="form-control" list="authors"
                        id="author" placeholder="Author / Artist / Director" type="text"/>
+                <datalist id="authors">{% include "select_author.html" %}</datalist>
             </div>
             <div class="form-group">
                 <label class="sr-only" for="year">Year</label>

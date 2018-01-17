@@ -12,10 +12,15 @@
 
 {% block main %}
 
-    <div class="progress">
-        <span id="progress_line" style="text-align: left;">Line 1/{{ size }} </span>
-        <progress value="1" max="{{ size - 1 }}" id="progress_bar"></progress>
-    </div>
+    <h4>
+        {{ project["title"].title() }}
+        {% if project["type"].lower() == "tv series" %}
+            [S{{ project["season"] }}/E{{ project["episode"] }}]
+        {% endif %}
+        - (<span id="progress_line" style="text-align: center;">Line 1/{{ size }}</span>)
+    </h4>
+    <progress value="1" max="{{ size - 1 }}" id="progress_bar" ></progress>
+    </br>
     <div class="container">
 
         <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->

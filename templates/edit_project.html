@@ -16,7 +16,8 @@
                             <br>
                             <label class="sr-only" for="change_title">Change title</label>
                             <input autocomplete="off" name="change_title" class="form-control"
-                                   id="change_title" placeholder="Change title" type="text"/>
+                                   id="change_title" placeholder="Change title" type="text"/ list="titles">
+                            <datalist id="titles">{% include "select_title.html" %}</datalist>
                         </div>
                     </li>
 
@@ -45,7 +46,8 @@
                             <br>
                             <label class="sr-only" for="change_author">Change author</label>
                             <input autocomplete="off" name="change_author" class="form-control"
-                                   id="change_title" placeholder="Change author" type="text"/>
+                                   id="change_title" placeholder="Change author" type="text"/ list="authors">
+                            <datalist id="authors">{% include "select_author.html" %}</datalist>
                         </div>
                     </li>
                     <li>
@@ -64,7 +66,7 @@
                             <label class="sr-only" for="change_type">Change type</label>
                             <input autocomplete="off" name="change_type" class="form-control"
                                    list="types" id="change_type" placeholder="Change type" type="text"/>
-                            {% include "select_type.html" %}
+                            <datalist id="types">{% include "select_type.html" %}</datalist>
 
                             {% if project["type"] != "tv series" %}
                                 <span>   </span>
@@ -91,7 +93,7 @@
                         <input autocomplete="on" name="change_language{{version['sheet_number']}}" class="form-control"
                                list="languages" id="change_language{{version['sheet_number']}}"
                                placeholder="Change language {{version['sheet_number']}}" type="text"/>
-                        {% include "select_language.html" %}
+                        <datalist id="languages">{% include "select_language.html" %}</datalist>
                         </div>
                     </li>
                 {% endfor %}

@@ -5,7 +5,7 @@ from flask import redirect, render_template, request, session, url_for
 from functools import wraps
 
 SUPPORTED_TYPES = ["book", "movie", "tv series", "song"]
-ALLOWED_EXTENSIONS = set(['xls', 'xlsx', 'xlsm', 'xltx', 'xltm', 'txt'])
+ALLOWED_EXTENSIONS = set(['xls', 'xlsx', 'xlsm', 'xltx', 'xltm'])
 SUPPORTED_LANGUAGES = [
         'afrikanns', 'albanian', 'arabic', 'armenian', 'basque', 'bengali',
         'bulgarian', 'catalan', 'cambodian', 'chinese', 'croation', 'czech',

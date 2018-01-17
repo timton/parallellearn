@@ -172,11 +172,11 @@ td {
 /* https://css-tricks.com/fun-with-blurred-text/ */
 .blurry {
     color: transparent;
-    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 /* https://stackoverflow.com/questions/618097/how-do-you-easily-horizontally-center-a-div-using-css */
-.progress {
+#progress_bar {
     width: 25%;
     display: block;
     margin-left: auto;
