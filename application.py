@@ -4,6 +4,7 @@ from flask_session import Session
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
 from time import gmtime, strftime
+from random import shuffle
 
 # for file uploading
 import os
@@ -47,6 +48,17 @@ db = SQL("sqlite:///parallellearn.db")
 @app.route("/")
 def index():
 
+    # get all the supported languages
+    all_versions = db.execute("SELECT * FROM versions")
+    possible_languages = []
+    for version in all_versions:
+        if version["language"] not in possible_languages:
+            possible_languages.append(version["language"])
+    possible_from_languages = sorted(possible_languages)
+
+    # https://stackoverflow.com/questions/4183506/python-list-sort-in-descending-order
+    possible_to_languages = sorted(possible_languages, reverse=True)
+
     # get the newest versions
     new_versions = db.execute("SELECT * FROM versions ORDER BY timestamp DESC")
     new_projects = []
@@ -79,12 +91,17 @@ def index():
             # get project languages
             rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
                               project_id=project["id"])
-            languages_string = ""
+
             languages_list = []
             for row in rows:
                 if row["language"] not in languages_list:
-                    languages_string += (row["language"] + ", ")
                     languages_list.append(row["language"])
+            languages_list = sorted(languages_list)
+
+            languages_string = ""
+            for language in languages_list:
+                languages_string += (language + ", ")
+
             languages_string = languages_string[:-2]
             project["languages"] = languages_string
 
@@ -104,7 +121,141 @@ def index():
             version["episode"] = projects[0]["episode"]
 
     # render the home page, passing in the data
-    return render_template("index.html", new_projects=new_projects, popular_versions=popular_versions)
+    return render_template("index.html", possible_from_languages=possible_from_languages,
+                           possible_to_languages=possible_to_languages, new_projects=new_projects,
+                           popular_versions=popular_versions)
+
+
+# prepare quick practice route
+@app.route("/quick_practice", methods=["GET", "POST"])
+def quick_practice():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the language-to-learn
+        from_language = request.form.get("from_language").lower()
+        to_language = request.form.get("to_language").lower()
+
+        # ensure different languages
+        if from_language == to_language:
+            return apology("must select different languages")
+
+
+        # get all the projects that support the 'from language'
+        from_projects = []
+        rows = db.execute("SELECT * FROM versions WHERE language = :language", language=from_language)
+        for row in rows:
+            from_projects.append(row["project_id"])
+        from_projects = list(set(from_projects))
+
+        # get all the projects that support both languages
+        possible_projects = []
+        for project_id in from_projects:
+            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
+                              project_id=project_id, language=to_language)
+            if len(rows) > 0:
+                for row in rows:
+                    possible_projects.append(row["project_id"])
+
+        # make sure combination possible
+        if len(possible_projects) == 0:
+            x = "sorry, this combination (from {f} to {t}) is not supported.".format(f=from_language, t=to_language)
+            return apology(x)
+
+        # get all the lines, to and from, separately
+        # separately, because we might have different versions with the same language
+        # all lines need corresponding mapping afterwards
+        from_lines = []
+        to_lines = []
+        for project_id in possible_projects:
+
+            # get the project, mostly for the line count
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+            project = rows[0]
+
+            # get all the from versions
+            from_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
+                                       project_id=project_id, language=from_language)
+
+            # iterate over the from versions
+            for version in from_versions:
+                workbook = openpyxl.load_workbook(version["filepath"])
+                worksheet = workbook.worksheets[(version["sheet_number"] - 1)]
+
+                # save each line as a tuple, with its project id, line index and string
+                i = 1
+                for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
+                    for cell in row:
+                        value = str(cell.value)
+                        x = (project_id, i, value)
+                        from_lines.append(x)
+                    i += 1
+
+            # same with to versions
+            to_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
+                                     project_id=project_id, language=to_language)
+
+            for version in to_versions:
+                workbook = openpyxl.load_workbook(version["filepath"])
+                worksheet = workbook.worksheets[(version["sheet_number"] - 1)]
+
+                i = 1
+                for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
+                    for cell in row:
+                        value = str(cell.value)
+                        x = (project_id, i, value)
+                        to_lines.append(x)
+                    i += 1
+
+        # doing the mapping
+        lines = []
+        for from_line in from_lines:
+
+            possible_to_lines = []
+
+            # get the project id and line index
+            i = from_line[0]
+            j = from_line[1]
+
+            # get all to lines with same index
+            for to_line in to_lines:
+                if to_line[0] == i and to_line[1] == j:
+                    possible_to_lines.append(to_line[2])
+
+            # random shuffle of to lines
+            shuffle(possible_to_lines)
+
+            # map the first
+            x = (from_line[2], possible_to_lines[0])
+
+            # append the line
+            lines.append(x)
+
+        # shuffle lines before rendering
+        # https://stackoverflow.com/questions/976882/shuffling-a-list-of-objects
+        shuffle(lines)
+
+        # prepare lists to render
+        from_lines = []
+        to_lines = []
+        for line in lines:
+            from_lines.append(line[0])
+            to_lines.append(line[1])
+
+        # prepare project to render
+        project = {}
+        project["from_language"] = from_language
+        project["to_language"] = to_language
+        project["line_count"] = len(lines)
+
+        return render_template("quick_practice.html", from_lines=from_lines, to_lines=to_lines, project=project)
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # go to index
+    else:
+        return index()
+
 
 # register route
 @app.route("/register", methods=["GET", "POST"])
@@ -1085,7 +1236,7 @@ def prepare_practice():
             version["rows"] = row_count
         '''
 
-        return render_template("prepare_practice.html", project=session["project"], versions=session["versions"])
+        return render_template("preproject_practice.html", project=session["project"], versions=session["versions"])
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -1113,9 +1264,6 @@ def practice():
             project_versions.append(version["id"])
 
         if from_version_id not in project_versions or to_version_id not in project_versions:
-            print(from_version_id)
-            print(to_version_id)
-            print(project_versions)
             return apology("can only practice in project supported languages (better select)")
 
         # make sure from & to languages different
@@ -1149,14 +1297,11 @@ def practice():
                 value = str(cell.value)
                 to_lines.append(value)
 
-        # number of lines
-        size = len(from_lines)
-
         # release session variables
         session.pop('project', None)
         session.pop('versions', None)
 
-        return render_template("practice.html", from_lines=from_lines, to_lines=to_lines, project=project, size=size)
+        return render_template("project_practice.html", from_lines=from_lines, to_lines=to_lines, project=project)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page

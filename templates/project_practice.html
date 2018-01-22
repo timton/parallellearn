@@ -17,9 +17,9 @@
         {% if project["type"].lower() == "tv series" %}
             [S{{ project["season"] }}/E{{ project["episode"] }}]
         {% endif %}
-        - (<span id="progress_line" style="text-align: center;">Line 1/{{ size }}</span>)
+        - (<span id="progress_line" style="text-align: center;">Line 1/{{ project["line_count"] }}</span>)
     </h4>
-    <progress value="1" max="{{ size - 1 }}" id="progress_bar" ></progress>
+    <progress value="1" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
     </br>
     <div class="container">
 
@@ -47,7 +47,7 @@
             </tr>
         </table>
         </br>
-        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}, {{ size }}); ">
+        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}, {{ project['line_count'] }}); ">
             <button class="btn btn-default" type="submit" id="next_line" value="0">Next</button>
         </form>
 

@@ -14,7 +14,27 @@
     <div class="container">
 
         <div class="leftindex">
-            <a href="#" class="quickTestButton">Quick Test</a>
+            <h4>Quick Practice</h4>
+            <p>I'd like to translate from</p>
+            <p>
+                <select name="from_language" form="quick_practice_form">
+                    {% for language in possible_from_languages %}
+                        <option value="{{ language }}">{{ language.title() }}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p>to</p>
+            <p>
+                <select name="to_language" form="quick_practice_form">
+                    {% for language in possible_to_languages %}
+                        <option value="{{ language }}">{{ language.title() }}</option>
+                    {% endfor %}
+                </select>
+            </br>
+            </p>
+            <form action="{{ url_for('quick_practice') }}" method="post" id="quick_practice_form">
+                <p><button type="submit">Go!</button></p>
+            </form>
         </div>
 
         <div class="middleindex"></div>
@@ -42,13 +62,13 @@
                         {% for project in new_projects %}
                             <a href="{{ url_for('view_project', title=project['title']) }}">
                             <div class="row">
-                                <div class="col-xs-3"> {{ project["title"] }} </div>
+                                <div class="col-xs-3"> {{ project["title"].title() }} </div>
                                 <div class="col-xs-1"> {{ project["season"] }} </div>
                                 <div class="col-xs-1"> {{ project["episode"] }} </div>
-                                <div class="col-xs-2"> {{ project["author"] }} </div>
+                                <div class="col-xs-2"> {{ project["author"].title() }} </div>
                                 <div class="col-xs-1"> {{ project["year"] }} </div>
-                                <div class="col-xs-1"> {{ project["type"] }} </div>
-                                <div class="col-xs-3"> {{ project["languages"] }} </div>
+                                <div class="col-xs-1"> {{ project["type"].title() }} </div>
+                                <div class="col-xs-3"> {{ project["languages"].title() }} </div>
                             </div>
                             </a>
                         {% endfor %}
@@ -80,13 +100,13 @@
                         <a href="{{ url_for('view_project', title=version['title']) }}">
                         <div class="row">
 
-                            <div class="col-xs-2"> {{ version["title"] }} </div>
+                            <div class="col-xs-2"> {{ version["title"].title() }} </div>
                             <div class="col-xs-1"> {{ version["season"] }} </div>
                             <div class="col-xs-1"> {{ version["episode"] }} </div>
-                            <div class="col-xs-2"> {{ version["author"] }} </div>
+                            <div class="col-xs-2"> {{ version["author"].title() }} </div>
                             <div class="col-xs-1"> {{ version["year"] }} </div>
-                            <div class="col-xs-2"> {{ version["language"] }} </div>
-                            <div class="col-xs-1"> {{ version["type"] }} </div>
+                            <div class="col-xs-2"> {{ version["language"].title() }} </div>
+                            <div class="col-xs-1"> {{ version["type"].title() }} </div>
                             <div class="col-xs-1"> {{ version["rating"] }} </div>
 
                         </div>

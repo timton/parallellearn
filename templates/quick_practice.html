@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Quick Practice
+{% endblock %}
+
+{% block main %}
+
+    <h4>
+        Practice lines
+        - (<span id="progress_line" style="text-align: center;">Line 1/{{ project["line_count"] }}</span>)
+    </h4>
+    <progress value="1" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
+    </br>
+    <div class="container">
+
+        <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
+        <table style="margin: auto;">
+            <tr>
+                <th>{{ project["from_language"].upper() }} </th>
+                <td id="from_line">{{ from_lines[0] }}</td>
+            </tr>
+            <tr>
+                <th>PRACTICE </th>
+                <td>
+                    <!--
+                    javascript prevent form submission on submit
+                    https://stackoverflow.com/questions/8664486/javascript-code-to-stop-form-submission
+                    -->
+                    <form action="#" onsubmit="event.preventDefault(); removeBlur();">
+                        <input type="text" style="width: 100%" autofocus id="practice_line">
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ project["to_language"].upper() }} </th>
+                <td class="blurry" id="to_line">{{ to_lines[0] }}</td>
+            </tr>
+        </table>
+        </br>
+        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}, {{ project['line_count'] }}); ">
+            <button class="btn btn-default" type="submit" id="next_line" value="0">Next</button>
+        </form>
+
+    </div>
+
+{% endblock %}
