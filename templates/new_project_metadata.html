@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Upload New Project: Input Project Metadata
+{% endblock %}
+
+{% block main %}
+
+    <ul style="list-style: none; text-align: left;">
+        <li>
+            <p>Uploading a {{ session["new_project"]["type"] }}. Excellent!</p>
+        <li>
+    </ul>
+    </br>
+    <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
+    <form action="{{ url_for('new_project_metadata') }}" method="post" enctype="multipart/form-data" id="upload_new">
+        <fieldset>
+            <ol align="left">
+                <li>
+                    <div class="form-group">
+                        Please input the <strong>title</strong>:
+                        <br/>
+                        <input autofocus autocomplete="off" name="new_project_title" class="form-control"
+                               id="new_project_title" type="text"/ list="titles" placeholder="Title"/>
+                        <datalist id="titles">{% include "select/titles.html" %}</datalist>
+                    </div>
+                </li>
+
+                {% if session["new_project"]["type"] == "tv series" %}
+                    <li>
+                        <div class="form-group">
+                            What <strong>season</strong> and <strong>episode</strong>:
+                            <br>
+                            <input autocomplete="off" name="new_project_season" class="form-control"
+                                   type="number" placeholder="Season"/>
+                            <input autocomplete="off" name="new_project_episode" class="form-control"
+                                   type="number" placeholder="Episode"/>
+                        </div>
+                    </li>
+                {% endif %}
+
+                <li>
+                    <div class="form-group">
+                        Next, the <strong>author</strong>:
+                        <br>
+                        <input autocomplete="off" name="new_project_author" class="form-control"
+                               id="new_project_author" type="text"/ list="authors" placeholder="Author"/>
+                        <datalist id="authors">{% include "select/authors.html" %}</datalist>
+                    </div>
+                </li>
+                <li>
+                    <div class="form-group">
+                        Don't forget about the <strong>year</strong>:
+                        <br>
+                        <input autocomplete="off" name="new_project_year" class="form-control"
+                               type="number" placeholder="Year"/>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="form-group">
+                        Finally, select the <strong>file</strong> itself:
+                        <br>
+                        <input autocomplete="off" class="form-control" name="file"
+                               placeholder="File" type="file"/>
+                    </div>
+                </li>
+            </ol>
+            <ul style="list-style: none;">
+                <li>
+                    <div class="form-group">
+                        <button class="btn" type="submit" style="float: left;">
+                            Upload Project
+                        </button>
+                    </div>
+                <li>
+            </ul>
+        </fieldset>
+    </form>
+{% endblock %}

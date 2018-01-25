@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Update Existing Project
+    Add to Existing Project
 {% endblock %}
 
 {% block main %}
@@ -11,10 +11,14 @@
         <p>No existing projects yet.</p>
         <br>
     {% else %}
+
+
+        <h4>Contributing to an existing project. Most appreciated!</h4>
+        </br>
         <form action="{{ url_for('upload_existing') }}" method="post" enctype="multipart/form-data" id="upload_existing">
             <fieldset>
                 <div class="form-group">
-                    <label class="sr-only" for="project">Project</label>
+                    <p>First, please select the project you'd like to contribute to:</p>
                     <input autocomplete="off" autofocus class="form-control"
                            list="projects" name="project" id="project" placeholder="Project (select/type)">
                     <datalist id="projects">
@@ -24,22 +28,13 @@
                     </datalist>
                 </div>
 
-                <div class="form-group">
-                    <label class="sr-only" for="number_of_versions">Language version(s)</label>
-                    <input autocomplete="off" autofocus class="form-control" name="number_of_versions"
-                           id="number_of_versions" placeholder="Language version(s)"
-                           type="number" min="1" id="number_of_versions" value="">
-                    <span>   </span>
-                    <a href="#" id="add_languages" onclick="addLanguages(1)">Click to select</a>
-                    <div class="form-group" id="language_container"></div>
-                </div>
-                <br />
 
                 <div class="form-group">
+                    <p>Then select the file with the language versions:</p>
                     <input autocomplete="off" autofocus class="form-control" name="file" placeholder="File" type="file"/>
                 </div>
                 <div class="form-group">
-                    <button class="btn btn-default" type="submit">Upload</button>
+                    <button class="btn btn-default" type="submit">Next</button>
                 </div>
             </fieldset>
         </form>

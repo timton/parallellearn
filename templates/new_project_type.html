@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Upload New Project: Select Type
+{% endblock %}
+
+{% block main %}
+
+    <!--
+    Multiple level template inheritance in Jinja2?
+    https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+    -->
+    <p>
+        Let's get started! What <b>type</b> of project would you like to upload:
+        </br></br>
+        <select autofocus name="new_project_type" form="submit_type">{% include "select/types.html" %}</select>
+    </p>
+
+    <form action="{{ url_for('new_project_type') }}" method="post" id="submit_type">
+        <button class="btn btn-default" type="submit">Next</button>
+    </form>
+
+{% endblock %}

@@ -27,9 +27,6 @@ if app.config["DEBUG"]:
         response.headers["Pragma"] = "no-cache"
         return response
 
-# custom filter
-app.jinja_env.filters["usd"] = usd
-
 # configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -65,11 +62,13 @@ def index():
 
     if len(new_versions) > 0:
 
-        # get only distinct projects
+        # get the first 10 distinct projects IDs
         different_projects = []
         for version in new_versions:
             if version["project_id"] not in different_projects:
                 different_projects.append(version["project_id"])
+                if len(different_projects) == 10:
+                    break
             else:
                 continue
 
@@ -77,16 +76,13 @@ def index():
         for id in different_projects:
             rows = db.execute("SELECT * FROM projects WHERE id = :id", id=id)
             new_projects.append(rows[0])
-        new_projects = new_projects[:10]
 
-        # get all the metadata
+        # get all the displayable metadata
         for project in new_projects:
-            projects = db.execute("SELECT * FROM projects WHERE id = :id", id=project["id"])
-            project["type"] = projects[0]["type"]
-            project["title"] = projects[0]["title"]
-            project["author"] = projects[0]["author"]
-            project["year"] = projects[0]["year"]
 
+            # if tv series, make title include the season & episode
+            if project["type"].lower() == "tv series":
+                project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
             # get project languages
             rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
@@ -106,8 +102,7 @@ def index():
             project["languages"] = languages_string
 
     # get the 5 most popular language versions
-    popular_versions = db.execute("SELECT * FROM (SELECT * FROM versions ORDER BY rating ASC LIMIT 10) \
-                              ORDER BY rating DESC")
+    popular_versions = db.execute("SELECT * FROM versions ORDER BY rating DESC LIMIT 10")
 
     # get all the metadata
     if len(popular_versions) > 0:
@@ -115,10 +110,13 @@ def index():
             projects = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
             version["type"] = projects[0]["type"]
             version["title"] = projects[0]["title"]
+
+            # if tv series, make title include the season & episode
+            if version["type"].lower() == "tv series":
+                version["title"] += (" (s" + str(projects[0]["season"]) + "/e" + str(projects[0]["episode"]) +")")
+
             version["author"] = projects[0]["author"]
             version["year"] = projects[0]["year"]
-            version["season"] = projects[0]["season"]
-            version["episode"] = projects[0]["episode"]
 
     # render the home page, passing in the data
     return render_template("index.html", possible_from_languages=possible_from_languages,
@@ -133,14 +131,13 @@ def quick_practice():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # get the language-to-learn
+        # get the desired practice languages
         from_language = request.form.get("from_language").lower()
         to_language = request.form.get("to_language").lower()
 
         # ensure different languages
         if from_language == to_language:
-            return apology("must select different languages")
-
+            return apology("Couldn't load the practice interface.", "Must select different practice languages.")
 
         # get all the projects that support the 'from language'
         from_projects = []
@@ -160,8 +157,9 @@ def quick_practice():
 
         # make sure combination possible
         if len(possible_projects) == 0:
-            x = "sorry, this combination (from {f} to {t}) is not supported.".format(f=from_language, t=to_language)
-            return apology(x)
+            x = "Sorry, this combination (from {f} to {t}) is not supported.".format(f=from_language, t=to_language)
+            y = "Please try a different language combination. Thank you!"
+            return apology(x, y)
 
         # get all the lines, to and from, separately
         # separately, because we might have different versions with the same language
@@ -180,33 +178,25 @@ def quick_practice():
 
             # iterate over the from versions
             for version in from_versions:
-                workbook = openpyxl.load_workbook(version["filepath"])
-                worksheet = workbook.worksheets[(version["sheet_number"] - 1)]
+
+                rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version["id"])
 
                 # save each line as a tuple, with its project id, line index and string
-                i = 1
-                for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
-                    for cell in row:
-                        value = str(cell.value)
-                        x = (project_id, i, value)
-                        from_lines.append(x)
-                    i += 1
+                for row in rows:
+                    x = (row["project_id"], row["line_index"], row["line"])
+                    from_lines.append(x)
 
             # same with to versions
             to_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
                                      project_id=project_id, language=to_language)
 
             for version in to_versions:
-                workbook = openpyxl.load_workbook(version["filepath"])
-                worksheet = workbook.worksheets[(version["sheet_number"] - 1)]
 
-                i = 1
-                for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
-                    for cell in row:
-                        value = str(cell.value)
-                        x = (project_id, i, value)
-                        to_lines.append(x)
-                    i += 1
+                rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version["id"])
+
+                for row in rows:
+                    x = (row["project_id"], row["line_index"], row["line"])
+                    to_lines.append(x)
 
         # doing the mapping
         lines = []
@@ -489,179 +479,6 @@ def change_username():
     else:
         return render_template("change_username.html")
 
-@app.route("/upload_new", methods=["GET", "POST"])
-@login_required
-def upload_new():
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # ensure type submitted and ...
-        if not request.form.get("type"):
-            return apology("must provide the type of this project")
-        else:
-            type = request.form.get("type").lower()
-
-        # ... ensure supported type submitted
-        if type not in SUPPORTED_TYPES:
-            return apology("must provide correct type: book, movie, tv series, or song")
-
-        # if tv series, ensure season and episode submitted
-        if type == "tv series":
-            if not request.form.get("season") or not request.form.get("episode"):
-                return apology("must provide season and episode for tv series")
-            else:
-                season = int(request.form.get("season"))
-                episode = int(request.form.get("episode"))
-
-        # if someone is trying to be cheeky and uploads season/episode for non-tv series:
-        if type != "tv series":
-            if request.form.get("season") or request.form.get("episode"):
-                return apology("season/episode for tv series only")
-
-        # ensure title of the project was submitted
-        if not request.form.get("title"):
-            return apology("must provide title for this project")
-        else:
-            title = request.form.get("title").lower()
-
-        # ensure author of the project was submitted
-        if not request.form.get("author"):
-            return apology("must provide author's name for this project")
-        else:
-            author = request.form.get("author").lower()
-
-        # ensure year of the project was submitted
-        if not request.form.get("year"):
-            return apology("must provide year for this project")
-        else:
-            year = request.form.get("year")
-
-        # ensure number of language versions submitted
-        if not request.form.get("number_of_versions"):
-            return apology("must provide number of language versions for this project")
-        else:
-            number_of_versions = int(request.form.get("number_of_versions"))
-
-        # ensure supported languages submitted
-        for i in range(number_of_versions):
-            if not request.form.get("language_version" + str(i + 1)):
-                return apology("must provide languages for this project")
-            if request.form.get("language_version" + str(i + 1)).lower() not in SUPPORTED_LANGUAGES:
-                return apology("must submit project in supported languages (better select)")
-
-
-        # ENSURE FILE SELECTED FOR UPLOAD
-        # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            return apology("must select file to upload")
-
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        file = request.files['file']
-        if not file or file.filename == '':
-            return apology("no selected file")
-
-        # ensure file name (extension) allowed
-        if forbidden_file(file.filename):
-            return apology("must select xls/xlsx/xlsm/xltx/xltm files")
-
-        # make sure project doesn't exist already
-        if type == "tv series":
-            rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
-                              year = :year AND season = :season AND episode = :episode",
-                              type=type, title=title, author=author, year=year, season=season, episode=episode)
-        else:
-            rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
-                              year = :year", type=type, title=title, author=author, year=year)
-        if len(rows) > 0:
-            return apology("this project already exists; try to update existing instead.")
-
-        # prepare to upload file (create name)
-        project_languages = " ("
-        for i in range(number_of_versions):
-            project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
-        project_languages = project_languages[:-2]
-        project_languages += ")"
-
-        if type == "tv series":
-            seasep = " [s" + str(season) + "e" + str(episode) + "]"
-            filename = "[" + type + "] " + title + seasep + " - " + author + " - " + \
-                       str(year) + project_languages + "." + file.filename.rsplit('.', 1)[1].lower()
-        else:
-            filename = "[" + type + "] " + title + " - " + author + " - " + \
-                       str(year) + project_languages + "." + file.filename.rsplit('.', 1)[1].lower()
-
-
-        # try to upload the file
-        try:
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        except RuntimeError:
-            return apology("couldn't upload te selected file")
-
-        # make sure we have as many worksheets as language versions
-        # get_sheet_names() deprecated
-        # get worksheets: https://stackoverflow.com/questions/23527887/getting-sheet-names-from-openpyxl
-        # loop through sheets https://media.readthedocs.org/pdf/openpyxl/latest/openpyxl.pdf
-        workbook = openpyxl.load_workbook(UPLOAD_FOLDER+filename)
-        number_of_worksheets = len(workbook.worksheets)
-        if number_of_worksheets != number_of_versions:
-            try:
-                os.remove(UPLOAD_FOLDER+filename)
-            except RuntimeError:
-                return apology("number of versions and number of worksheets differ; couldn't delete the file")
-
-            return apology("number of versions and number of worksheets differ")
-
-        # make sure all versions have the same number of lines
-        line_count = workbook.worksheets[0].max_row
-        for worksheet in workbook:
-            if worksheet.max_row != line_count:
-
-                try:
-                    os.remove(UPLOAD_FOLDER+filename)
-                except RuntimeError:
-                    return apology("versions have a different number of lines; couldn't delete them")
-
-                return apology("versions have different number of lines")
-
-        # try to upload new project metadata
-        # get the project id if successful
-        try:
-            db.execute("INSERT INTO projects (type, title, author, year, user_id, line_count) \
-                       VALUES(:type, :title, :author, :year, :user_id, :line_count)",
-                       type=type, title=title, author=author, year=year, user_id=session["user_id"],
-                       line_count=line_count)
-            rows = db.execute("SElECT * FROM projects WHERE user_id = :user_id ORDER BY id DESC",
-                              user_id=session["user_id"])
-            project_id=rows[0]["id"]
-
-            if type == "tv series":
-                db.execute("UPDATE projects SET season = :season, episode = :episode \
-                            WHERE id = :id", season=season, episode=episode, id=project_id)
-        except RuntimeError:
-            return apology("error while uploading new project metadata")
-
-        # try to upload new project language versions
-        for i in range(number_of_versions):
-            try:
-                key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath, sheet_number) \
-                                 VALUES(:project_id, :user_id, :language, :timestamp, :filepath, :sheet_number)",
-                                 project_id=project_id, user_id=session["user_id"],
-                                 language=request.form.get("language_version" + str(i + 1)).lower(),
-                                 timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
-                                 filepath=UPLOAD_FOLDER+filename,
-                                 sheet_number=(i + 1))
-            except RuntimeError:
-                return apology("error while uploading new project language version")
-
-        # once successful, back to home page
-        return redirect(url_for("index"))
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("upload_new.html")
-
 
 @app.route("/upload_existing", methods=["GET", "POST"])
 @login_required
@@ -681,7 +498,7 @@ def upload_existing():
 
         # ensure project submitted and ...
         if not request.form.get("project"):
-            return apology("must choose project to update")
+            return apology("Must choose project to update.")
         else:
             project_name = request.form.get("project").lower()
 
@@ -693,111 +510,144 @@ def upload_existing():
                 project_id = project["id"]
                 break
         if project_id == -1:
-            return apology("must choose among existing projects")
+            return apology("Must choose among existing projects (better select from the dropdown menu).")
 
-        # ensure number of language versions submitted
-        if not request.form.get("number_of_versions"):
-            return apology("must provide number of language versions for this project")
-        else:
-            number_of_versions = int(request.form.get("number_of_versions"))
-
-        # ensure supported language(s) submitted
-        for i in range(number_of_versions):
-            if not request.form.get("language_version" + str(i + 1)):
-                return apology("must provide languages for this project")
-            if request.form.get("language_version" + str(i + 1)).lower() not in SUPPORTED_LANGUAGES:
-                return apology("must submit project in supported languages (better select)")
-
+        # get project metadata
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+        session["existing_project"] = rows[0]
 
         # ENSURE FILE SELECTED FOR UPLOAD
         # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
         # check if the post request has the file part
         if 'file' not in request.files:
-            return apology("must select file to upload")
+            session.pop('existing_project', None)
+            return apology("Couldn't update this project.", "Please select a file to upload.")
 
         # if user does not select file, browser also
         # submit a empty part without filename
         file = request.files['file']
         if not file or file.filename == '':
-            return apology("no selected file")
+            session.pop('existing_project', None)
+            return apology("Couldn't update this project.", "Please select a file to upload.")
 
         # ensure file name (extension) allowed
         if forbidden_file(file.filename):
-            return apology("must select xls/xlsx/xlsm/xltx/xltm files")
+            session.pop('existing_project', None)
+            return apology("Couldn't update this project.",
+                           "Allowed extensions: xls/xlsx/xlsm/xltx/xltm.")
 
-        # get project metadata
-        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
-        project = rows[0]
+        # ensure 1 <-> 10 language versions
+        workbook = openpyxl.load_workbook(file)
+        session["existing_project"]["number_of_versions"] = len(workbook.worksheets)
 
-        # prepare to upload file (create name)
-        project_languages = " ("
-        for i in range(number_of_versions):
-            project_languages += (request.form.get("language_version" + str(i + 1)).lower() + ", ")
-        project_languages = project_languages[:-2]
-        project_languages += ")"
+        if session["existing_project"]["number_of_versions"] > 10:
+            session.pop('existing_project', None)
+            return apology("Couldn't update the project with your file.",
+                           "Let's not overload the server (10 maximum language versions allowed per file).")
+        elif session["existing_project"]["number_of_versions"] < 1:
+            session.pop('existing_project', None)
+            return apology("Couldn't update the project with your file.",
+                           "You must contribute with at least one language version.")
 
-
-        if project["type"] == "tv series":
-            seasep = " [s" + str(project["season"]) + "e" + str(project["episode"]) + "]"
-            filename = "[" + project["type"] + "] " + project["title"] + seasep + " - " + \
-                       project["author"] + " - " + str(project["year"]) + project_languages + "." + \
-                       file.filename.rsplit('.', 1)[1].lower()
-        else:
-            filename = "[" + project["type"] + "] " + project["title"] + " - " + \
-                       project["author"] + " - " + str(project["year"]) + project_languages + "." + \
-                       file.filename.rsplit('.', 1)[1].lower()
-
-        # try to upload the file
-        try:
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        except RuntimeError:
-            return apology("couldn't upload te selected file")
-
-        # make sure we have as many worksheets as language versions
-        workbook = openpyxl.load_workbook(UPLOAD_FOLDER+filename)
-        number_of_worksheets = len(workbook.worksheets)
-        if number_of_worksheets != number_of_versions:
-            try:
-                os.remove(UPLOAD_FOLDER+filename)
-            except RuntimeError:
-                return apology("number of versions and number of worksheets differ; couldn't delete the file")
-
-            return apology("number of versions and number of worksheets differ")
-
-        # make sure all versions have the same number of lines as the original project
+        # make sure all the new versions have the same number of lines as the original project
         for worksheet in workbook:
-            if worksheet.max_row != project["line_count"]:
+            if worksheet.max_row != session["existing_project"]["line_count"]:
+                session.pop('existing_project', None)
+                return apology("Couldn't update the project with your file.",
+                               "The new versions have to have the same number of lines as the original project.")
 
-                try:
-                    os.remove(UPLOAD_FOLDER+filename)
-                except RuntimeError:
-                    return apology("versions have a different number of lines than the original project; \
-                                   couldn't delete them")
+        # save all the lines
+        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
+        session["existing_project"]["lines"] = []
+        for worksheet in workbook:
+            l = []
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["existing_project"]["line_count"]):
+                for cell in row:
+                    value = str(cell.value)
+                    l.append(value)
+            session["existing_project"]["lines"].append(l)
 
-                return apology("versions have a different number of lines than the original project")
-
-        # try to upload new project language versions
-        for i in range(number_of_versions):
-            try:
-                key2 = db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, filepath, sheet_number) \
-                                 VALUES(:project_id, :user_id, :language, :timestamp, :filepath, :sheet_number)",
-                                 project_id=project_id, user_id=session["user_id"],
-                                 language=request.form.get("language_version" + str(i + 1)).lower(),
-                                 timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
-                                 filepath=UPLOAD_FOLDER+filename,
-                                 sheet_number=(i + 1))
-            except RuntimeError:
-                return apology("error while uploading new project language version")
-
-        # once successful, back to home page
-        return redirect(url_for("index"))
-
+        return render_template("existing_project_versions.html")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
 
         # return the list of projects for the user to choose from
         return render_template("upload_existing.html", existing_projects=existing_projects)
+
+# add to existing project - project versions
+@app.route("/existing_project_versions", methods=["GET", "POST"])
+@login_required
+def existing_project_versions():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # save language versions
+        session["existing_project"]["versions"] = []
+        for i in range(session["existing_project"]["number_of_versions"]):
+            session["existing_project"]["versions"].append(request.form.get(str(i)).lower())
+
+        # upload new language versions
+        # prepare to delete, if something goes wrong
+        timestamps = []
+        for i in range(session["existing_project"]["number_of_versions"]):
+            timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime())
+            timestamps.append(timestamp)
+            try:
+                db.execute("INSERT INTO versions (project_id, user_id, language, timestamp) VALUES(:project_id, \
+                           :user_id, :language, :timestamp)", project_id=session["existing_project"]["id"],
+                           user_id=session["user_id"], language=session["existing_project"]["versions"][i],
+                           timestamp=timestamp)
+            except RuntimeError:
+                for timestamp in timestamps:
+                    db.execute("DELETE FROM 'versions' WHERE timestamp = :timestamp", timestamp=timestamp)
+                session.pop('existing_project', None)
+                return apology("Couldn't save the new language versions in the database.")
+
+        # get the IDs of the new versions
+        # https://stackoverflow.com/questions/10897339/python-fetch-first-10-results-from-a-list
+        # https://stackoverflow.com/questions/3940128/how-can-i-reverse-a-list-in-python
+        version_ids = []
+        rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id ORDER BY id DESC",
+                          project_id=session["existing_project"]["id"])
+        for row in rows:
+            version_ids.append(row["id"])
+        version_ids = version_ids[:session["existing_project"]["number_of_versions"]]
+        version_ids = list(reversed(version_ids))
+
+        # upload the lines for each version
+        # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
+        # make the lines 1-indexed
+        for i in range(session["existing_project"]["number_of_versions"]):
+            for index, line in enumerate(session["existing_project"]["lines"][i]):
+                try:
+                    db.execute("INSERT INTO lines (project_id, version_id, line_index, line) \
+                               VALUES (:project_id, :version_id, :line_index, :line)",
+                               project_id=session["existing_project"]["id"],
+                               version_id=version_ids[i], line_index=(index + 1), line=line)
+                except RuntimeError:
+                    for id in version_ids:
+                        db.execute("DELETE FROM 'lines' WHERE version_id = :version_id", version_id=id)
+                    db.execute("DELETE FROM 'projects' WHERE id = :id", id=session["existing_project"]["id"])
+                    db.execute("DELETE FROM 'versions' WHERE project_id = :project_id",
+                               project_id=session["existing_project"]["id"])
+                    session.pop('existing_project', None)
+                    return apology("Couldn't save the new lines in the database.")
+
+        # if successful, pop the session variable and inform
+        # personalize the message just to be kewl
+        if session["existing_project"]["type"].lower() == "tv series":
+                session["existing_project"]["title"] += (" (s" + str(session["existing_project"]["season"]) + \
+                                                        "/(e" + str(session["existing_project"]["episode"]) +")")
+        s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
+            session["existing_project"]["author"].title() + " has been successfully updated."
+        session.pop('existing_project', None)
+        return success(s)
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return upload_existing()
 
 
 # route with parameters
@@ -812,9 +662,14 @@ def view_project(title):
 
     # get project languages
     rows = db.execute("SELECT * FROM versions WHERE project_id = :id", id=project["id"])
-    languages = ""
+    language_list = []
     for row in rows:
-        languages += (row["language"] + ", ")
+        if row["language"] not in language_list:
+            language_list.append(row["language"])
+
+    languages = ""
+    for language in language_list:
+        languages += (language + ", ")
     languages = languages[:-2]
     project["languages"] = languages
 
@@ -910,6 +765,7 @@ def delete_project():
         file_to_delete = request.form['delete_project']
 
         # make sure none or 2+ different language versions left for project if deleting current file
+        # if one version would be left, delete it only if uploaded by the current user
         # How do I count unique values inside an array in Python?
         # https://stackoverflow.com/questions/12282232/how-do-i-count-unique-values-inside-an-array-in-python
         rows = db.execute("SELECT project_id FROM versions WHERE filepath = :filepath",
@@ -918,13 +774,48 @@ def delete_project():
         rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
                           project_id=project["project_id"])
         languages_left = []
-        for project in rows:
-            if project["filepath"] != file_to_delete:
-                languages_left.append(project["language"])
+        for version in rows:
+            if version["filepath"] != file_to_delete:
+                languages_left.append(version["language"])
                 if len(set(languages_left)) >= 2:
                     break
+
         if len(set(languages_left)) == 1:
-            return apology("can't delete project if only one language version remains")
+
+            # make sure all remaining versions are uploaded by the same user
+            same_user = True
+            for version in rows:
+                if version["user_id"] != session["user_id"]:
+                    same_user = False
+                    break
+
+            if same_user:
+
+                for version in rows:
+
+                    # delete each version
+                    try:
+                        db.execute("DELETE FROM 'versions' WHERE id = :id", id=version["id"])
+                    except RuntimeError:
+                        return apology("couldn't delete all the remaining versions of this project")
+
+                    # delete each file (only once, of course)
+                    if os.path.isfile(version["filepath"]):
+                        try:
+                            os.remove(version["filepath"])
+                        except RuntimeError:
+                            return apology("couldn't delete this project")
+
+                # delete the project as well
+                try:
+                    db.execute("DELETE FROM 'projects' WHERE id = :id", id=project['project_id'])
+                except RuntimeError:
+                    return apology("couldn't delete this project")
+
+                # back to account history after deletion
+                return view_history()
+            else:
+                return apology("can't delete project if only one language version remains")
 
         # save the project metadata (for project deletion purposes afterwards)
         rows = db.execute("SELECT * FROM versions WHERE filepath = :filepath",
@@ -1223,20 +1114,10 @@ def prepare_practice():
         project_id = request.form["prepare_practice"]
         rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
         session["project"] = rows[0]
-        session["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id \
-                                          GROUP BY language ORDER BY rating DESC", project_id=project_id)
+        session["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
+                                         project_id=project_id)
 
-        '''
-        # save the number of lines in the translation version
-        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        for version in version:
-            wb = load_workbook(version["filepath"], use_iterators=True)
-            sheet = wb.worksheets[0]
-            row_count = sheet.max_row
-            version["rows"] = row_count
-        '''
-
-        return render_template("preproject_practice.html", project=session["project"], versions=session["versions"])
+        return render_template("prepare_practice.html", project=session["project"], versions=session["versions"])
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -1308,11 +1189,16 @@ def practice():
     else:
         return browse()
 
+# the about route (the purpose of this website)
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
 
-
-
-
+# contact info route
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
 
 
 
@@ -1343,10 +1229,259 @@ def browse():
 def faq():
     return
 
-@app.route("/about")
-def about():
-    return
 
-@app.route("/contact")
-def contact():
-    return
+
+
+
+# upload new project - we start with the type
+@app.route("/new_project_type", methods=["GET", "POST"])
+@login_required
+def new_project_type():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the new project type, store it in the new project object
+        session["new_project"]["type"] = request.form.get("new_project_type").lower()
+
+        return render_template("new_project_metadata.html")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+
+        # create a new project object
+        session["new_project"] = {}
+
+        # start the uploading process with the type template
+        return render_template("new_project_type.html")
+
+
+# upload new project - project metadata
+@app.route("/new_project_metadata", methods=["GET", "POST"])
+@login_required
+def new_project_metadata():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the new project title, store it in the new project object
+        # ensure title of the project was submitted
+        if not request.form.get("new_project_title"):
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.", "Please provide a title.")
+        else:
+            session["new_project"]["title"] = request.form.get("new_project_title").lower()
+
+        # for tv series, save the season and episode
+        if session["new_project"]["type"].lower() == "tv series":
+            if not request.form.get("new_project_season") or not request.form.get("new_project_episode"):
+                session.pop('new_project', None)
+                return apology("Couldn't upload this project.",
+                               "Please provide a season and/or an episode number.")
+            else:
+                session["new_project"]["season"] = request.form.get("new_project_season")
+                session["new_project"]["episode"] = request.form.get("new_project_episode")
+
+        # get the new project author, store it in the new project object
+        if not request.form.get("new_project_author"):
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.", "Please provide an author.")
+        else:
+            session["new_project"]["author"] = request.form.get("new_project_author")
+
+        # get the new project type, store it in the new project object
+        if not request.form.get("new_project_year"):
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.", "Please provide a year.")
+        else:
+            session["new_project"]["year"] = request.form.get("new_project_year")
+
+        # ENSURE FILE SELECTED FOR UPLOAD
+        # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.", "Please select a file to upload.")
+
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        file = request.files['file']
+        if not file or file.filename == '':
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.", "Please select a file to upload.")
+
+        # ensure file name (extension) allowed
+        if forbidden_file(file.filename):
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "Allowed extensions: xls/xlsx/xlsm/xltx/xltm.")
+
+        # make sure project doesn't exist already
+        if session["new_project"]["type"].lower() == "tv series":
+            rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
+                              year = :year AND season = :season AND episode = :episode",
+                              type=session["new_project"]["type"].lower(), title=session["new_project"]["title"].lower(),
+                              author=session["new_project"]["author"].lower(), year=session["new_project"]["year"],
+                              season=session["new_project"]["season"], episode=session["new_project"]["episode"])
+        else:
+            rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND year = :year",
+                              type=session["new_project"]["type"].lower(), title=session["new_project"]["title"].lower(),
+                              author=session["new_project"]["author"].lower(), year=session["new_project"]["year"])
+        if len(rows) > 0:
+            session.pop('new_project', None)
+            return apology("This project already exists.", "Try simply uploading versions for it.")
+
+        # ensure 2 <-> 10 language versions
+        workbook = openpyxl.load_workbook(file)
+        session["new_project"]["number_of_versions"] = len(workbook.worksheets)
+
+        if session["new_project"]["number_of_versions"] > 10:
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "Let's not overload the server (10 maximum language versions allowed per file).")
+        elif session["new_project"]["number_of_versions"] < 2:
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "A new project must have at least two language versions.")
+
+        # make sure all versions have the same number of lines
+        session["new_project"]["line_count"] = workbook.worksheets[0].max_row
+        for worksheet in workbook:
+            if worksheet.max_row != session["new_project"]["line_count"]:
+                session.pop('new_project', None)
+                return apology("Couldn't upload this project.",
+                               "All language versions have to have the same number of lines.")
+
+        # save all the lines
+        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
+        session["new_project"]["lines"] = []
+        for worksheet in workbook:
+            l = []
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
+                for cell in row:
+                    value = str(cell.value)
+                    l.append(value)
+            session["new_project"]["lines"].append(l)
+
+        return render_template("new_project_versions.html")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return new_project_type()
+
+
+# upload new project - project versions
+@app.route("/new_project_versions", methods=["GET", "POST"])
+@login_required
+def new_project_versions():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # save language versions
+        session["new_project"]["versions"] = []
+        for i in range(session["new_project"]["number_of_versions"]):
+            session["new_project"]["versions"].append(request.form.get(str(i)).lower())
+
+        # ensure at least two different language versions
+        if len(set(session["new_project"]["versions"])) == 1:
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "New project must have at least two different language versions.")
+
+        # upload new project metadata
+        try:
+            if session["new_project"]["type"] != "tv series":
+                db.execute("INSERT INTO projects (type, title, author, year, user_id, line_count) \
+                           VALUES (:type, :title, :author, :year, :user_id, :line_count)",
+                           type=session["new_project"]["type"], title=session["new_project"]["title"],
+                           author=session["new_project"]["author"], year=session["new_project"]["year"],
+                           user_id=session["user_id"], line_count=session["new_project"]["line_count"])
+            else:
+                db.execute("INSERT INTO projects (type, title, author, year, user_id, line_count, season, episode) \
+                           VALUES (:type, :title, :author, :year, :user_id, :line_count, :season, :episode)",
+                           type=session["new_project"]["type"], title=session["new_project"]["title"],
+                           author=session["new_project"]["author"], year=session["new_project"]["year"],
+                           user_id=session["user_id"], line_count=session["new_project"]["line_count"],
+                           season=session["new_project"]["season"], episode=session["new_project"]["episode"])
+
+        except RuntimeError:
+            session.pop('new_project', None)
+            return apology("Couldn't save this project in the database.")
+
+        # get the id of the new project
+        rows = db.execute("SElECT * FROM projects WHERE user_id = :user_id ORDER BY id DESC", user_id=session["user_id"])
+        session["new_project"]["project_id"]=rows[0]["id"]
+
+        # upload new project language versions
+        for i in range(session["new_project"]["number_of_versions"]):
+            try:
+                db.execute("INSERT INTO versions (project_id, user_id, language, timestamp) VALUES(:project_id, \
+                           :user_id, :language, :timestamp)", project_id=session["new_project"]["project_id"],
+                           user_id=session["user_id"], language=session["new_project"]["versions"][i],
+                           timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()))
+            except RuntimeError:
+                db.execute("DELETE FROM 'projects' WHERE id = :id", id=session["new_project"]["project_id"])
+                db.execute("DELETE FROM 'versions' WHERE project_id = :project_id",
+                           project_id=session["new_project"]["project_id"])
+                session.pop('new_project', None)
+                return apology("Couldn't save the language versions in the database.")
+
+        # get the IDs of the new versions
+        # https://stackoverflow.com/questions/10897339/python-fetch-first-10-results-from-a-list
+        # https://stackoverflow.com/questions/3940128/how-can-i-reverse-a-list-in-python
+        version_ids = []
+        rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id ORDER BY id DESC",
+                          project_id=session["new_project"]["project_id"])
+        for row in rows:
+            version_ids.append(row["id"])
+        version_ids = version_ids[:session["new_project"]["number_of_versions"]]
+        version_ids = list(reversed(version_ids))
+
+        # upload the lines for each version
+        # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
+        # make the lines 1-indexed
+        for i in range(session["new_project"]["number_of_versions"]):
+            for index, line in enumerate(session["new_project"]["lines"][i]):
+                try:
+                    db.execute("INSERT INTO lines (project_id, version_id, line_index, line) \
+                               VALUES (:project_id, :version_id, :line_index, :line)",
+                               project_id=session["new_project"]["project_id"],
+                               version_id=version_ids[i], line_index=(index + 1), line=line)
+                except RuntimeError:
+                    for id in version_ids:
+                        db.execute("DELETE FROM 'lines' WHERE version_id = :version_id", version_id=id)
+                    db.execute("DELETE FROM 'projects' WHERE id = :id", id=session["new_project"]["project_id"])
+                    db.execute("DELETE FROM 'versions' WHERE project_id = :project_id",
+                               project_id=session["new_project"]["project_id"])
+                    session.pop('new_project', None)
+                    return apology("Couldn't save the lines in the database.")
+
+        # if successful, pop the session variable and inform
+        # personalize the message just to be kewl
+        if session["new_project"]["type"].lower() == "tv series":
+                session["new_project"]["title"] += (" (s" + str(session["new_project"]["season"]) + \
+                                                    "/(e" + str(session["new_project"]["episode"]) +")")
+        s = "\"" + session["new_project"]["title"].title() + "\"" + " by " + session["new_project"]["author"].title() + \
+            " has been successfully uploaded."
+        session.pop('new_project', None)
+        return success(s)
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return new_project_type()
+
+
+
+# prototype
+@app.route("/whatever", methods=["GET", "POST"])
+@login_required
+def whatever():
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        pass
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("upload_new.html")

@@ -35,15 +35,13 @@
                             <li><a href="{{ url_for('faq') }}">FAQ</a></li>
                             <li><a href="{{ url_for('about') }}">About</a></li>
                             <li><a href="{{ url_for('contact') }}">Contact</a></li>
-                            {% if session.user_id %}
-                                <li class="dropdown">
-                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Upload</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="{{ url_for('upload_new') }}">New project</a></li>
-                                        <li><a href="{{ url_for('upload_existing') }}">Existing project</a></li>
-                                    </ul>
-                                </li>
-                            {% endif %}
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Upload</a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="{{ url_for('new_project_type') }}">Brand new project</a></li>
+                                    <li><a href="{{ url_for('upload_existing') }}">Version for existing project</a></li>
+                                </ul>
+                            </li>
                         </ul>
                         {% if session.user_id %}
                             <ul class="nav navbar-nav navbar-right">

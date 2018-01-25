@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    {{ project["title"] }}
+    {{ project["title"].title() }}
 {% endblock %}
 
 {% block main %}
@@ -19,13 +19,13 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-xs-2"> {{ project["title"] }} </div>
+            <div class="col-xs-2"> {{ project["title"].title() }} </div>
             <div class="col-xs-1"> {{ project["season"] }} </div>
             <div class="col-xs-1"> {{ project["episode"] }} </div>
-            <div class="col-xs-2"> {{ project["author"] }} </div>
+            <div class="col-xs-2"> {{ project["author"].title() }} </div>
             <div class="col-xs-1"> {{ project["year"] }} </div>
-            <div class="col-xs-1"> {{ project["type"] }} </div>
-            <div class="col-xs-3"> {{ project["languages"] }} </div>
+            <div class="col-xs-1"> {{ project["type"].title() }} </div>
+            <div class="col-xs-3"> {{ project["languages"].title() }} </div>
             <div class="col-xs-1">
                 <form action=" {{ url_for('prepare_practice') }} " method="POST">
                     <button type="submit" name="prepare_practice" value="{{ project['id'] }}">

@@ -24,9 +24,13 @@ function displayNextLine(from_lines, to_lines, size) {
     var progress_line = progress_line1 + progress_line2 + progress_line3 + progress_line4;
     document.getElementById("progress_line").innerHTML = progress_line;
 
+    // update the progress bar
+    document.getElementById("progress_bar").removeAttribute("value");
+    document.getElementById("progress_bar").setAttribute("value", y);
+
     // alert, if no more lines
     if (y >= size) {
-        alert("You finished this project!");
+        alert("You finished!");
         return;
     }
 

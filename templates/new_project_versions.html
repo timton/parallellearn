@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Upload New Project: Specify Project Versions
+{% endblock %}
+
+{% block main %}
+
+    <!--
+    Multiple level template inheritance in Jinja2?
+    https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+    -->
+    <p>We have detected <b>{{ session["new_project"]["number_of_versions"] }}</b> versions. Please specify them:</p>
+    </br>
+    <ul style="list-style: none;">
+        {% for i in range(session["new_project"]["number_of_versions"]) %}
+            <li>
+                Version {{ (i + 1) }}:
+                <select name="{{ i }}" form="submit_language">{% include "select/languages.html" %}</select>
+            </li>
+            </br>
+        {% endfor %}
+    </ul>
+    <form action="{{ url_for('new_project_versions') }}" method="post" id="submit_language">
+        <button class="btn btn-default" type="submit">Next</button>
+    </form>
+
+{% endblock %}

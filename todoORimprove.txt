@@ -1,10 +1,16 @@
 ######### TODO
-- scrape project info
 - delete separate versions, not entire files
-- if multiple versions with same language
 
 - start from history/specific later
-- choose between different versions of the same language
+- download project
+- project poster / description (scraping? google api)
+- save the lines in the db, not in separate files on the server
+- browsing projects (cards?)
+- upload step by step?
+- REINSTATE LOGIN REQUIRED DECORATOR
+- source credit / poster / description
+
+- mobile version
 
 #########  IMPROVE
 - live registration form validation

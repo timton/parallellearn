@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Upload New Project: Input Title
+{% endblock %}
+
+{% block main %}
+
+    <form action="{{ url_for('upload_new_title') }}" method="post">
+        <fieldset>
+            <div class="form-group">
+                What would be the <b>title</b> of the {{ session["new_project"]["type"] }}:
+                </br>
+                </br>
+                <input autocomplete="off" name="new_project_title" class="form-control"
+                       id="new_project_title" type="text"/ list="titles">
+                <datalist id="titles">{% include "select/titles.html" %}</datalist>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-default" type="submit">Next</button>
+            </div>
+        </fieldset>
+    </form>
+
+{% endblock %}

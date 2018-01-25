@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add to Existing Project: Specify Project Versions
+{% endblock %}
+
+{% block main %}
+
+    <!--
+    Multiple level template inheritance in Jinja2?
+    https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+    -->
+    {% if session["existing_project"]["number_of_versions"] == 1 %}
+        <p>We have detected <b>{{ session["existing_project"]["number_of_versions"] }}</b> version. Please specify it:</p>
+    {% else %}
+        <p>We have detected <b>{{ session["existing_project"]["number_of_versions"] }}</b> versions. Please specify them:</p>
+    {% endif %}
+    </br>
+    <ul style="list-style: none;">
+        {% for i in range(session["existing_project"]["number_of_versions"]) %}
+            <li>
+                Version {{ (i + 1) }}:
+                <select name="{{ i }}" form="submit_language">{% include "select/languages.html" %}</select>
+            </li>
+            </br>
+        {% endfor %}
+    </ul>
+    <form action="{{ url_for('existing_project_versions') }}" method="post" id="submit_language">
+        <button class="btn btn-default" type="submit">Next</button>
+    </form>
+
+{% endblock %}

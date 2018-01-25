@@ -14,27 +14,34 @@
     <div class="container">
 
         <div class="leftindex">
+
             <h4>Quick Practice</h4>
-            <p>I'd like to translate from</p>
-            <p>
-                <select name="from_language" form="quick_practice_form">
-                    {% for language in possible_from_languages %}
-                        <option value="{{ language }}">{{ language.title() }}</option>
-                    {% endfor %}
-                </select>
-            </p>
-            <p>to</p>
-            <p>
-                <select name="to_language" form="quick_practice_form">
-                    {% for language in possible_to_languages %}
-                        <option value="{{ language }}">{{ language.title() }}</option>
-                    {% endfor %}
-                </select>
-            </br>
-            </p>
-            <form action="{{ url_for('quick_practice') }}" method="post" id="quick_practice_form">
-                <p><button type="submit">Go!</button></p>
-            </form>
+
+            {% if possible_from_languages|length == 0 %}
+                <p>No languages yet!</p>
+            {% else %}
+                <p>I'd like to translate from</p>
+                <p>
+                    <select name="from_language" form="quick_practice_form">
+                        {% for language in possible_from_languages %}
+                            <option value="{{ language }}">{{ language.title() }}</option>
+                        {% endfor %}
+                    </select>
+                </p>
+                <p>to</p>
+                <p>
+                    <select name="to_language" form="quick_practice_form">
+                        {% for language in possible_to_languages %}
+                            <option value="{{ language }}">{{ language.title() }}</option>
+                        {% endfor %}
+                    </select>
+                </br>
+                </p>
+                <form action="{{ url_for('quick_practice') }}" method="post" id="quick_practice_form">
+                    <p><button type="submit">Go!</button></p>
+                </form>
+            {% endif %}
+
         </div>
 
         <div class="middleindex"></div>
@@ -50,12 +57,10 @@
                     {% else %}
                         <div class="row">
                             <div class="col-xs-3"><strong>Title</strong></div>
-                            <div class="col-xs-1"><strong>Season</strong></div>
-                            <div class="col-xs-1"><strong>Episode</strong></div>
-                            <div class="col-xs-2"><strong>Author</strong></div>
+                            <div class="col-xs-3"><strong>Author</strong></div>
                             <div class="col-xs-1"><strong>Year</strong></div>
                             <div class="col-xs-1"><strong>Type</strong></div>
-                            <div class="col-xs-3"><strong>Languages</strong></div>
+                            <div class="col-xs-4"><strong>Languages</strong></div>
                         </div>
                         <hr>
 
@@ -63,12 +68,10 @@
                             <a href="{{ url_for('view_project', title=project['title']) }}">
                             <div class="row">
                                 <div class="col-xs-3"> {{ project["title"].title() }} </div>
-                                <div class="col-xs-1"> {{ project["season"] }} </div>
-                                <div class="col-xs-1"> {{ project["episode"] }} </div>
-                                <div class="col-xs-2"> {{ project["author"].title() }} </div>
+                                <div class="col-xs-3"> {{ project["author"].title() }} </div>
                                 <div class="col-xs-1"> {{ project["year"] }} </div>
                                 <div class="col-xs-1"> {{ project["type"].title() }} </div>
-                                <div class="col-xs-3"> {{ project["languages"].title() }} </div>
+                                <div class="col-xs-4"> {{ project["languages"].title() }} </div>
                             </div>
                             </a>
                         {% endfor %}
@@ -85,12 +88,10 @@
                     <br>
                 {% else %}
                     <div class="row">
-                            <div class="col-xs-2"><strong>Title</strong></div>
-                            <div class="col-xs-1"><strong>Season</strong></div>
-                            <div class="col-xs-1"><strong>Episode</strong></div>
-                            <div class="col-xs-2"><strong>Author</strong></div>
+                            <div class="col-xs-4"><strong>Title</strong></div>
+                            <div class="col-xs-4"><strong>Author</strong></div>
                             <div class="col-xs-1"><strong>Year</strong></div>
-                            <div class="col-xs-2"><strong>Language</strong></div>
+                            <div class="col-xs-1"><strong>Language</strong></div>
                             <div class="col-xs-1"><strong>Type</strong></div>
                             <div class="col-xs-1"><strong>Rating</strong></div>
                     </div>
@@ -100,12 +101,10 @@
                         <a href="{{ url_for('view_project', title=version['title']) }}">
                         <div class="row">
 
-                            <div class="col-xs-2"> {{ version["title"].title() }} </div>
-                            <div class="col-xs-1"> {{ version["season"] }} </div>
-                            <div class="col-xs-1"> {{ version["episode"] }} </div>
-                            <div class="col-xs-2"> {{ version["author"].title() }} </div>
+                            <div class="col-xs-4"> {{ version["title"].title() }} </div>
+                            <div class="col-xs-4"> {{ version["author"].title() }} </div>
                             <div class="col-xs-1"> {{ version["year"] }} </div>
-                            <div class="col-xs-2"> {{ version["language"].title() }} </div>
+                            <div class="col-xs-1"> {{ version["language"].title() }} </div>
                             <div class="col-xs-1"> {{ version["type"].title() }} </div>
                             <div class="col-xs-1"> {{ version["rating"] }} </div>
 
