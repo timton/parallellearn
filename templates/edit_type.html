@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Project: Type
+{% endblock %}
+
+{% block main %}
+
+    <!--
+    Multiple level template inheritance in Jinja2?
+    https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+    -->
+    <p>
+        Currently, this project is a <b>{{ project["type"] }}</b>. Change it to:
+        </br></br>
+        <select autofocus name="new_type" form="submit_type">{% include "select/types.html" %}</select>
+    </p>
+
+    <form action="{{ url_for('edit') }}" method="post" id="submit_type">
+        <button class="btn btn-default" type="submit" name="change_project_type" value="{{ project['id'] }}">Edit</button>
+    </form>
+
+{% endblock %}

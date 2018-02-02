@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Project: Description
+{% endblock %}
+
+{% block main %}
+    <form action="{{ url_for('edit') }}" method="post">
+        <fieldset>
+            <!-- https://stackoverflow.com/questions/6262472/multiple-lines-of-input-in-input-type-text -->
+            <div class="form-group">
+                New Description:
+                <textarea name="new_description" class="form-control" rows="3" cols="36"></textarea>
+            </div>
+            <br>
+            <div class="form-group">
+                <button class="btn" type="submit" name="change_project_description" value="{{ project['id'] }}">
+                    Done
+                </button>
+            </div>
+        </fieldset>
+    </form>
+{% endblock %}

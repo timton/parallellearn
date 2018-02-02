@@ -9,6 +9,7 @@
 - upload step by step?
 - REINSTATE LOGIN REQUIRED DECORATOR
 - source credit / poster / description
+- display progress whil the server does smth (especially uploading project)
 
 - mobile version
 

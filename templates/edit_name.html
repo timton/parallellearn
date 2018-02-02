@@ -1,18 +1,18 @@
-{% extends "layout.html" %}
+S{% extends "layout.html" %}
 
 {% block title %}
-    Edit Project
+    Edit Project: Name
 {% endblock %}
 
 {% block main %}
-    <form action="{{ url_for('edit_project') }}" method="post">
+
+    <form action="{{ url_for('edit') }}" method="post">
         <fieldset>
             <ol align="left">
 
-                {% if project["user_id"] == session["user_id"] %}
                     <li>
                         <div class="form-group">
-                            Project title is <strong>{{ project["title"] }}</strong>.
+                            Project title is <strong>{{ project["title"].title() }}</strong>.
                             <br>
                             <label class="sr-only" for="change_title">Change title</label>
                             <input autocomplete="off" name="change_title" class="form-control"
@@ -20,10 +20,6 @@
                             <datalist id="titles">{% include "select/titles.html" %}</datalist>
                         </div>
                     </li>
-
-                    {% if project["type"] != "tv series" %}
-                        <div class="form-group" id="edit_episode_container"></div>
-                    {% endif %}
 
                     {% if project["type"] == "tv series" %}
                         <li>
@@ -42,7 +38,7 @@
 
                     <li>
                         <div class="form-group">
-                            Project author is <strong>{{ project["author"] }}</strong>.
+                            Project author is <strong>{{ project["author"].title() }}</strong>.
                             <br>
                             <label class="sr-only" for="change_author">Change author</label>
                             <input autocomplete="off" name="change_author" class="form-control"
@@ -59,50 +55,13 @@
                                    id="change_year" placeholder="Change year" type="number"/>
                         </div>
                     </li>
-                    <li>
-                        <div class="form-group">
-                            Project type is <strong>{{ project["type"] }}</strong>.
-                            <br>
-                            <label class="sr-only" for="change_type">Change type</label>
-                            <input autocomplete="off" name="change_type" class="form-control"
-                                   list="types" id="change_type" placeholder="Change type" type="text"/>
-                            <datalist id="types">{% include "select/types.html" %}</datalist>
-
-                            {% if project["type"] != "tv series" %}
-                                <span>   </span>
-                                <a href="#" id="edit_episode" onclick="addEpisode(2)">Click if TV Series</a>
-                            {% endif %}
-                        </div>
-                    </li>
-
-                {% else %}
-                    <br>
-                    You cannot change the metadata for a project that wasn't originally uploaded by you,
-                    only the language versions you have contributed with.
-                    <br><br>
-                {% endif %}
-
-                {% for version in versions %}
-                    <li>
-                        <div class="form-group">
-                        Language {{ version["sheet_number"] }} is <strong>{{ version["language"] }}</strong>.
-                        <br>
-                        <label class="sr-only" for="change_language{{version['sheet_number']}}">
-                            Change language {{ version["sheet_number"] }}
-                        </label>
-                        <input autocomplete="on" name="change_language{{version['sheet_number']}}" class="form-control"
-                               list="languages" id="change_language{{version['sheet_number']}}"
-                               placeholder="Change language {{version['sheet_number']}}" type="text"/>
-                        <datalist id="languages">{% include "select/languages.html" %}</datalist>
-                        </div>
-                    </li>
-                {% endfor %}
             </ol>
             <div class="form-group">
-                <button class="btn" type="submit" style="float: left;" name="edit_project" value="">
-                    Edit Project
+                <button class="btn" type="submit" style="float: left;" name="change_project_name" value="{{ project['id'] }}">
+                    Done
                 </button>
             </div>
         </fieldset>
     </form>
+
 {% endblock %}

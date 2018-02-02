@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Project: New Episode for TV Series
+{% endblock %}
+
+{% block main %}
+
+    <form action="{{ url_for('edit') }}" method="post">
+        <fieldset>
+            <ul style="list-style: none;">
+                <li>
+                    <div class="form-group">
+                        If it's a TV Series, what <strong>season</strong> and <strong>episode</strong> is this:
+                        <br><br>
+                        <input autocomplete="off" name="new_season" class="form-control"
+                               type="number" placeholder="Season"/>
+                        <input autocomplete="off" name="new_episode" class="form-control"
+                               type="number" placeholder="Episode"/>
+                    </div>
+                </li>
+                <li>
+                    <div class="form-group">
+                        <button class="btn" type="submit" name="change_to_tv_series" value="{{ project['id'] }}">
+                            Done
+                        </button>
+                    </div>
+                <li>
+            </ul>
+        </fieldset>
+    </form>
+
+{% endblock %}

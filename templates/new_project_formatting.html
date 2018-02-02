@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Upload New Project: Format
+{% endblock %}
+
+{% block main %}
+
+    <p>Lastly, please provide a small <b>poster image</b> and a short <b>description</b> for this project:</p>
+    <br>
+    <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
+    <form action="{{ url_for('new_project_formatting') }}" method="post" enctype="multipart/form-data">
+        <fieldset>
+            <div class="form-group">
+                Poster image:
+                <input autofocus class="form-control" name="poster" placeholder="Poster" type="file" />
+            </div>
+            <br>
+
+            <!-- https://stackoverflow.com/questions/6262472/multiple-lines-of-input-in-input-type-text -->
+            <div class="form-group">
+                Description:
+                <textarea name="new_project_description" class="form-control" rows="3" cols="36"></textarea>
+            </div>
+            <br>
+            <div class="form-group">
+                <button class="btn" type="submit">
+                    Done
+                </button>
+            </div>
+        </fieldset>
+    </form>
+
+{% endblock %}

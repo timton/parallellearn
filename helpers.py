@@ -5,7 +5,10 @@ from flask import redirect, render_template, request, session, url_for
 from functools import wraps
 
 SUPPORTED_TYPES = ["book", "movie", "tv series", "song"]
-ALLOWED_EXTENSIONS = set(['xls', 'xlsx', 'xlsm', 'xltx', 'xltm'])
+ALLOWED_FILE_EXTENSIONS = set(['xls', 'xlsx', 'xlsm', 'xltx', 'xltm'])
+
+# https://stackoverflow.com/questions/2336522/png-vs-gif-vs-jpeg-vs-svg-when-best-to-use
+ALLOWED_POSTER_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'svg'])
 SUPPORTED_LANGUAGES = [
         'afrikanns', 'albanian', 'arabic', 'armenian', 'basque', 'bengali',
         'bulgarian', 'catalan', 'cambodian', 'chinese', 'croation', 'czech',
@@ -25,7 +28,14 @@ SUPPORTED_LANGUAGES = [
 # extension must present and allowed
 def forbidden_file(filename):
     return '.' not in filename or \
-           filename.rsplit('.', 1)[1].lower() not in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() not in ALLOWED_FILE_EXTENSIONS
+
+# ensure selected poster image allowed
+# extension must present and allowed
+def forbidden_poster(filename):
+    return '.' not in filename or \
+           filename.rsplit('.', 1)[1].lower() not in ALLOWED_POSTER_EXTENSIONS
+
 
 def apology(error_message="", error_cause=""):
     """Renders message as an apology to user."""

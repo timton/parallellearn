@@ -23,7 +23,7 @@
                            list="projects" name="project" id="project" placeholder="Project (select/type)">
                     <datalist id="projects">
                         {% for project in existing_projects %}
-                        <option value='[{{ project["type"] }}] {{ project["title"] }} - {{ project["author"] }} ({{ project["year"] }})'>
+                        <option value='{{ project["name"].title() }}'>
                         {% endfor %}
                     </datalist>
                 </div>
