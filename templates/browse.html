@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Browse
+{% endblock %}
+
+{% block main %}
+    {% for project in projects %}
+        <a href="{{ url_for('view_project', id=project['id']) }}" style="text-decoration: none;">
+            <div class="card {{ project['type'] }}">
+                <h5 class="card-title">{{ project['type'].title() }}</h5>
+                <img class="card-img-top" src="{{ url_for('static', filename=project['poster']) }}" alt="Card image cap">
+                <h4 class="card-title">{{ project['title'].title() }}</h4>
+            </div>
+        </a>
+    {% endfor %}
+{% endblock %}

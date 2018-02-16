@@ -7,7 +7,6 @@ from time import gmtime, strftime
 from random import shuffle
 
 # for file uploading, manipulation
-import filecmp
 import os
 from werkzeug.utils import secure_filename
 
@@ -676,7 +675,7 @@ def new_project_formatting():
         file.seek(0, os.SEEK_END)
         size = file.tell()
         file.seek(old_file_position, os.SEEK_SET)
-        if size > 300000:
+        if size > 307200:
             session.pop('new_project', None)
             return apology("Couldn't upload this project.", "Maximum size for poster images is 300 KB.")
 
@@ -754,14 +753,13 @@ def new_project_formatting():
 
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
-        # make the lines 1-indexed
         for i in range(session["new_project"]["number_of_versions"]):
             for index, line in enumerate(session["new_project"]["lines"][i]):
                 try:
                     db.execute("INSERT INTO lines (project_id, version_id, line_index, line) \
                                VALUES (:project_id, :version_id, :line_index, :line)",
                                project_id=session["new_project"]["project_id"],
-                               version_id=version_ids[i], line_index=(index + 1), line=line)
+                               version_id=version_ids[i], line_index=index, line=line)
                 except RuntimeError:
                     for id in version_ids:
                         db.execute("DELETE FROM 'lines' WHERE version_id = :version_id", version_id=id)
@@ -930,14 +928,13 @@ def existing_project_versions():
 
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
-        # make the lines 1-indexed
         for i in range(session["existing_project"]["number_of_versions"]):
             for index, line in enumerate(session["existing_project"]["lines"][i]):
                 try:
                     db.execute("INSERT INTO lines (project_id, version_id, line_index, line) \
                                VALUES (:project_id, :version_id, :line_index, :line)",
                                project_id=session["existing_project"]["id"],
-                               version_id=version_ids[i], line_index=(index + 1), line=line)
+                               version_id=version_ids[i], line_index=index, line=line)
                 except RuntimeError:
                     for id in version_ids:
                         db.execute("DELETE FROM 'lines' WHERE version_id = :version_id", version_id=id)
@@ -1531,10 +1528,10 @@ def edit():
                 if project["type"] == "tv series":
                     rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND \
                                       author = :author AND year = :year AND season = :season AND episode = :episode",
-                                      type=type, title=title, author=author, year=year, season=season, episode=episode)
+                                      type=project["type"], title=title, author=author, year=year, season=season, episode=episode)
                 else:
                     rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
-                                      year = :year", type=type, title=title, author=author, year=year)
+                                      year = :year", type=project["type"], title=title, author=author, year=year)
 
                 if len(rows) > 0:
                     return apology("This project already exists.")
@@ -1592,18 +1589,14 @@ def edit():
                     return apology("Couldn't edit this project.",
                                    "Allowed extensions for poster images: jpeg/jpeg/png/svg.")
 
-                # make sure posters not the same
-                # https://stackoverflow.com/questions/1072569/see-if-two-files-have-the-same-content-in-python
-                if filecmp.cmp(file, os.path.join(app.config['UPLOAD_FOLDER'], project["poster"])) == True:
-                    return apology("Didn't edit this project.", "The poster images are the same.")
-
                 # ensure poster image not too large
                 # https://stackoverflow.com/questions/2104080/how-to-check-file-size-in-python
                 old_file_position = file.tell()
                 file.seek(0, os.SEEK_END)
                 size = file.tell()
                 file.seek(old_file_position, os.SEEK_SET)
-                if size > 300000:
+                print(size)
+                if size > 307200:
                     return apology("Couldn't edit this project.", "Maximum size for poster images is 300 KB.")
 
                 # try to upload the new poster
@@ -1703,11 +1696,10 @@ def prepare_practice():
 
         project_id = request.form["prepare_practice"]
         rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
-        session["project"] = rows[0]
-        session["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
-                                         project_id=project_id)
+        project = rows[0]
+        project["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id", project_id=project_id)
 
-        return render_template("prepare_practice.html", project=session["project"], versions=session["versions"])
+        return render_template("prepare_practice.html", project=project)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -1716,63 +1708,58 @@ def prepare_practice():
 
 
 # practice route
-@app.route("/practice", methods=["GET", "POST"])
-def practice():
+@app.route("/project_practice", methods=["GET", "POST"])
+def project_practice():
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
+        # get project metadata
+        project_id = request.form.get("start_practice")
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+        project = rows[0]
+
         # ensure translate from & to languages submitted
         if not request.form.get("from_version_id") or not request.form.get("to_version_id"):
-            return apology("must choose from & to which language to translate")
+            return apology("Couldn't start practice.", "Please choose from & to which language to translate.")
         else:
-            from_version_id = int(request.form.get("from_version_id"))
-            to_version_id = int(request.form.get("to_version_id"))
-
-        # ensure version supported by project
-        project_versions = []
-        for version in session["versions"]:
-            project_versions.append(version["id"])
-
-        if from_version_id not in project_versions or to_version_id not in project_versions:
-            return apology("can only practice in project supported languages (better select)")
+            from_version_id = request.form.get("from_version_id")
+            to_version_id = request.form.get("to_version_id")
 
         # make sure from & to languages different
-        if from_version_id == to_version_id:
-            return apology("from & to languages must differ")
-
-        project=session["project"]
-
-        # prepare versions and project for rendering
         rows = db.execute("SELECT * FROM versions WHERE id = :id", id=from_version_id)
-        from_version = rows[0]
-        project["from_language"] = from_version["language"]
-        workbook = openpyxl.load_workbook(from_version["filepath"])
-        from_worksheet = workbook.worksheets[(from_version["sheet_number"] - 1)]
-
-        from_lines = []
-        for row in from_worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
-            for cell in row:
-                value = str(cell.value)
-                from_lines.append(value)
-
+        project["from_version"] = rows[0]
         rows = db.execute("SELECT * FROM versions WHERE id = :id", id=to_version_id)
-        to_version = rows[0]
-        project["to_language"] = to_version["language"]
-        workbook = openpyxl.load_workbook(to_version["filepath"])
-        to_worksheet = workbook.worksheets[(to_version["sheet_number"] - 1)]
+        project["to_version"] = rows[0]
+        if from_version_id == to_version_id or project["from_version"]["language"] == project["to_version"]["language"]:
+            return apology("Couldn't start practice.", "From & to languages must differ.")
 
+        # prepare the starting point
+        # if user logged in, check whether project already started
+        # https://stackoverflow.com/questions/3845362/python-how-can-i-check-if-the-key-of-an-dictionary-exists
+        starting_line = 0
+        if "user_id" in session:
+            rows = db.execute("SELECT * FROM history WHERE user_id = :user_id AND from_version_id = :from_version_id AND \
+                               to_version_id = :to_version_id", user_id=session["user_id"], from_version_id=from_version_id,
+                               to_version_id=to_version_id)
+            if len(rows) > 0:
+                starting_line = rows[0]["progress"]
+
+
+        # prepare lines and project for rendering
+        from_lines = []
+        rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=from_version_id)
+        for row in rows:
+            from_lines.append(row["line"])
+
+        # prepare lines and project for rendering
         to_lines = []
-        for row in to_worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
-            for cell in row:
-                value = str(cell.value)
-                to_lines.append(value)
+        rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=to_version_id)
+        for row in rows:
+            to_lines.append(row["line"])
 
-        # release session variables
-        session.pop('project', None)
-        session.pop('versions', None)
-
-        return render_template("project_practice.html", from_lines=from_lines, to_lines=to_lines, project=project)
+        return render_template("project_practice.html", starting_line=starting_line, from_lines=from_lines, to_lines=to_lines,
+                                                        project=project)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -1789,6 +1776,224 @@ def about():
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
+
+
+@app.route("/browse")
+def browse():
+
+    projects = db.execute("SELECT * FROM projects")
+
+    # if tv series, make title include the season & episode
+    for project in projects:
+        if project["type"].lower() == "tv series":
+            project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
+
+    return render_template("browse.html", projects=projects)
+
+
+# edit version line
+@app.route("/edit_line", methods=["GET", "POST"])
+@login_required
+def edit_line():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # if user prepares to edit line from practice page
+        if request.form.get('line_to_edit'):
+
+            # get the line index, and the versions ids
+            line_to_edit = request.form.get("line_to_edit").split(",")
+            line_index = line_to_edit[0]
+            bad_version_id = line_to_edit[1]
+            good_version_id = line_to_edit[2]
+
+            # get the line id and the lines themselves
+            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
+                              version_id=good_version_id, line_index=line_index)
+            good_line = rows[0]["line"]
+            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
+                              version_id=bad_version_id, line_index=line_index)
+            bad_line = rows[0]["line"]
+            bad_line_id = rows[0]["id"]
+
+            # render the template with the corresponding variables
+            return render_template("edit_line.html", good_line=good_line, bad_line=bad_line, bad_line_id=bad_line_id)
+
+        # else if user actually changes a specific line from the edit line template
+        elif request.form.get('edit_line'):
+
+            # make sure new line text provided, save it
+            if not request.form.get("edit_line_text"):
+                return apology("Couldn't edit anything.", "Please make sure you input the new line.")
+            else:
+                line_text = request.form.get("edit_line_text")
+
+            # get the line id
+            line_id = request.form.get("edit_line")
+
+            # try to edit the line
+            try:
+                db.execute("UPDATE lines SET line = :line WHERE id = :id", line=line_text, id=line_id)
+            except RuntimeError:
+                    return apology("Couldn't edit this line.", "Please try again later.")
+
+            return success("The line has been successfully updated.")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to project browsing page
+    else:
+        return browse()
+
+
+# correct version line
+@app.route("/correct_line", methods=["GET", "POST"])
+@login_required
+def correct_line():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # if user prepares to correct line from practice page
+        if request.form.get('line_to_correct'):
+
+            # get the line index, and the versions ids
+            line_to_correct = request.form.get("line_to_correct").split(",")
+            line_index = line_to_correct[0]
+            bad_version_id = line_to_correct[1]
+            good_version_id = line_to_correct[2]
+
+            # get the line id and the lines themselves
+            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
+                              version_id=good_version_id, line_index=line_index)
+            good_line = rows[0]["line"]
+            good_line_id = rows[0]["id"]
+            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
+                              version_id=bad_version_id, line_index=line_index)
+            bad_line = rows[0]["line"]
+            bad_line_id = rows[0]["id"]
+
+            # render the template with the corresponding variables
+            return render_template("correct_line.html", good_line=good_line, good_line_id=good_line_id,
+                                                        bad_line=bad_line, bad_line_id=bad_line_id)
+
+        # else if user actually changes a specific line from the edit line template
+        elif request.form.get('correct_line'):
+
+            # make sure new line text provided, save it
+            if not request.form.get("correct_line_text"):
+                return apology("Couldn't correct anything.", "Please make sure you input the new corrected text.")
+            else:
+                line_text = request.form.get("correct_line_text")
+
+            # get the good line id, bad line id and its metadata
+            line_to_correct = request.form.get("correct_line").split(",")
+            context_line_id = line_to_correct[0]
+            line_id = line_to_correct[1]
+            rows = db.execute("SELECT * FROM lines WHERE id = :id", id=line_id)
+            line = rows[0]
+
+            # save the correction
+            try:
+                db.execute("INSERT INTO corrections (line_id, correction, user_id, project_id, version_id, context_line_id) \
+                           VALUES (:line_id, :correction, :user_id, :project_id, :version_id, :context_line_id)",
+                           line_id=line["id"], correction=line_text, user_id=session["user_id"], project_id=line["project_id"],
+                           version_id=line["version_id"], context_line_id=context_line_id)
+            except RuntimeError:
+                    return apology("Couldn't correct this line.", "Please try again later.")
+
+            return success("The correction has been submitted to the owner of the project.")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to project browsing page
+    else:
+        return browse()
+
+
+# view notifications route
+@app.route("/view_notifications")
+@login_required
+def view_notifications():
+
+    # fetch user's versions
+    versions = db.execute("SELECT * FROM versions WHERE user_id = :user_id", user_id=session["user_id"])
+
+    # fetch the proposed line corrections for these versions
+    corrections = []
+    for version in versions:
+        rows = db.execute("SELECT * FROM corrections WHERE version_id = :version_id", version_id=version["id"])
+        for row in rows:
+            corrections.append(row)
+
+    # gather the metadata
+    notifications = []
+    for correction in corrections:
+        notification = {}
+        rows = db.execute("SELECT * FROM projects WHERE id = :project_id", project_id=correction["project_id"])
+        notification["title"] = rows[0]["title"]
+        rows = db.execute("SELECT * FROM lines WHERE id = :id", id=correction["context_line_id"])
+        notification["context_line"] = rows[0]["line"]
+        from_version_id = rows[0]["version_id"]
+        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=from_version_id)
+        notification["from_language"] = rows[0]["language"]
+        rows = db.execute("SELECT * FROM users WHERE id = :id", id=correction["user_id"])
+        notification["user"] = rows[0]["username"]
+        notification["suggested_line"] = correction["correction"]
+        rows = db.execute("SELECT * FROM lines WHERE id = :id", id=correction["line_id"])
+        notification["original_line"] = rows[0]["line"]
+        to_version_id = rows[0]["version_id"]
+        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=to_version_id)
+        notification["to_language"] = rows[0]["language"]
+        notification["original_line_id"] = correction["line_id"]
+        notification["correction_id"] = correction["id"]
+        notifications.append(notification)
+
+    return render_template("account_notifications.html", notifications=notifications)
+
+
+# act upon suggested corrections
+@app.route("/action_correction", methods=["GET", "POST"])
+@login_required
+def action_correction():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # if user accepts the suggested correction
+        if request.form.get('implement_correction'):
+
+            correction_id = request.form.get('implement_correction')
+            rows = db.execute("SELECT * FROM corrections WHERE id = :id", id=correction_id)
+            correction = rows[0]["correction"]
+            corrected_line_id = rows[0]["line_id"]
+
+            # change the line
+            try:
+                db.execute("UPDATE lines SET line = :line WHERE id = :id", line=correction, id=corrected_line_id)
+            except RuntimeError:
+                return apology("Couldn't implement the correction.", "Please try again later.")
+
+            # delete the suggestion
+            try:
+                db.execute("DELETE FROM corrections WHERE id = :id", id=correction_id)
+            except RuntimeError:
+                return apology("Implemented the correction, couldn't delete it though.", "Please try again later.")
+
+        # else if user directly discards the suggested correction
+        if request.form.get('discard_correction'):
+
+            # delete the suggestion
+            try:
+                db.execute("DELETE FROM corrections WHERE id = :id", id=request.form.get('discard_correction'))
+            except RuntimeError:
+                return apology("Couldn't delete the correction.", "Please try again later.")
+
+        return view_notifications()
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to project browsing page
+    else:
+        return browse()
 
 
 
@@ -1809,11 +2014,6 @@ def contact():
 
 
 
-
-
-@app.route("/browse")
-def browse():
-    return
 
 @app.route("/faq")
 def faq():

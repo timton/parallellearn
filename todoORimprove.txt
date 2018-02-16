@@ -3,15 +3,12 @@
 
 - start from history/specific later
 - download project
-- project poster / description (scraping? google api)
-- save the lines in the db, not in separate files on the server
-- browsing projects (cards?)
-- upload step by step?
-- REINSTATE LOGIN REQUIRED DECORATOR
-- source credit / poster / description
+- source credit
 - display progress whil the server does smth (especially uploading project)
+- browse by category
+- rating
 
-- mobile version
+- mobile version (bootstrap?)
 
 #########  IMPROVE
 - live registration form validation

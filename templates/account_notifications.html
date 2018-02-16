@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Account Notifications
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+
+        {% if notifications|length == 0 %}
+            <br>
+            <p>You don't have any notifications.</p>
+            <br>
+        {% else %}
+            <h2>Account Notifications</h2>
+            <br>
+            <ul>
+                {% for notification in notifications %}
+                    <div class="row">
+                        <li style="text-align: left;">
+                            <div class="col-xs-10">
+                                <b>[{{ notification["title"].title() }}]</b> When translating from
+                                {{ notification["from_language"].title() }} to {{ notification["to_language"].title() }}
+                                the following phrase: "<u><i>{{ notification["context_line"] }}</i></u>"
+                                <b>{{ notification["user"] }}</b> suggests using
+                                <span style="color: green;">"<b><i>{{ notification["suggested_line"] }}</i></b>"</span>
+                                instead of <span style="color: red;">"<i>{{ notification["original_line"] }}</i>"</span>
+                            </div>
+                            <div class="col-xs-1">
+                                <form action="{{ url_for('action_correction') }}" method="POST">
+                                    <button type="submit" name="implement_correction" value="{{ notification['correction_id'] }}">
+                                        Implement
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-xs-1">
+                                <form action="{{ url_for('action_correction') }}" method="POST">
+                                    <button type="submit" name="discard_correction" value="{{ notification['correction_id'] }}">
+                                        Discard
+                                    </button>
+                                </form>
+                            </div>
+                        </li>
+                    </div>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endblock %}

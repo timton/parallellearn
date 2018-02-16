@@ -186,3 +186,11 @@ td {
 .bordered {
     border: 1px solid grey;
 }
+
+.card {
+    width: 20rem;
+    border: 1px solid black;
+    position: relative;
+    display: inline-block;
+    float: left;
+}

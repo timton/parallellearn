@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+        Edit Line
+{% endblock %}
+
+{% block main %}
+
+    <div class="container">
+
+        <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
+        <table style="margin: auto;">
+            <tr>
+                <th>GOOD LINE: </th>
+                <td>{{ good_line }}</td>
+            </tr>
+            <tr>
+                <th>BAD LINE: </th>
+                <td>{{ bad_line }}</td>
+            </tr>
+            <tr>
+                <th>EDIT BAD LINE: </th>
+                <td>
+                    <form action="{{ url_for('edit_line') }}" method="post" id="edit_line_form">
+                        <input type="text" style="width: 100%" autofocus name="edit_line_text">
+                    </form>
+                </td>
+            </tr>
+        </table>
+        </br>
+        <button class="btn btn-default" type="submit" name="edit_line" value="{{ bad_line_id }}" form="edit_line_form">
+            Edit
+        </button>
+
+    </div>
+
+{% endblock %}

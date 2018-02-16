@@ -17,17 +17,40 @@
         {% if project["type"].lower() == "tv series" %}
             [S{{ project["season"] }}/E{{ project["episode"] }}]
         {% endif %}
-        - (<span id="progress_line" style="text-align: center;">Line 1/{{ project["line_count"] }}</span>)
+        - (<span id="progress_line" style="text-align: center;">Line {{ starting_line + 1 }}/{{ project["line_count"] }}</span>)
     </h4>
-    <progress value="1" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
+    <progress value="{{ starting_line + 1 }}" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
     </br>
     <div class="container">
 
         <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
         <table style="margin: auto;">
             <tr>
-                <th>{{ project["from_language"].upper() }} </th>
-                <td id="from_line">{{ from_lines[0] }}</td>
+                <th>{{ project["from_version"]["language"].upper() }} </th>
+                <td id="from_line">{{ from_lines[starting_line] }}</td>
+
+                <!-- offer logged in users the possibility to either correct or actually edit the lines (for owners) -->
+                {% if session.user_id %}
+                    {% if project["from_version"]["user_id"] == session["user_id"] %}
+                        <th>
+                            <form action="{{ url_for('edit_line') }}" method="post">
+                                <button class="btn btn-default" type="submit" id="edit_from_line" name="line_to_edit"
+                                        value="{{ starting_line }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
+                                    Edit
+                                </button>
+                            </form>
+                        </th>
+                    {% else %}
+                        <th>
+                            <form action="{{ url_for('correct_line') }}" method="post">
+                                <button class="btn btn-default" type="submit" id="correct_from_line" name="line_to_correct"
+                                        value="{{ starting_line }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
+                                    Correct
+                                </button>
+                            </form>
+                        </th>
+                    {% endif %}
+                {% endif %}
             </tr>
             <tr>
                 <th>PRACTICE </th>
@@ -42,13 +65,34 @@
                 </td>
             </tr>
             <tr>
-                <th>{{ project["to_language"].upper() }} </th>
-                <td class="blurry" id="to_line">{{ to_lines[0] }}</td>
+                <th>{{ project["to_version"]["language"].upper() }} </th>
+                <td class="blurry" id="to_line">{{ to_lines[starting_line] }}</td>
+                {% if session.user_id %}
+                    {% if project["to_version"]["user_id"] == session["user_id"] %}
+                        <th>
+                            <form action="{{ url_for('edit_line') }}" method="post">
+                                <button class="btn btn-default" type="submit" id="edit_to_line" name="line_to_edit"
+                                        value="{{ starting_line }},{{ project['to_version']['id'] }},{{ project['from_version']['id'] }}">
+                                    Edit
+                                </button>
+                            </form>
+                        </th>
+                    {% else %}
+                        <th>
+                            <form action="{{ url_for('correct_line') }}" method="post">
+                                <button class="btn btn-default" type="submit" id="correct_to_line" name="line_to_correct"
+                                        value="{{ starting_line }},{{ project['to_version']['id'] }},{{ project['from_version']['id'] }}">
+                                    Correct
+                                </button>
+                            </form>
+                        </th>
+                    {% endif %}
+                {% endif %}
             </tr>
         </table>
         </br>
         <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}, {{ project['line_count'] }}); ">
-            <button class="btn btn-default" type="submit" id="next_line" value="0">Next</button>
+            <button class="btn btn-default" type="submit" id="next_line" value="{{ starting_line }}">Next</button>
         </form>
 
     </div>
