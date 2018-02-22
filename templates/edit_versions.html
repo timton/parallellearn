@@ -17,8 +17,9 @@
         {% endfor %}
     </select>
     version to
-    <select name="change_to_version" form="change_version">{% include "select/languages.html" %}</select>
-    <br>
+    <select name="change_to_version" form="change_version">{% include "select/languages.html" %}</select>.
+    New version source: <input type="text" name="source" form="change_version" placeholder="Optional">
+    <br><br>
     <form action="{{ url_for('edit') }}" method="post" id="change_version">
         <button class="btn btn-default" type="submit" name="change_project_versions" value="{{ project['id'] }}">Done</button>
     </form>

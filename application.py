@@ -1,5 +1,5 @@
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for, send_file, after_this_request
 from flask_session import Session
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
@@ -8,6 +8,8 @@ from random import shuffle
 
 # for file uploading, manipulation
 import os
+import urllib.request
+import pathlib
 from werkzeug.utils import secure_filename
 
 # for excel manipulation
@@ -593,6 +595,7 @@ def new_project_metadata():
         # make sure all versions have the same number of lines
         session["new_project"]["line_count"] = workbook.worksheets[0].max_row
         for worksheet in workbook:
+            print(worksheet.max_row)
             if worksheet.max_row != session["new_project"]["line_count"]:
                 session.pop('new_project', None)
                 return apology("Couldn't upload this project.",
@@ -624,10 +627,16 @@ def new_project_versions():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # save language versions
+        # save language versions and potential sources
         session["new_project"]["versions"] = []
+        session["new_project"]["sources"] = []
         for i in range(session["new_project"]["number_of_versions"]):
             session["new_project"]["versions"].append(request.form.get(str(i)).lower())
+            if request.form.get("source" + str(i)):
+                session["new_project"]["sources"].append(request.form.get("source" + str(i)))
+            else:
+                session["new_project"]["sources"].append(None)
+
 
         # ensure at least two different language versions
         if len(set(session["new_project"]["versions"])) == 1:
@@ -729,10 +738,10 @@ def new_project_formatting():
         # upload new project language versions
         for i in range(session["new_project"]["number_of_versions"]):
             try:
-                db.execute("INSERT INTO versions (project_id, user_id, language, timestamp) VALUES(:project_id, \
-                           :user_id, :language, :timestamp)", project_id=session["new_project"]["project_id"],
+                db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, source) VALUES(:project_id, \
+                           :user_id, :language, :timestamp, :source)", project_id=session["new_project"]["project_id"],
                            user_id=session["user_id"], language=session["new_project"]["versions"][i],
-                           timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()))
+                           timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()), source=session["new_project"]["sources"][i])
             except RuntimeError:
                 db.execute("DELETE FROM 'projects' WHERE id = :id", id=session["new_project"]["project_id"])
                 db.execute("DELETE FROM 'versions' WHERE project_id = :project_id",
@@ -893,10 +902,15 @@ def existing_project_versions():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # save language versions
+        # save language versions and potential sources
         session["existing_project"]["versions"] = []
+        session["existing_project"]["sources"] = []
         for i in range(session["existing_project"]["number_of_versions"]):
             session["existing_project"]["versions"].append(request.form.get(str(i)).lower())
+            if request.form.get("source" + str(i)):
+                session["existing_project"]["sources"].append(request.form.get("source" + str(i)))
+            else:
+                session["existing_project"]["sources"].append(None)
 
         # upload new language versions
         # prepare to delete, if something goes wrong
@@ -905,10 +919,10 @@ def existing_project_versions():
             timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime())
             timestamps.append(timestamp)
             try:
-                db.execute("INSERT INTO versions (project_id, user_id, language, timestamp) VALUES(:project_id, \
-                           :user_id, :language, :timestamp)", project_id=session["existing_project"]["id"],
+                db.execute("INSERT INTO versions (project_id, user_id, language, timestamp, source) VALUES(:project_id, \
+                           :user_id, :language, :timestamp, :source)", project_id=session["existing_project"]["id"],
                            user_id=session["user_id"], language=session["existing_project"]["versions"][i],
-                           timestamp=timestamp)
+                           timestamp=timestamp, source=session["existing_project"]["sources"][i])
             except RuntimeError:
                 for timestamp in timestamps:
                     db.execute("DELETE FROM 'versions' WHERE timestamp = :timestamp", timestamp=timestamp)
@@ -973,18 +987,27 @@ def view_project(id):
     if project["type"].lower() == "tv series":
         project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
-    # get project languages
+    # get project languages and sources
     rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id", project_id=id)
     language_list = []
+    sources = []
     for row in rows:
         if row["language"] not in language_list:
             language_list.append(row["language"])
+        credit = {}
+        if row["source"] != None:
+            users = db.execute("SELECT * FROM users WHERE id = :id", id=row["user_id"])
+            credit["user"] = users[0]["username"]
+            credit["source"] = row["source"]
+            credit["language"] = row["language"]
+            sources.append(credit)
 
     languages = ""
     for language in language_list:
         languages += (language + ", ")
     languages = languages[:-2]
     project["languages"] = languages
+    project["sources"] = sources
 
     return render_template("view_project.html", project=project)
 
@@ -1405,17 +1428,14 @@ def edit():
             # if user wants to change one of his project versions
             if request.form.get('want_to_edit_versions'):
 
-                project_id = request.form.get('want_to_edit_description')
+                project_id = request.form.get('want_to_edit_versions')
                 rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
                 project = rows[0]
 
                 # get user project versions
                 rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND user_id = :user_id",
                                   project_id=project_id, user_id=session["user_id"])
-                versions = []
-                for row in rows:
-                    versions.append(row["language"])
-                project["versions"] = versions
+                project["versions"] = rows
 
                 return render_template("edit_versions.html", project=project)
 
@@ -1657,6 +1677,12 @@ def edit():
                 from_version_id = request.form.get('change_from_version')
                 to_version = request.form.get('change_to_version').lower()
 
+                # get the potential source
+                if request.form.get("source"):
+                    source = request.form.get("source")
+                else:
+                    source = None
+
                 # new version language must differ
                 rows = db.execute("SELECT * FROM versions WHERE id = :id", id=from_version_id)
                 if rows[0]["language"] == to_version:
@@ -1675,7 +1701,8 @@ def edit():
 
                 # try to edit
                 try:
-                    db.execute("UPDATE versions SET language = :language WHERE id = :id", language=to_version, id=from_version_id)
+                    db.execute("UPDATE versions SET language = :language, source = :source WHERE id = :id",
+                               language=to_version, source=source, id=from_version_id)
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
@@ -1698,6 +1725,11 @@ def prepare_practice():
         rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
         project = rows[0]
         project["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id", project_id=project_id)
+
+        # fetch the user for each version
+        for version in project["versions"]:
+            rows = db.execute("SELECT * FROM users WHERE id = :id", id=version["user_id"])
+            version["user"] = rows[0]["username"]
 
         return render_template("prepare_practice.html", project=project)
 
@@ -1996,6 +2028,122 @@ def action_correction():
         return browse()
 
 
+# prepare project for practice route
+@app.route("/prepare_download", methods=["GET", "POST"])
+def prepare_download():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the project id
+        project_id = request.form["prepare_download"]
+
+        # get project
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+        project = rows[0]
+
+        # get all its versions
+        project["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id", project_id=project_id)
+
+        # fetch the user for each version
+        for version in project["versions"]:
+            rows = db.execute("SELECT * FROM users WHERE id = :id", id=version["user_id"])
+            version["user"] = rows[0]["username"]
+
+        return render_template("prepare_download.html", project=project)
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to project browsing page
+    else:
+        return browse()
+
+
+# prepare project for practice route
+@app.route("/project_download", methods=["GET", "POST"])
+def project_download():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the project id
+        project_id = request.form["download_project"]
+
+        # get project
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+        project = rows[0]
+
+        # get all its versions
+        project["versions"] = db.execute("SELECT * FROM versions WHERE project_id = :project_id", project_id=project_id)
+
+        # make sure that at least one version was selected for download
+        selected_versions = []
+        for version in project["versions"]:
+            if request.form.get(str(version["id"])):
+                selected_versions.append(request.form[str(version["id"])])
+
+        if len(selected_versions) == 0:
+            return apology("Couldn't download anything.", "Please select at least one version.")
+
+        # create a new workbook
+        wb = openpyxl.Workbook()
+
+        # get the active sheet
+        ws = wb.active
+
+        # get the lines for the first version
+        lines = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=selected_versions[0])
+
+        # fill the first sheet
+        # https://stackoverflow.com/questions/31395058/how-to-write-to-a-new-cell-in-python-using-openpyxl
+        for line in lines:
+            ws.cell(row=(line["line_index"] + 1), column=1).value = line["line"]
+
+        # create and fill additional sheets if more versions
+        # https://stackoverflow.com/questions/40385689/add-a-new-sheet-to-a-existing-workbook-in-python
+        # https://stackoverflow.com/questions/176918/finding-the-index-of-an-item-given-a-list-containing-it-in-python
+        if len(selected_versions) > 1:
+            for version in selected_versions:
+
+                # skip the first version, it's done
+                if selected_versions.index(version) == 0:
+                    continue
+
+                sheet_name = "Sheet" + str(selected_versions.index(version))
+                ws = wb.create_sheet(sheet_name)
+                lines = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version)
+
+                for line in lines:
+                    ws.cell(row=(line["line_index"] + 1), column=1).value = line["line"]
+
+
+        # save the workbook
+        try:
+            filename = project["title"].title()
+            if project["type"].lower() == "tv series":
+                filename += (" (s" + str(project["season"]) + "e" + str(project["episode"]) +")")
+            filename += ".xlsx"
+            wb.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        except RuntimeError:
+            return apology("Couldn't download this project.", "Please try again later.")
+
+        # delete after downloading
+        # https://stackoverflow.com/questions/24612366/flask-deleting-uploads-after-they-have-been-downloaded
+        @after_this_request
+        def remove_file(response):
+            try:
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            except RuntimeError:
+                return apology("Couldn't remove the created file.")
+            return response
+
+        # download it
+        # https://stackoverflow.com/questions/37937091/download-a-file-from-a-flask-based-python-server
+        return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), as_attachment=True)
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    # redirect to project browsing page
+    else:
+        return browse()
 
 ######################
 # DONE UP UNTIL HERE #

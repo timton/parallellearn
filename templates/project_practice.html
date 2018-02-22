@@ -30,10 +30,12 @@
                 <td id="from_line">{{ from_lines[starting_line] }}</td>
 
                 <!-- offer logged in users the possibility to either correct or actually edit the lines (for owners) -->
+                <!-- https://css-tricks.com/snippets/html/form-submission-new-window/ edit in a new tab, not to lose progress-->
+
                 {% if session.user_id %}
                     {% if project["from_version"]["user_id"] == session["user_id"] %}
                         <th>
-                            <form action="{{ url_for('edit_line') }}" method="post">
+                            <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
                                 <button class="btn btn-default" type="submit" id="edit_from_line" name="line_to_edit"
                                         value="{{ starting_line }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
                                     Edit
@@ -42,7 +44,7 @@
                         </th>
                     {% else %}
                         <th>
-                            <form action="{{ url_for('correct_line') }}" method="post">
+                            <form action="{{ url_for('correct_line') }}" method="post" target="_blank">
                                 <button class="btn btn-default" type="submit" id="correct_from_line" name="line_to_correct"
                                         value="{{ starting_line }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
                                     Correct
@@ -70,7 +72,7 @@
                 {% if session.user_id %}
                     {% if project["to_version"]["user_id"] == session["user_id"] %}
                         <th>
-                            <form action="{{ url_for('edit_line') }}" method="post">
+                            <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
                                 <button class="btn btn-default" type="submit" id="edit_to_line" name="line_to_edit"
                                         value="{{ starting_line }},{{ project['to_version']['id'] }},{{ project['from_version']['id'] }}">
                                     Edit
@@ -79,7 +81,7 @@
                         </th>
                     {% else %}
                         <th>
-                            <form action="{{ url_for('correct_line') }}" method="post">
+                            <form action="{{ url_for('correct_line') }}" method="post" target="_blank">
                                 <button class="btn btn-default" type="submit" id="correct_to_line" name="line_to_correct"
                                         value="{{ starting_line }},{{ project['to_version']['id'] }},{{ project['from_version']['id'] }}">
                                     Correct

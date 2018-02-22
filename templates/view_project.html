@@ -23,12 +23,26 @@
                 <b>Description: </b>{{ project["description"] }}
                 <br><br>
                 <b>Languages: </b>{{ project["languages"].title() }}
+                {% if project["sources"]|length != 0 %}
+                    <br><br>
+                    <b>Credits: </b>
+                    <select>
+                        {% for source in project["sources"] %}
+                            <option><b>{{ source["user"] }}</b> thanks <i>{{ source["source"] }}</i> for {{ source["language"].title() }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
             </div>
     </div>
     <br>
-    <form action=" {{ url_for('prepare_practice') }} " method="POST">
+    <form action="{{ url_for('prepare_practice') }}" method="POST" style="display: inline-block;">
         <button type="submit" name="prepare_practice" value="{{ project['id'] }}">
             Practice
+        </button>
+    </form>
+    <form action="{{ url_for('prepare_download') }}" method="POST" style="display: inline-block;">
+        <button type="submit" name="prepare_download" value="{{ project['id'] }}">
+            Download
         </button>
     </form>
 

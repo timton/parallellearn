@@ -21,6 +21,7 @@
             <li>
                 Version {{ (i + 1) }}:
                 <select name="{{ i }}" form="submit_language">{% include "select/languages.html" %}</select>
+                Source: <input type="text" name="source{{ i }}" form="submit_language" placeholder="Optional">
             </li>
             </br>
         {% endfor %}

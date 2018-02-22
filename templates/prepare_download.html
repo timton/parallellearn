@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Download Project
+{% endblock %}
+
+{% block main %}
+    <h4>
+        {{ project["title"].title() }}
+        {% if project["type"].lower() == "tv series" %}
+            [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
+        {% endif %}
+        - {{ project["author"].title() }} -
+        ({{ project["year"] }})
+    </h4>
+    <br><br>
+    <div style="text-align: left;">
+        <p>Please select the versions you'd like to download:</p>
+        {% for version in project["versions"] %}
+            <input type="checkbox" name="{{ version['id'] }}" value="{{ version['id'] }}" form="project_download">
+            {{ version["language"].title() }} (by <b>{{ version["user"] }}</b> - {{ version["rating"] }})<br>
+        {% endfor %}
+        <br>
+        <form action="{{ url_for('project_download') }}" method="post" id="project_download">
+            <button class="btn btn-default" type="submit" name="download_project" value="{{ project['id'] }}">
+                Download
+            </button>
+        </form>
+    </div>
+{% endblock %}

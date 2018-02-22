@@ -13,21 +13,23 @@
         - {{ project["author"].title() }} -
         ({{ project["year"] }})
     </h4>
+    <br>
 
+    <!-- reverse the list order http://jinja.pocoo.org/docs/2.10/templates/#builtin-filters  -->
     <p>
         Translate from
         <select name="from_version_id" form="start_practice">
             {% for version in project["versions"] %}
                 <option value="{{ version['id'] }}">
-                    {{ version["language"].title() }} - {{ version["rating"] }}
+                    {{ version["language"].title() }} (by {{ version["user"] }} - {{ version["rating"] }})
                 </option>
             {% endfor %}
         </select>
         to
         <select name="to_version_id" form="start_practice">
-            {% for version in project["versions"] %}
+            {% for version in project["versions"]|reverse %}
                 <option value="{{ version['id'] }}">
-                    {{ version["language"].title() }} - {{ version["rating"] }}
+                    {{ version["language"].title() }} (by {{ version["user"] }} - {{ version["rating"] }})
                 </option>
             {% endfor %}
         </select>
