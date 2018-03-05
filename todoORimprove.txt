@@ -1,7 +1,6 @@
 ######### TODO
 
 - start from history/specific later
-- download project
 - display progress whil the server does smth (especially uploading project)
 - browse by category
 - rating

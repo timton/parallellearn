@@ -1,13 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    PRACTICE:
-    {{ project["title"].title() }}
-    {% if project["type"].lower() == "tv series" %}
-        [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
-    {% endif %}
-    - {{ project["author"].title() }} -
-    ({{ project["year"] }})
+    Project Practice
 {% endblock %}
 
 {% block main %}
@@ -17,9 +11,9 @@
         {% if project["type"].lower() == "tv series" %}
             [S{{ project["season"] }}/E{{ project["episode"] }}]
         {% endif %}
-        - (<span id="progress_line" style="text-align: center;">Line {{ starting_line + 1 }}/{{ project["line_count"] }}</span>)
+        - (<span id="progress_line" style="text-align: center;">Line {{ project["starting_line"] + 1 }}/{{ project["line_count"] }}</span>)
     </h4>
-    <progress value="{{ starting_line + 1 }}" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
+    <progress value="{{ project['starting_line'] + 1 }}" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
     </br>
     <div class="container">
 
@@ -27,32 +21,18 @@
         <table style="margin: auto;">
             <tr>
                 <th>{{ project["from_version"]["language"].upper() }} </th>
-                <td id="from_line">{{ from_lines[starting_line] }}</td>
+                <td id="from_line">{{ project["from_lines"][project["starting_line"]]["line"] }}</td>
 
                 <!-- offer logged in users the possibility to either correct or actually edit the lines (for owners) -->
                 <!-- https://css-tricks.com/snippets/html/form-submission-new-window/ edit in a new tab, not to lose progress-->
-
-                {% if session.user_id %}
-                    {% if project["from_version"]["user_id"] == session["user_id"] %}
-                        <th>
-                            <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
-                                <button class="btn btn-default" type="submit" id="edit_from_line" name="line_to_edit"
-                                        value="{{ starting_line }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
-                                    Edit
-                                </button>
-                            </form>
-                        </th>
-                    {% else %}
-                        <th>
-                            <form action="{{ url_for('correct_line') }}" method="post" target="_blank">
-                                <button class="btn btn-default" type="submit" id="correct_from_line" name="line_to_correct"
-                                        value="{{ starting_line }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
-                                    Correct
-                                </button>
-                            </form>
-                        </th>
-                    {% endif %}
-                {% endif %}
+                <th>
+                    <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
+                        <button class="btn btn-default" type="submit" id="edit_from_line" name="line_to_edit"
+                                value="{{ project['from_lines'][project['starting_line']]['id'] }},{{ project['to_lines'][project['starting_line']]['id'] }}">
+                            Edit
+                        </button>
+                    </form>
+                </th>
             </tr>
             <tr>
                 <th>PRACTICE </th>
@@ -68,33 +48,21 @@
             </tr>
             <tr>
                 <th>{{ project["to_version"]["language"].upper() }} </th>
-                <td class="blurry" id="to_line">{{ to_lines[starting_line] }}</td>
-                {% if session.user_id %}
-                    {% if project["to_version"]["user_id"] == session["user_id"] %}
-                        <th>
-                            <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
-                                <button class="btn btn-default" type="submit" id="edit_to_line" name="line_to_edit"
-                                        value="{{ starting_line }},{{ project['to_version']['id'] }},{{ project['from_version']['id'] }}">
-                                    Edit
-                                </button>
-                            </form>
-                        </th>
-                    {% else %}
-                        <th>
-                            <form action="{{ url_for('correct_line') }}" method="post" target="_blank">
-                                <button class="btn btn-default" type="submit" id="correct_to_line" name="line_to_correct"
-                                        value="{{ starting_line }},{{ project['to_version']['id'] }},{{ project['from_version']['id'] }}">
-                                    Correct
-                                </button>
-                            </form>
-                        </th>
-                    {% endif %}
-                {% endif %}
+                <td class="blurry" id="to_line">{{ project["to_lines"][project["starting_line"]]["line"] }}</td>
+                <th>
+                    <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
+                        <button class="btn btn-default" type="submit" id="edit_to_line" name="line_to_edit"
+                                value="{{ project['to_lines'][project['starting_line']]['id'] }},{{ project['from_lines'][project['starting_line']]['id'] }}">
+                            Edit
+                        </button>
+                    </form>
+                </th>
             </tr>
         </table>
         </br>
-        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ from_lines }}, {{ to_lines }}, {{ project['line_count'] }}); ">
-            <button class="btn btn-default" type="submit" id="next_line" value="{{ starting_line }}">Next</button>
+        <form action="#"
+              onsubmit="event.preventDefault(); displayNextLine({{ project['from_lines'] }}, {{ project['to_lines'] }}, {{ project['line_count'] }}); ">
+            <button class="btn btn-default" type="submit" id="next_line" value="{{ project['starting_line'] }}">Next</button>
         </form>
 
     </div>

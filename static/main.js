@@ -38,57 +38,16 @@ function displayNextLine(from_lines, to_lines, size) {
     document.getElementById("next_line").removeAttribute("value");
     document.getElementById("next_line").setAttribute("value", y);
 
-    // https://stackoverflow.com/questions/5629684/how-to-check-if-element-exists-in-the-visible-dom
-    // https://stackoverflow.com/questions/26906294/is-a-best-practice-to-check-a-truthy-value
-    var optionToEdit = document.getElementById("edit_from_line");
-    if (optionToEdit) {
-        // set the incremented index as the value of the edit from & to line buttons
-        // https://stackoverflow.com/questions/15677869/how-to-convert-a-string-of-numbers-to-an-array-of-numbers
-        var efl1 = document.getElementById("edit_from_line").getAttribute("value");
-        var efl2 = efl1.split(',').map(Number);
-        var efl3 = y.toString();
-        var efl4 = efl2[1].toString();
-        var efl5 = efl2[2].toString();
-        var efl6 = efl3 + "," + efl4 + "," + efl5;
-        document.getElementById("edit_from_line").removeAttribute("value");
-        document.getElementById("edit_from_line").setAttribute("value", efl6);
+    // update the edit buttons with the new id values
+    var from_line_id = from_lines[y].id.toString();
+    var to_line_id = to_lines[y].id.toString();
+    var edit_from_line = from_line_id + "," + to_line_id;
+    var edit_to_line = to_line_id + "," + from_line_id;
+    document.getElementById("edit_from_line").removeAttribute("value");
+    document.getElementById("edit_from_line").setAttribute("value", edit_from_line);
+    document.getElementById("edit_to_line").removeAttribute("value");
+    document.getElementById("edit_to_line").setAttribute("value", edit_to_line);
 
-        var etl1 = document.getElementById("edit_to_line").getAttribute("value");
-        var etl2 = etl1.split(',').map(Number);
-        var etl3 = y.toString();
-        var etl4 = etl2[1].toString();
-        var etl5 = etl2[2].toString();
-        var etl6 = etl3 + "," + etl4 + "," + etl5;
-        document.getElementById("edit_to_line").removeAttribute("value");
-        document.getElementById("edit_to_line").setAttribute("value", etl6);
-    }
-
-    var optionToCorrect = document.getElementById("correct_from_line");
-    if (optionToCorrect) {
-        // set the incremented index as the value of the correct from & to line buttons
-        // https://stackoverflow.com/questions/15677869/how-to-convert-a-string-of-numbers-to-an-array-of-numbers
-        var cfl1 = document.getElementById("correct_from_line").getAttribute("value");
-        var cfl2 = cfl1.split(',').map(Number);
-        var cfl3 = y.toString();
-        var cfl4 = cfl2[1].toString();
-        var cfl5 = cfl2[2].toString();
-        var cfl6 = cfl3 + "," + cfl4 + "," + cfl5;
-        document.getElementById("correct_from_line").removeAttribute("value");
-        document.getElementById("correct_from_line").setAttribute("value", cfl6);
-
-        var ctl1 = document.getElementById("correct_to_line").getAttribute("value");
-        var ctl2 = ctl1.split(',').map(Number);
-        var ctl3 = y.toString();
-        var ctl4 = ctl2[1].toString();
-        var ctl5 = ctl2[2].toString();
-        var ctl6 = ctl3 + "," + ctl4 + "," + ctl5;
-        document.getElementById("correct_to_line").removeAttribute("value");
-        document.getElementById("correct_to_line").setAttribute("value", ctl6);
-    }
-
-    // update the progress bar
-    document.getElementById("progress_bar").removeAttribute("value");
-    document.getElementById("progress_bar").setAttribute("value", y);
 
     // get the next from & to lines
     var from_line = from_lines[y];
@@ -96,9 +55,9 @@ function displayNextLine(from_lines, to_lines, size) {
 
     // display the next from & to lines, empty the practice field
     from_line_tag = document.getElementById("from_line");
-    from_line_tag.innerHTML = from_line;
+    from_line_tag.innerHTML = from_line.line;
     to_line_tag = document.getElementById("to_line");
-    to_line_tag.innerHTML = to_line;
+    to_line_tag.innerHTML = to_line.line;
     practice_line_tag = document.getElementById("practice_line");
     practice_line_tag.value="";
 

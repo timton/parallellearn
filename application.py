@@ -178,15 +178,13 @@ def quick_practice():
             from_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
                                        project_id=project_id, language=from_language)
 
-            # iterate over the from versions
+            # iterate over the from versions, append all the lines
             for version in from_versions:
 
                 rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version["id"])
 
-                # save each line as a tuple, with its project id, line index and string
                 for row in rows:
-                    x = (row["project_id"], row["line_index"], row["line"])
-                    from_lines.append(x)
+                    from_lines.append(row)
 
             # same with to versions
             to_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
@@ -197,29 +195,25 @@ def quick_practice():
                 rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version["id"])
 
                 for row in rows:
-                    x = (row["project_id"], row["line_index"], row["line"])
-                    to_lines.append(x)
+                    to_lines.append(row)
 
         # doing the mapping
         lines = []
         for from_line in from_lines:
 
+            # in case multiple versions with the same language, prepare a list for possible to_lines
             possible_to_lines = []
 
-            # get the project id and line index
-            i = from_line[0]
-            j = from_line[1]
-
-            # get all to lines with same index
+            # get all to lines with same index, from the same project
             for to_line in to_lines:
-                if to_line[0] == i and to_line[1] == j:
-                    possible_to_lines.append(to_line[2])
+                if to_line["project_id"] == from_line["project_id"] and to_line["line_index"] == from_line["line_index"]:
+                    possible_to_lines.append(to_line)
 
-            # random shuffle of to lines
+            # random shuffle of the to lines, in case multiple
             shuffle(possible_to_lines)
 
             # map the first
-            x = (from_line[2], possible_to_lines[0])
+            x = (from_line, possible_to_lines[0])
 
             # append the line
             lines.append(x)
@@ -227,6 +221,12 @@ def quick_practice():
         # shuffle lines before rendering
         # https://stackoverflow.com/questions/976882/shuffling-a-list-of-objects
         shuffle(lines)
+
+        # limit to 100 lines, if more
+        line_count = len(lines)
+        if line_count > 100:
+            lines = lines[:100]
+            line_count = 100
 
         # prepare lists to render
         from_lines = []
@@ -239,9 +239,12 @@ def quick_practice():
         project = {}
         project["from_language"] = from_language
         project["to_language"] = to_language
-        project["line_count"] = len(lines)
+        project["line_count"] = line_count
+        project["from_lines"] = from_lines
+        project["to_lines"] = to_lines
+        project["starting_line"] = 0
 
-        return render_template("quick_practice.html", from_lines=from_lines, to_lines=to_lines, project=project)
+        return render_template("quick_practice.html", project=project)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # go to index
@@ -1769,29 +1772,20 @@ def project_practice():
         # prepare the starting point
         # if user logged in, check whether project already started
         # https://stackoverflow.com/questions/3845362/python-how-can-i-check-if-the-key-of-an-dictionary-exists
-        starting_line = 0
+        project["starting_line"] = 0
         if "user_id" in session:
             rows = db.execute("SELECT * FROM history WHERE user_id = :user_id AND from_version_id = :from_version_id AND \
                                to_version_id = :to_version_id", user_id=session["user_id"], from_version_id=from_version_id,
                                to_version_id=to_version_id)
             if len(rows) > 0:
-                starting_line = rows[0]["progress"]
+                project["starting_line"] = rows[0]["progress"]
 
 
         # prepare lines and project for rendering
-        from_lines = []
-        rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=from_version_id)
-        for row in rows:
-            from_lines.append(row["line"])
+        project["from_lines"] = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=from_version_id)
+        project["to_lines"] = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=to_version_id)
 
-        # prepare lines and project for rendering
-        to_lines = []
-        rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=to_version_id)
-        for row in rows:
-            to_lines.append(row["line"])
-
-        return render_template("project_practice.html", starting_line=starting_line, from_lines=from_lines, to_lines=to_lines,
-                                                        project=project)
+        return render_template("project_practice.html", project=project)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -1834,107 +1828,77 @@ def edit_line():
         # if user prepares to edit line from practice page
         if request.form.get('line_to_edit'):
 
-            # get the line index, and the versions ids
+            # get the line index, and the ids
             line_to_edit = request.form.get("line_to_edit").split(",")
-            line_index = line_to_edit[0]
-            bad_version_id = line_to_edit[1]
-            good_version_id = line_to_edit[2]
+            bad_line_id = line_to_edit[0]
+            good_line_id = line_to_edit[1]
 
-            # get the line id and the lines themselves
-            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
-                              version_id=good_version_id, line_index=line_index)
+            # find out whether the user wants to edit a line of one of hiw own versions
+            # if it's hiw own version, he will edit the line directly
+            # otherwise, he will submit the correction to the author for consideration
+            rows = db.execute("SELECT * FROM lines WHERE id = :id", id=bad_line_id)
+            bad_version_id = rows[0]["version_id"]
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=bad_version_id)
+
+            if rows[0]["user_id"] == session["user_id"]:
+                user_is_author = True
+            else:
+                user_is_author = False
+
+            # get the lines themselves
+            rows = db.execute("SELECT * FROM lines WHERE id = :id", id=good_line_id)
             good_line = rows[0]["line"]
-            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
-                              version_id=bad_version_id, line_index=line_index)
+            rows = db.execute("SELECT * FROM lines WHERE id = :id", id=bad_line_id)
             bad_line = rows[0]["line"]
-            bad_line_id = rows[0]["id"]
+
+            # prepare the var to pass
+            line_to_edit = {}
+            line_to_edit["user_is_author"] = user_is_author
+            line_to_edit["good_line"] = good_line
+            line_to_edit["good_line_id"] = good_line_id
+            line_to_edit["bad_line"] = bad_line
+            line_to_edit["bad_line_id"] = bad_line_id
 
             # render the template with the corresponding variables
-            return render_template("edit_line.html", good_line=good_line, bad_line=bad_line, bad_line_id=bad_line_id)
+            return render_template("edit_line.html", line_to_edit=line_to_edit)
 
         # else if user actually changes a specific line from the edit line template
         elif request.form.get('edit_line'):
 
             # make sure new line text provided, save it
             if not request.form.get("edit_line_text"):
-                return apology("Couldn't edit anything.", "Please make sure you input the new line.")
+                return apology("Nothing has been done.", "Please make sure you submit a correction.")
             else:
                 line_text = request.form.get("edit_line_text")
 
-            # get the line id
-            line_id = request.form.get("edit_line")
+            # get the line index, and the ids
+            line_to_edit = request.form.get("edit_line").split(",")
+            user_is_author = line_to_edit[0]
+            bad_line_id = line_to_edit[1]
+            good_line_id = line_to_edit[2]
+            rows = db.execute("SELECT * FROM lines WHERE id = :id", id=bad_line_id)
+            bad_line = rows[0]
 
-            # try to edit the line
-            try:
-                db.execute("UPDATE lines SET line = :line WHERE id = :id", line=line_text, id=line_id)
-            except RuntimeError:
-                    return apology("Couldn't edit this line.", "Please try again later.")
+            # if user is author, try to edit the line
+            if user_is_author == "True":
+                try:
+                    db.execute("UPDATE lines SET line = :line WHERE id = :id", line=line_text, id=bad_line_id)
+                except RuntimeError:
+                        return apology("Couldn't edit this line.", "Please try again later.")
 
-            return success("The line has been successfully updated.")
+                return success("The line has been successfully updated.")
 
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    # redirect to project browsing page
-    else:
-        return browse()
-
-
-# correct version line
-@app.route("/correct_line", methods=["GET", "POST"])
-@login_required
-def correct_line():
-
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # if user prepares to correct line from practice page
-        if request.form.get('line_to_correct'):
-
-            # get the line index, and the versions ids
-            line_to_correct = request.form.get("line_to_correct").split(",")
-            line_index = line_to_correct[0]
-            bad_version_id = line_to_correct[1]
-            good_version_id = line_to_correct[2]
-
-            # get the line id and the lines themselves
-            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
-                              version_id=good_version_id, line_index=line_index)
-            good_line = rows[0]["line"]
-            good_line_id = rows[0]["id"]
-            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
-                              version_id=bad_version_id, line_index=line_index)
-            bad_line = rows[0]["line"]
-            bad_line_id = rows[0]["id"]
-
-            # render the template with the corresponding variables
-            return render_template("correct_line.html", good_line=good_line, good_line_id=good_line_id,
-                                                        bad_line=bad_line, bad_line_id=bad_line_id)
-
-        # else if user actually changes a specific line from the edit line template
-        elif request.form.get('correct_line'):
-
-            # make sure new line text provided, save it
-            if not request.form.get("correct_line_text"):
-                return apology("Couldn't correct anything.", "Please make sure you input the new corrected text.")
+            # else, submit correction to the author
             else:
-                line_text = request.form.get("correct_line_text")
+                try:
+                    db.execute("INSERT INTO corrections (line_id, correction, user_id, project_id, version_id, context_line_id) \
+                               VALUES (:line_id, :correction, :user_id, :project_id, :version_id, :context_line_id)",
+                               line_id=bad_line["id"], correction=line_text, user_id=session["user_id"], project_id=bad_line["project_id"],
+                               version_id=bad_line["version_id"], context_line_id=good_line_id)
+                except RuntimeError:
+                        return apology("Couldn't correct this line.", "Please try again later.")
 
-            # get the good line id, bad line id and its metadata
-            line_to_correct = request.form.get("correct_line").split(",")
-            context_line_id = line_to_correct[0]
-            line_id = line_to_correct[1]
-            rows = db.execute("SELECT * FROM lines WHERE id = :id", id=line_id)
-            line = rows[0]
-
-            # save the correction
-            try:
-                db.execute("INSERT INTO corrections (line_id, correction, user_id, project_id, version_id, context_line_id) \
-                           VALUES (:line_id, :correction, :user_id, :project_id, :version_id, :context_line_id)",
-                           line_id=line["id"], correction=line_text, user_id=session["user_id"], project_id=line["project_id"],
-                           version_id=line["version_id"], context_line_id=context_line_id)
-            except RuntimeError:
-                    return apology("Couldn't correct this line.", "Please try again later.")
-
-            return success("The correction has been submitted to the owner of the project.")
+                return success("The correction has been submitted to the owner of the project.")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -2144,6 +2108,10 @@ def project_download():
     # redirect to project browsing page
     else:
         return browse()
+
+
+
+
 
 ######################
 # DONE UP UNTIL HERE #
