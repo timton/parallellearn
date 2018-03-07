@@ -48,6 +48,12 @@ function displayNextLine(from_lines, to_lines, size) {
     document.getElementById("edit_to_line").removeAttribute("value");
     document.getElementById("edit_to_line").setAttribute("value", edit_to_line);
 
+    // update the save progress button with the new values
+    var save_progress_old = document.getElementById("save_progress").getAttribute("value");
+    var save_progress_array = save_progress_old.split(",");
+    var save_progress_new = y.toString() + "," + save_progress_array[1] + "," + save_progress_array[2] + "," + save_progress_array[3];
+    document.getElementById("save_progress").removeAttribute("value");
+    document.getElementById("save_progress").setAttribute("value", save_progress_new);
 
     // get the next from & to lines
     var from_line = from_lines[y];

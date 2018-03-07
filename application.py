@@ -1028,13 +1028,16 @@ def view_history():
     if len(started_projects) > 0:
         for project in started_projects:
 
+            # add the resume id
+            project["resume_id"] = project["id"]
+
             # add "from_version" metadata
             rows = db.execute("SELECT * FROM versions WHERE id = :id", id=project["from_version_id"])
-            project["from_language"] = rows[0]["from_version_id"]
+            project["from_language"] = rows[0]["language"]
 
             # add "to_version" metadata
             rows = db.execute("SELECT * FROM versions WHERE id = :id", id=project["to_version_id"])
-            project["to_language"] = rows[0]["to_version_id"]
+            project["to_language"] = rows[0]["language"]
 
             # add project metadata
             rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project["project_id"])
@@ -1042,6 +1045,7 @@ def view_history():
             project["title"] = rows[0]["title"]
             project["author"] = rows[0]["author"]
             project["year"] = rows[0]["year"]
+            project["id"] = rows[0]["id"]
 
             # if tv series, make title include the season & episode
             if project["type"].lower() == "tv series":
@@ -1749,43 +1753,78 @@ def project_practice():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # get project metadata
-        project_id = request.form.get("start_practice")
-        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
-        project = rows[0]
+        # if project started from the project profile page
+        if request.form.get('start_practice'):
 
-        # ensure translate from & to languages submitted
-        if not request.form.get("from_version_id") or not request.form.get("to_version_id"):
-            return apology("Couldn't start practice.", "Please choose from & to which language to translate.")
-        else:
-            from_version_id = request.form.get("from_version_id")
-            to_version_id = request.form.get("to_version_id")
+            # get project metadata
+            project_id = request.form.get("start_practice")
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+            project = rows[0]
 
-        # make sure from & to languages different
-        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=from_version_id)
-        project["from_version"] = rows[0]
-        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=to_version_id)
-        project["to_version"] = rows[0]
-        if from_version_id == to_version_id or project["from_version"]["language"] == project["to_version"]["language"]:
-            return apology("Couldn't start practice.", "From & to languages must differ.")
+            # ensure translate from & to languages submitted
+            if not request.form.get("from_version_id") or not request.form.get("to_version_id"):
+                return apology("Couldn't start practice.", "Please choose from & to which language to translate.")
+            else:
+                from_version_id = request.form.get("from_version_id")
+                to_version_id = request.form.get("to_version_id")
 
-        # prepare the starting point
-        # if user logged in, check whether project already started
-        # https://stackoverflow.com/questions/3845362/python-how-can-i-check-if-the-key-of-an-dictionary-exists
-        project["starting_line"] = 0
-        if "user_id" in session:
-            rows = db.execute("SELECT * FROM history WHERE user_id = :user_id AND from_version_id = :from_version_id AND \
-                               to_version_id = :to_version_id", user_id=session["user_id"], from_version_id=from_version_id,
-                               to_version_id=to_version_id)
-            if len(rows) > 0:
-                project["starting_line"] = rows[0]["progress"]
+            # make sure from & to languages different
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=from_version_id)
+            project["from_version"] = rows[0]
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=to_version_id)
+            project["to_version"] = rows[0]
+            if from_version_id == to_version_id or project["from_version"]["language"] == project["to_version"]["language"]:
+                return apology("Couldn't start practice.", "From & to languages must differ.")
+
+            # prepare the starting point
+            # if user logged in, check whether project already started
+            # https://stackoverflow.com/questions/3845362/python-how-can-i-check-if-the-key-of-an-dictionary-exists
+            project["starting_line"] = 0
+            if "user_id" in session:
+                rows = db.execute("SELECT * FROM history WHERE user_id = :user_id AND from_version_id = :from_version_id AND \
+                                   to_version_id = :to_version_id", user_id=session["user_id"], from_version_id=from_version_id,
+                                   to_version_id=to_version_id)
+                if len(rows) > 0:
+                    project["starting_line"] = rows[0]["progress"]
 
 
-        # prepare lines and project for rendering
-        project["from_lines"] = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=from_version_id)
-        project["to_lines"] = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=to_version_id)
+            # prepare lines and project for rendering
+            project["from_lines"] = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=from_version_id)
+            project["to_lines"] = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=to_version_id)
+
+
+        # else if project practice resumed from the account history page
+        elif request.form.get('resume_project'):
+
+            # get resume metadata
+            resume_id = request.form.get("resume_project")
+            rows = db.execute("SELECT * FROM history WHERE id = :id", id=resume_id)
+            starting_line = rows[0]["progress"]
+            from_lines = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=rows[0]["from_version_id"])
+            to_lines = db.execute("SELECT * FROM lines WHERE version_id = :version_id ORDER BY id ASC", version_id=rows[0]["to_version_id"])
+            project_id = rows[0]["project_id"]
+
+            # get versions metadata
+            from_version_id = rows[0]["from_version_id"]
+            to_version_id = rows[0]["to_version_id"]
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=from_version_id)
+            from_version = rows[0]
+            rows = db.execute("SELECT * FROM versions WHERE id = :id", id=to_version_id)
+            to_version = rows[0]
+
+            # get project metadata
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+            project = rows[0]
+
+            # prepare project for rendering
+            project["from_lines"] = from_lines
+            project["to_lines"] = to_lines
+            project["starting_line"] = starting_line
+            project["from_version"] = from_version
+            project["to_version"] = to_version
 
         return render_template("project_practice.html", project=project)
+
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     # redirect to project browsing page
@@ -2110,8 +2149,74 @@ def project_download():
         return browse()
 
 
+# save progress route
+@app.route("/save_progress", methods=["GET", "POST"])
+@login_required
+def save_progress():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the metadata for the progress line
+        progress_info = request.form.get("save_progress").split(",")
+        line_index = progress_info[0]
+        project_id = progress_info[1]
+        from_version_id = progress_info[2]
+        to_version_id = progress_info[3]
+
+        # if project already started, update the line index
+        rows = db.execute("SELECT * FROM history WHERE user_id = :user_id AND project_id = :project_id \
+                          AND from_version_id = :from_version_id AND to_version_id = :to_version_id",
+                          user_id=session["user_id"], project_id=project_id, from_version_id=from_version_id,
+                          to_version_id=to_version_id)
+
+        if len(rows) > 0:
+            try:
+                db.execute("UPDATE history SET progress = :progress WHERE id = :id",
+                           progress=line_index, id=rows[0]["id"])
+            except RuntimeError:
+                return apology("Couldn't save the progress.", "Please try again later.")
+
+        # otherwise save it as a new started project
+        else:
+            try:
+                db.execute("INSERT INTO history (user_id, progress, project_id, from_version_id, to_version_id) \
+                           VALUES (:user_id, :progress, :project_id, :from_version_id, :to_version_id)",
+                           user_id=session["user_id"], progress=line_index, project_id=project_id,
+                           from_version_id=from_version_id, to_version_id=to_version_id)
+            except RuntimeError:
+                    return apology("Couldn't save the progress.", "Please try again later.")
+
+        return success("Progress saved.")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("browse.html")
 
 
+
+# discard project route
+@app.route("/discard_project", methods=["GET", "POST"])
+@login_required
+def discard_project():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get discard metadata
+        discard_id = request.form.get("discard_project")
+
+        # try deleting the progress
+        try:
+            db.execute("DELETE FROM history WHERE id = :id", id=discard_id)
+        except RuntimeError:
+            return apology("Couldn't delete the progress.", "Please try again.")
+
+        return view_history()
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("upload_new.html")
 
 ######################
 # DONE UP UNTIL HERE #
