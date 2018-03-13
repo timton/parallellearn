@@ -1,11 +1,11 @@
 ######### TODO
 
-- start from history/specific later
 - display progress whil the server does smth (especially uploading project)
 - browse by category
-- rating
+- rating (for each line/version?)
 - favicons
 - mobile version (bootstrap?)
+- make a db for series and their episodes
 
 #########  IMPROVE
 - live registration form validation

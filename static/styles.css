@@ -191,6 +191,6 @@ td {
     width: 20rem;
     border: 1px solid black;
     position: relative;
-    display: inline-block;
+    display: inline;
     float: left;
 }
