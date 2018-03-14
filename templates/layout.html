@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
     <head>
 
-        <!-- https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta -->
-        <meta charset="utf-8"/>
-        <meta content="initial-scale=1, width=device-width" name="viewport"/>
+        <!-- https://getbootstrap.com/docs/4.0/getting-started/introduction/ -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- documentation at http://getbootstrap.com/, alternative themes at https://www.bootstrapcdn.com/bootswatch/ -->
-        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
 
+        <!-- our custom CSS -->
         <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
-
-        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
         <title>Parallellearn: {% block title %}{% endblock %}</title>
 
@@ -22,67 +20,86 @@
 
     <body>
 
-        <div class="container">
+        <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+          <a class="navbar-brand" href="{{ url_for('index') }}">Parallellearn</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                  aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('browse') }}">Browse</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('about') }}">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
+              </li>
 
-            <nav class="navbar navbar-default">
-                <div class="container-fluid">
-                    <div class="collapse navbar-collapse" id="navbar">
-                        <ul class="nav navbar-nav">
-                            <li><a href="{{ url_for('index') }}">Home</a></li>
-                            <li><a href="{{ url_for('browse') }}">Browse</a></li>
-                            <li><a href="{{ url_for('faq') }}">FAQ</a></li>
-                            <li><a href="{{ url_for('about') }}">About</a></li>
-                            <li><a href="{{ url_for('contact') }}">Contact</a></li>
-                            <li class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Upload</a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="{{ url_for('new_project_type') }}">Brand new project</a></li>
-                                    <li><a href="{{ url_for('upload_existing') }}">Version for existing project</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                        {% if session.user_id %}
-                            <ul class="nav navbar-nav navbar-right">
-                                <li><a href="{{ url_for('log_out') }}">Log Out</a></li>
+              <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                    Upload
+                  </a>
+                  <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{{ url_for('new_project_type') }}">Brand new project</a>
+                    <a class="dropdown-item" href="{{ url_for('upload_existing') }}">Version for existing project</a>
+                  </div>
+                </li>
+            </ul>
 
-                                <!--
-                                navigation dropdown bootstrap
-                                https://www.w3schools.com/bootstrap/bootstrap_navbar.asp
-                                -->
-                                <li class="dropdown">
-                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="{{ url_for('view_details') }}">Account details</a></li>
-                                        <li><a href="{{ url_for('view_history') }}">Account history</a></li>
-                                        <li><a href="{{ url_for('view_notifications') }}">Account notifications</a></li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        {% else %}
-                            <ul class="nav navbar-nav navbar-right">
-                                <li><a href="{{ url_for('log_in') }}">Log In</a></li>
-                                <li><a href="{{ url_for('register') }}">Register</a></li>
-                            </ul>
-                        {% endif %}
-                    </div>
-                </div>
-            </nav>
+              <!-- https://stackoverflow.com/questions/40178386/bootstrap-4-navbar-items-on-right-side -->
+              <ul class="navbar-nav ml-auto">
+                  {% if session.user_id %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('log_out') }}">Log Out</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                        My Account
+                      </a>
 
-            {% if get_flashed_messages() %}
-                <header>
-                    <div class="alert alert-info" role="alert">
-                        {{ get_flashed_messages() | join(" ") }}
-                    </div>
-                </header>
-            {% endif %}
+                      <!-- https://stackoverflow.com/questions/42046287/bootstrap-4-dropdown-menu-is-going-off-to-the-right-of-the-screen -->
+                      <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="{{ url_for('view_details') }}">Account details</a>
+                        <a class="dropdown-item" href="{{ url_for('view_history') }}">Account history</a>
+                        <a class="dropdown-item" href="{{ url_for('view_notifications') }}">Account notifications</a>
+                      </div>
+                    </li>
+                  {% else %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('log_in') }}">Log In</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                    </li>
+                  {% endif %}
+              </ul>
+          </div>
+        </nav>
 
-            <main>
-                {% block main %}{% endblock %}
-            </main>
+        <main>
+            {% block main %}{% endblock %}
+        </main>
 
-        </div>
 
-    <script src="{{ url_for('static', filename='main.js') }}" type='text/javascript'></script>
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+                integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+                crossorigin="anonymous"></script>
+
+        <!-- our custom JS -->
+        <script src="{{ url_for('static', filename='main.js') }}" type='text/javascript'></script>
     </body>
 
 </html>

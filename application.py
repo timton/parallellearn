@@ -2218,6 +2218,11 @@ def discard_project():
     else:
         return render_template("upload_new.html")
 
+# faq route
+@app.route("/faq")
+def faq():
+    return render_template("faq.html")
+
 ######################
 # DONE UP UNTIL HERE #
 ######################
@@ -2235,10 +2240,6 @@ def discard_project():
 
 
 
-
-@app.route("/faq")
-def faq():
-    return
 
 
 # prototype
