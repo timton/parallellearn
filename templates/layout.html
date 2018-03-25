@@ -11,6 +11,9 @@
               integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
               crossorigin="anonymous">
 
+        <!-- Font Awesome Icons -->
+        <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
         <!-- our custom CSS -->
         <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
 
@@ -56,26 +59,39 @@
               <ul class="navbar-nav ml-auto">
                   {% if session.user_id %}
                     <li class="nav-item">
-                      <a class="nav-link" href="{{ url_for('log_out') }}">Log Out</a>
+                      <a class="nav-link" href="{{ url_for('log_out') }}">
+                          <i class="fas fa-sign-out-alt"></i> Log Out
+                      </a>
                     </li>
                     <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-                        My Account
+                        <i class="fas fa-user"></i> My Account
                       </a>
 
                       <!-- https://stackoverflow.com/questions/42046287/bootstrap-4-dropdown-menu-is-going-off-to-the-right-of-the-screen -->
+                      <!-- https://stackoverflow.com/questions/16592849/how-do-i-make-sure-every-glyph-has-the-same-width -->
                       <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href="{{ url_for('view_details') }}">Account details</a>
-                        <a class="dropdown-item" href="{{ url_for('view_history') }}">Account history</a>
-                        <a class="dropdown-item" href="{{ url_for('view_notifications') }}">Account notifications</a>
+                        <a class="dropdown-item" href="{{ url_for('view_details') }}">
+                            <i class="fas fa-eye fa-fw"></i> Profile
+                        </a>
+                        <a class="dropdown-item" href="{{ url_for('view_history') }}">
+                            <i class="fas fa-history fa-fw"></i> History
+                        </a>
+                        <a class="dropdown-item" href="{{ url_for('view_notifications') }}">
+                            <i class="fas fa-bell fa-fw"></i> Notifications
+                        </a>
                       </div>
                     </li>
                   {% else %}
                     <li class="nav-item">
-                      <a class="nav-link" href="{{ url_for('log_in') }}">Log In</a>
+                      <a class="nav-link" href="{{ url_for('log_in') }}">
+                          <i class="fas fa-sign-in-alt"></i> Log In
+                      </a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                      <a class="nav-link" href="{{ url_for('register') }}">
+                          <i class="fas fa-user-plus"></i> Register
+                      </a>
                     </li>
                   {% endif %}
               </ul>
@@ -83,7 +99,9 @@
         </nav>
 
         <main>
+          <div class="container-fluid">
             {% block main %}{% endblock %}
+          </div>
         </main>
 
 

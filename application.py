@@ -47,83 +47,67 @@ db = SQL("sqlite:///parallellearn.db")
 @app.route("/")
 def index():
 
+    # the variable we will pass for rendering
+    display = {}
+
     # get all the supported languages
     all_versions = db.execute("SELECT * FROM versions")
     possible_languages = []
     for version in all_versions:
         if version["language"] not in possible_languages:
             possible_languages.append(version["language"])
-    possible_from_languages = sorted(possible_languages)
 
-    # https://stackoverflow.com/questions/4183506/python-list-sort-in-descending-order
-    possible_to_languages = sorted(possible_languages, reverse=True)
+    # rendering variables for quick practice
+    display["from_languages"] = sorted(possible_languages)
+    display["to_languages"] = sorted(possible_languages, reverse=True)
 
-    # get the newest versions
-    new_versions = db.execute("SELECT * FROM versions ORDER BY timestamp DESC")
-    new_projects = []
+    # get all the projects
+    projects = db.execute("SELECT * FROM projects")
 
-    if len(new_versions) > 0:
+    # if tv series, make title include the season & episode
+    for project in projects:
+        if project["type"].lower() == "tv series":
+            project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
-        # get the first 10 distinct projects IDs
-        different_projects = []
-        for version in new_versions:
-            if version["project_id"] not in different_projects:
-                different_projects.append(version["project_id"])
-                if len(different_projects) == 10:
-                    break
-            else:
-                continue
-
-        # get the newest 10 different projects
-        for id in different_projects:
-            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=id)
-            new_projects.append(rows[0])
-
-        # get all the displayable metadata
-        for project in new_projects:
-
-            # if tv series, make title include the season & episode
-            if project["type"].lower() == "tv series":
-                project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
-
-            # get project languages
-            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id",
-                              project_id=project["id"])
-
-            languages_list = []
-            for row in rows:
-                if row["language"] not in languages_list:
-                    languages_list.append(row["language"])
-            languages_list = sorted(languages_list)
-
-            languages_string = ""
-            for language in languages_list:
-                languages_string += (language + ", ")
-
-            languages_string = languages_string[:-2]
-            project["languages"] = languages_string
-
-    # get the 5 most popular language versions
-    popular_versions = db.execute("SELECT * FROM versions ORDER BY rating DESC LIMIT 10")
+    # get the 5 newest versions
+    new_versions = db.execute("SELECT * FROM versions ORDER BY timestamp DESC LIMIT 5")
 
     # get all the metadata
-    if len(popular_versions) > 0:
-        for version in popular_versions:
-            projects = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
-            version["type"] = projects[0]["type"]
-            version["title"] = projects[0]["title"]
+    for version in new_versions:
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
+        version["type"] = rows[0]["type"]
+        version["author"] = rows[0]["author"]
+        version["year"] = rows[0]["year"]
+        version["title"] = rows[0]["title"]
 
-            # if tv series, make title include the season & episode
-            if version["type"].lower() == "tv series":
-                version["title"] += (" (s" + str(projects[0]["season"]) + "/e" + str(projects[0]["episode"]) +")")
+        if rows[0]["type"].lower() == "tv series":
+            version["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
-            version["author"] = projects[0]["author"]
-            version["year"] = projects[0]["year"]
+        version["timestamp"] = version["timestamp"].split()[1]
+
+    # get the 5 most popular versions
+    popular_versions = db.execute("SELECT * FROM versions ORDER BY rating DESC LIMIT 5")
+
+    # get all the metadata
+    for version in popular_versions:
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
+        version["type"] = rows[0]["type"]
+        version["author"] = rows[0]["author"]
+        version["year"] = rows[0]["year"]
+        version["title"] = rows[0]["title"]
+
+        if rows[0]["type"].lower() == "tv series":
+            version["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
+
+    # prepare vars for rendering
+    # we separate the first project, because the carouse requires a specific active element, so can't use a loop
+    display["project_1"] = projects[0]
+    display["projects"] = projects[1:]
+    display["new_versions"] = new_versions
+    display["popular_versions"] = popular_versions
 
     # render the home page, passing in the data
-    return render_template("index.html", possible_from_languages=possible_from_languages,
-                           possible_to_languages=possible_to_languages, new_projects=new_projects,
-                           popular_versions=popular_versions)
+    return render_template("index.html", display=display)
 
 
 # prepare quick practice route
@@ -1842,10 +1826,11 @@ def about():
 def contact():
     return render_template("contact.html")
 
-
+# browse route
 @app.route("/browse")
 def browse():
 
+    # get all the projects
     projects = db.execute("SELECT * FROM projects")
 
     # if tv series, make title include the season & episode

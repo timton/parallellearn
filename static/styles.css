@@ -2,204 +2,123 @@
 
 /* https://stackoverflow.com/questions/10336194/twitter-bootstrap-top-nav-bar-blocking-top-content-of-the-page */
 body {
-  padding-top: 60px;
+  padding-top: 55px;
 }
 
-/* end bs4 */
-
-/* for the three vertical columns */
-body, html {
-    width: 100%;
-    height: 100%;
-    margin: 0;
+main {
+    padding: 0 1rem;
 }
 
-.leftindex {
-    width: 15%;
-    position: relative;
-    float: left;
-    background-color: #713D99;
-    border-collapse: collapse;
-}
-
-.middleindex {
-    width: 0%;
-}
-
-.rightindex {
-    width: 85%;
-    position: relative;
-    float: right;
-    border-collapse: collapse;
-}
-
-.topindex {
-    width: 100%;
-    background-color: #A68753;
-    border-collapse: collapse;
-}
-
-.bottomindex {
-    width: 100%;
-    background-color: #1F663B;
-    border-collapse: collapse;
-}
-
-.leftpractice {
-    width: 33%;
-    height: 100%;
-    float: left;
-    background-color: #713D99;
-    border-collapse: collapse;
-}
-
-.middlepractice {
-    width: 33%;
-    height: 100%;
-    float: left;
-    background-color: #A68753;
-    border-collapse: collapse;
-}
-
-.rightpane {
-    width: 33%;
-    height: 100%;
-    position: relative;
-    float: right;
-    background-color: #1F663B;
-    border-collapse: collapse;
-}
-/* end of three vertical columns*/
-
-.container
-{
-    /* center contents */
-    margin-left: auto;
-    margin-right: auto;
+/* color scheme https://color.adobe.com/Campfire-color-theme-2528696/ */
+#practice-div {
+    background-color: #588c7e;
     text-align: center;
-
-    /* for the three vertical columns */
-    width: 100%;
-    height: 100%;
 }
 
-/* button inspiration https://www.bestcssbuttongenerator.com/ */
-.quickTestButton {
-    -moz-box-shadow:inset 0px 1px 0px 0px #cf866c;
-    -webkit-box-shadow:inset 0px 1px 0px 0px #cf866c;
-    box-shadow:inset 0px 1px 0px 0px #cf866c;
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #d0451b), color-stop(1, #bc3315));
-    background:-moz-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background:-webkit-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background:-o-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background:-ms-linear-gradient(top, #d0451b 5%, #bc3315 100%);
-    background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
-    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315',GradientType=0);
-    background-color:#d0451b;
-    -moz-border-radius:3px;
-    -webkit-border-radius:3px;
-    border-radius:3px;
-    border:1px solid #942911;
-    display:inline-block;
-    cursor:pointer;
-    color:#ffffff;
-    font-family:Arial;
-    font-size:15px;
-    padding:10px 24px;
-    text-decoration:none;
-    text-shadow:0px 1px 0px #854629;
-    margin: 14.5% 0%;
+.quick-practice {
+    margin: 2rem auto;
+    border: solid black 1px;
 }
 
-.quickTestButton:hover {
-    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
-    background:-moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background:-webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background:-o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background:-ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
-    background:linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
-    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b',GradientType=0);
-    background-color:#bc3315;
+#carousel-div {
+    background-color: #d96459;
+    text-align: center;
 }
 
-.quickTestButton:active {
-    position:relative;
-    top:1px;
+.carousel-item .card {
+    width: 13rem;
+    margin: 2rem auto;
 }
 
-/* colors for navbar */
-.navbar-default .navbar-brand .blue
-{
-    color: #537fbe;
-}
-.navbar-default .navbar-brand .red
-{
-    color: #ea433b;
-}
-.navbar-default .navbar-brand .yellow
-{
-    color: #f5b82e;
-}
-.navbar-default .navbar-brand .green
-{
-    color: #2e944b;
+.carousel-item .card a {
+    text-decoration: none;
 }
 
-main .form-control
-{
-    /* center form controls */
-    display: inline-block;
-
-    /* override Bootstrap's 100% width for form controls */
-    width: auto;
+.carousel-item .card-header {
+    color: black;
 }
 
-main img
-{
-    /* constrain images on small screens */
+.image-div {
+    height: 14rem;
+}
+
+/* https://stackoverflow.com/questions/30595321/how-to-scale-image-to-fit-the-container */
+.image-div img {
+    max-height: 100%;
     max-width: 100%;
 }
 
-main td
-{
-    /* left-align tables' cells */
+.carousel-item .card .card-header, .card-footer {
+    padding: 0;
+}
+
+#chat-div {
+    background-color: #f2ae72;
+}
+
+#chat-div textarea {
+    margin: 1rem auto;
+    width: 100%;
+    background-color: lightgrey;
+    resize: none;
+    overflow-y: scroll;
+}
+
+/* https://stackoverflow.com/questions/5817233/align-button-at-the-bottom-of-div-using-css */
+#chat-div form {
+    margin-bottom: 1rem;
+}
+
+#comment {
+    width: 60%;
+    margin-right: 1rem;
+}
+
+#chat-div button {
+}
+
+#recent-div {
+    background-color: #f2e394;
+}
+
+#recent-div, #popular-div {
+    text-align: center;
+    padding: 1rem;
+    font-size: 11px;
+}
+
+#recent-div h5, #popular-div h5 {
+    padding: 0;
+}
+
+.align-left {
     text-align: left;
 }
 
-/* https://stackoverflow.com/questions/17469483/how-to-increase-the-distance-between-table-columns-in-html */
-table {
-    border-collapse: collapse;
-    border-spacing: 50px 0;
-    margin-top: 45px;
+.align-center {
+    text-align: center;
 }
 
-td {
-    border: 1px solid black;
-    padding: 5px;
+.version-list {
+    border: solid black 1px;
+    padding: 1rem;
 }
 
-/* https://css-tricks.com/fun-with-blurred-text/ */
-.blurry {
-    color: transparent;
-    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+#popular-div {
+    background-color: #8c4646;
 }
 
-/* https://stackoverflow.com/questions/618097/how-do-you-easily-horizontally-center-a-div-using-css */
-#progress_bar {
-    width: 25%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+#popular-div a, #recent-div a {
+    color: darkblue;
 }
 
-.bordered {
-    border: 1px solid grey;
+#popular-div hr, #recent-div hr {
+    border-color: black;
+    margin: 5px 0;
 }
 
-.card {
-    width: 20rem;
-    border: 1px solid black;
-    position: relative;
-    display: inline;
-    float: left;
+.title-row {
+    margin-top, margin-bottom: 0;
 }
+
+/* end bs4 */

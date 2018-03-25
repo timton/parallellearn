@@ -4,8 +4,10 @@
 - browse by category
 - rating (for each line/version?)
 - favicons
-- mobile version (bootstrap?)
-- make a db for series and their episodes
+- make a db for series and their episodes (only for the cover/description?)
+- upload line by line (live translation)
+- front page chat
+- remaining: about,
 
 #########  IMPROVE
 - live registration form validation

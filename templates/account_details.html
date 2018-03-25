@@ -5,38 +5,43 @@
 {% endblock %}
 
 {% block main %}
-    <ol align="left">
-        <li>
-            Your email is <strong>{{ user["email"] }}</strong>.
-            <br>
-            <a href="{{ url_for('change_email') }}">
-                <button type="submit" name="change_email">
-                    Change email
-                </button>
-            </a>
-            <br>
-        </li>
-        </br>
-        <li>
-            Your username is <strong>{{ user["username"] }}</strong>.
-            <br>
-            <a href="{{ url_for('change_username') }}">
-                <button type="submit" name="change_username">
-                    Change username
-                </button>
-            </a>
-            <br>
-        </li>
-        </br>
-        <li>
-            Your password is <strong>********</strong> (not really).
-            <br>
-            <a href="{{ url_for('change_password') }}">
-                <button type="submit" name="change_password">
-                    Change password
-                </button>
-            </a>
-            <br>
-        </li>
-    </ol>
+    <div class="container">
+        <br>
+        <h2 class="align-center">Account Details</h2>
+        <br>
+        <ol class="align-left">
+            <li>
+                Your email is <strong>{{ user["email"] }}</strong>.
+                <br>
+                <a href="{{ url_for('change_email') }}">
+                    <button type="submit" name="change_email">
+                        Change email
+                    </button>
+                </a>
+                <br>
+            </li>
+            </br>
+            <li>
+                Your username is <strong>{{ user["username"] }}</strong>.
+                <br>
+                <a href="{{ url_for('change_username') }}">
+                    <button type="submit" name="change_username">
+                        Change username
+                    </button>
+                </a>
+                <br>
+            </li>
+            </br>
+            <li>
+                Your password is <strong>********</strong> (not really).
+                <br>
+                <a href="{{ url_for('change_password') }}">
+                    <button type="submit" name="change_password">
+                        Change password
+                    </button>
+                </a>
+                <br>
+            </li>
+        </ol>
+    </div>
 {% endblock %}
