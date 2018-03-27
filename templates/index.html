@@ -8,9 +8,11 @@
 
     <div class="row">
         <div class="col-md-2" id="practice-div">
+
+            <!-- QUICK PRACTICE DIV -->
             <div class="quick-practice">
 
-                <!-- making only one header with hidden span sections takes html space -->
+                <!-- making only one header with hidden responsive span sections takes html space -->
                 <h4 class="d-md-none d-xl-block">Quick Practice</h4>
                 <h4 class="d-none d-md-block d-xl-none">Practice</h4>
                 {% if display["from_languages"]|length == 0 %}
@@ -56,6 +58,7 @@
             </div>
         </div>
 
+        <!-- CAROUSEL DIV -->
         <div class="col-md-10" id="carousel-div">
             <div class="carousel slide" data-ride="carousel" id="carousel">
                 <div class="carousel-inner">
@@ -107,16 +110,11 @@
             </div>
         </div>
     </div>
+
     <div class="row">
-        <div class="col-md-2" id="chat-div">
-            <textarea rows="5" readonlynly></textarea>
-            <form class="form-inline align-bottom">
-                <label class="sr-only" for="comment">Comment</label>
-                <input type="text" class="form-control form-control-sm" id="comment" placeholder="Say something...">
-                <button type="submit" class="btn btn-primary btn-sm">Post</button>
-            <form>
-        </div>
-        <div class="col-md-5" id="recent-div">
+
+        <!-- RECENT DIV -->
+        <div class="col-lg-5 order-lg-2" id="recent-div">
 
             <h5>Recent versions</h5>
 
@@ -141,8 +139,8 @@
                         <a href="{{ url_for('view_project', id=version['project_id']) }}">
                         <div class="row">
                             <div class="col-7 d-none d-xl-block align-left">
-                                <strong>{{ version["title"].title() }}</strong>
-                                by {{ version["author"].title() }} ({{ version["year"] }})
+                                <i><strong>{{ version["title"].title() }}</strong></i>
+                                by {{ version["author"].title() }}, {{ version["year"] }}
                             </div>
                             <div class="col-5 d-xl-none">
                                 <strong>{{ version["title"].title() }}</strong>
@@ -161,7 +159,9 @@
             {% endif %}
 
         </div>
-        <div class="col-md-5" id="popular-div">
+
+        <!-- POPULAR DIV -->
+        <div class="col-lg-5 order-lg-3" id="popular-div">
 
             <h5>Popular versions</h5>
 
@@ -186,8 +186,8 @@
                         <a href="{{ url_for('view_project', id=version['project_id']) }}">
                         <div class="row">
                             <div class="col-7 d-none d-xl-block align-left">
-                                <strong>{{ version["title"].title() }}</strong>
-                                by {{ version["author"].title() }} ({{ version["year"] }})
+                                <i><strong>{{ version["title"].title() }}</strong></i>
+                                by {{ version["author"].title() }}, {{ version["year"] }}
                             </div>
                             <div class="col-6 d-xl-none">
                                 <strong>{{ version["title"].title() }}</strong>
@@ -205,6 +205,30 @@
                 </div>
             {% endif %}
 
+        </div>
+
+        <!-- CHAT DIV -->
+        <div class="col-lg-2 order-lg-1" id="chat-div">
+            <h5 class="align-center d-lg-none d-xl-block">Feedback Board</h5>
+            <h6 class="align-center d-none d-lg-block d-xl-none">Feedback Board</h6>
+            <div>
+                {% if display["comments"]|length != 0 %}
+                    <ul>
+                        {% for comment in display["comments"] %}
+                            <li>
+                                <i class="fas fa-comments"></i>
+                                <strong>{{ comment["username"] }}</strong>: {{ comment["comment"] }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <form class="form-inline" action="{{ url_for('comment') }}" method="post">
+                <label class="sr-only" for="comment">Comment</label>
+                <input type="text" class="form-control form-control-sm" id="comment"
+                       placeholder="Your feedback here..." name="comment" required>
+                <button type="submit" class="btn btn-primary btn-sm">Post</button>
+            <form>
         </div>
     </div>
 

@@ -8,6 +8,7 @@
 - upload line by line (live translation)
 - front page chat
 - remaining: about,
+- for quick practice, display source project
 
 #########  IMPROVE
 - live registration form validation

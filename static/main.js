@@ -1,3 +1,6 @@
+/* appends comment to board */
+
+
 /* upon submitting the practice line , removes the blur from the translated line*/
 function removeBlur() {
 

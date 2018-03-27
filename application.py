@@ -76,7 +76,7 @@ def index():
     for version in new_versions:
         rows = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
         version["type"] = rows[0]["type"]
-        version["author"] = rows[0]["author"]
+        version["author"] = rows[0]["author"].split()[-1]
         version["year"] = rows[0]["year"]
         version["title"] = rows[0]["title"]
 
@@ -92,19 +92,38 @@ def index():
     for version in popular_versions:
         rows = db.execute("SELECT * FROM projects WHERE id = :id", id=version["project_id"])
         version["type"] = rows[0]["type"]
-        version["author"] = rows[0]["author"]
+        version["author"] = rows[0]["author"].split()[-1]
         version["year"] = rows[0]["year"]
         version["title"] = rows[0]["title"]
 
         if rows[0]["type"].lower() == "tv series":
             version["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
+    # get the username, if user logged in
+    # https://stackoverflow.com/questions/1602934/check-if-a-given-key-already-exists-in-a-dictionary
+    if "user_id" in session:
+        rows = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
+        username = rows[0]["username"]
+    else:
+        username = "anon"
+
+    # get all the comments
+    comments = db.execute("SELECT * FROM comments ORDER BY timestamp DESC")
+    for comment in comments:
+        if comment["user_id"] == 0:
+            comment["username"] = "anon"
+        else:
+            rows = db.execute("SELECT * FROM users WHERE id = :id", id=comment["user_id"])
+            comment["username"] = rows[0]["username"]
+
     # prepare vars for rendering
-    # we separate the first project, because the carouse requires a specific active element, so can't use a loop
+    # we separate the first project, because the carousel requires a specific active element, so can't use a loop
     display["project_1"] = projects[0]
     display["projects"] = projects[1:]
     display["new_versions"] = new_versions
     display["popular_versions"] = popular_versions
+    display["username"] = username
+    display["comments"] = comments
 
     # render the home page, passing in the data
     return render_template("index.html", display=display)
@@ -2207,6 +2226,38 @@ def discard_project():
 @app.route("/faq")
 def faq():
     return render_template("faq.html")
+
+
+# post message route
+@app.route("/comment", methods=["GET", "POST"])
+def comment():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the comment
+        comment = request.form.get("comment")
+
+        # back to the message board, if empty
+        if comment == "":
+            return redirect("/#chat-div")
+
+        # check whether user logged in
+        if "user_id" in session:
+            user_id = session["user_id"]
+        else:
+            user_id = 0
+
+        # try saving it to the database
+        try:
+            db.execute("INSERT INTO comments (user_id, comment, timestamp) VALUES(:user_id, :comment, :timestamp)",
+                       user_id=user_id, comment=comment, timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()))
+        except RuntimeError:
+            return apology("Couldn't post the message.", "Please try again later.")
+
+    # go back to the message board once posted
+    return redirect("/#chat-div")
+
 
 ######################
 # DONE UP UNTIL HERE #
