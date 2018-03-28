@@ -137,17 +137,22 @@ main {
     margin-top, margin-bottom: 0;
 }
 
-#account_details {
-    width: 50%;
+#account-details {
+    width: 40%;
     margin: auto;
+    font-size: 14px;
 }
 
-#account_details, #account_details td {
-    border: 1px solid black;
+/* table appears left-padded on xs */
+@media (max-width: 335px) {
+    #account-details {
+        margin-left: -1.5rem;
+        font-size: 12px;
+    }
 }
 
-#account_details td {
-    padding: 1rem;
+#account-details p {
+    margin: 5px auto 0 auto;
 }
 
 /* end bs4 */

@@ -5,41 +5,47 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container">
-        <br>
-        <h2 class="align-center">Account Details</h2>
-        <br>
-        <table id="account_details">
+    <br>
+    <h3 class="align-center">Account Details</h3>
+    <br>
+    <table class="table" id="account-details">
+        <tbody>
             <tr>
                 <td>Your email is <strong>{{ user["email"] }}</strong>.</td>
                 <td>
-                    <a href="{{ url_for('change_email') }}">
-                        <button type="submit" name="change_email" class="btn">
-                            Change email
-                        </button>
-                    </a>
+                    <div class="align-center">
+                        <a href="{{ url_for('change_email') }}">
+                            <button type="submit" name="change_email" class="btn btn-secondary btn-sm">
+                                Change email
+                            </button>
+                        </a>
+                    </div>
                 </td>
             </tr>
             <tr>
                 <td>Your username is <strong>{{ user["username"] }}</strong>.</td>
                 <td>
-                    <a href="{{ url_for('change_username') }}">
-                        <button type="submit" name="change_username" class="btn">
-                            Change username
-                        </button>
-                    </a>
+                    <div class="align-center">
+                        <a href="{{ url_for('change_username') }}">
+                            <button type="submit" name="change_username" class="btn btn-secondary btn-sm">
+                                Change username
+                            </button>
+                        </a>
+                    </div>
                 </td>
             </tr>
             <tr>
                 <td>Your password is <strong>********</strong> (not really).</td>
                 <td>
-                    <a href="{{ url_for('change_password') }}">
-                        <button type="submit" name="change_password" class="btn">
-                            Change password
-                        </button>
-                    </a>
+                    <div class="align-center">
+                        <a href="{{ url_for('change_password') }}">
+                            <button type="submit" name="change_password" class="btn btn-secondary btn-sm">
+                                Change password
+                            </button>
+                        </a>
+                    </div>
                 </td>
             </tr>
-        </table>
-    </div>
+        </tbody>
+    </table>
 {% endblock %}

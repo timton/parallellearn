@@ -127,11 +127,9 @@
             {% else %}
                 <div class="version-list">
                     <div class="row title-row">
-                        <div class="col-7 d-none d-xl-block"><strong>Project Title</strong></div>
-                        <div class="col-5 d-xl-none"><strong>Project Title</strong></div>
-                        <div class="col-2"><strong>Language</strong></div>
-                        <div class="col-3 d-none d-xl-block"><strong>Added</strong></div>
-                        <div class="col-5 d-xl-none"><strong>Added</strong></div>
+                        <div class="col-5 col-xl-7"><strong>Project Title</strong></div>
+                        <div class="col-3 col-xl-2"><strong>Language</strong></div>
+                        <div class="col-4 col-xl-3"><strong>Added</strong></div>
                     </div>
                     <hr>
 
@@ -145,12 +143,12 @@
                             <div class="col-5 d-xl-none">
                                 <strong>{{ version["title"].title() }}</strong>
                             </div>
-                            <div class="col-2">{{ version["language"].title() }}</div>
-                            <div class="col-3 d-none d-xl-block">
+                            <div class="col-3 col-xl-2">{{ version["language"].title() }}</div>
+                            <div class="col-sm-4 col-xl-3 d-none d-sm-block">
                                 {{ version["timestamp"] }}
                             </div>
-                            <div class="col-5 d-xl-none">
-                                {{ version["timestamp"] }}
+                            <div class="col-4 d-block d-sm-none">
+                                {{ version["timestamp"][5:] }}
                             </div>
                         </div>
                         </a>
@@ -174,11 +172,9 @@
             {% else %}
                 <div class="version-list">
                     <div class="row title-row">
-                        <div class="col-7 d-none d-xl-block"><strong>Project Title</strong></div>
-                        <div class="col-6 d-xl-none"><strong>Project Title</strong></div>
-                        <div class="col-2"><strong>Language</strong></div>
-                        <div class="col-3 d-none d-xl-block"><strong>Rating</strong></div>
-                        <div class="col-4 d-xl-none"><strong>Rating</strong></div>
+                        <div class="col-5 col-xl-7"><strong>Project Title</strong></div>
+                        <div class="col-3"><strong>Language</strong></div>
+                        <div class="col-4 col-xl-2"><strong>Rating</strong></div>
                     </div>
                     <hr>
 
@@ -189,14 +185,11 @@
                                 <i><strong>{{ version["title"].title() }}</strong></i>
                                 by {{ version["author"].title() }}, {{ version["year"] }}
                             </div>
-                            <div class="col-6 d-xl-none">
+                            <div class="col-5 d-xl-none">
                                 <strong>{{ version["title"].title() }}</strong>
                             </div>
-                            <div class="col-2">{{ version["language"].title() }}</div>
-                            <div class="col-3 d-none d-xl-block">
-                                {{ version["rating"] }}
-                            </div>
-                            <div class="col-4 d-xl-none">
+                            <div class="col-3">{{ version["language"].title() }}</div>
+                            <div class="col-4 col-xl-2">
                                 {{ version["rating"] }}
                             </div>
                         </div>

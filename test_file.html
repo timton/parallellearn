@@ -1,18 +1,51 @@
-$(document).ready( function() {
+{% extends "layout.html" %}
 
-    $('#submit-comment').submit(function() { // catch the form's submit event
+{% block title %}
+    Account Details
+{% endblock %}
 
-        $.ajax({ // create an AJAX call...
-            data: $(this).serialize(), // get the form data
-            type: $(this).attr('method'), // GET or POST
-            url: $(this).attr('action'), // the file to call
-            success: function(response) { // on success..
-                $('#created').html(response); // update the DIV
-            }
-        });
-        return false; // cancel original event to prevent form submitting
-    });
-
-        // https://stackoverflow.com/questions/33801650/how-do-i-refresh-a-div-content
-        $( "#chat-div" ).load(window.location.href + " #chat-div" );
-});
+{% block main %}
+    <br>
+    <h3 class="align-center">Account Details</h3>
+    <br>
+    <table class="table" id="account-details">
+        <tbody>
+            <tr>
+                <td><p>Your email is <strong>{{ user["email"] }}</strong>.</p></td>
+                <td>
+                    <div class="align-center">
+                        <a href="{{ url_for('change_email') }}">
+                            <button type="submit" name="change_email" class="btn btn-secondary btn-sm">
+                                Change email
+                            </button>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><p>Your username is <strong>{{ user["username"] }}</strong>.</p></td>
+                <td>
+                    <div class="align-center">
+                        <a href="{{ url_for('change_username') }}">
+                            <button type="submit" name="change_username" class="btn btn-secondary btn-sm">
+                                Change username
+                            </button>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><p>Your password is <strong>********</strong> (not really).</p></td>
+                <td>
+                    <div class="align-center">
+                        <a href="{{ url_for('change_password') }}">
+                            <button type="submit" name="change_password" class="btn btn-secondary btn-sm">
+                                Change password
+                            </button>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}
