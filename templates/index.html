@@ -7,7 +7,7 @@
 {% block main %}
 
     <div class="row">
-        <div class="col-md-2" id="practice-div">
+        <div class="col-md-2 align-center" id="practice-div">
 
             <!-- QUICK PRACTICE DIV -->
             <div class="quick-practice">
@@ -59,7 +59,7 @@
         </div>
 
         <!-- CAROUSEL DIV -->
-        <div class="col-md-10" id="carousel-div">
+        <div class="col-md-10 align-center" id="carousel-div">
             <div class="carousel slide" data-ride="carousel" id="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
@@ -73,7 +73,13 @@
                                          src="{{ url_for('static', filename=display['project_1']['poster']) }}">
                                 </div>
                                 <div class="card-footer">
-                                    <strong>{{ display['project_1']['title'].title() }}</strong>
+                                    {% if display['project_1']['title']|length > 28 %}
+                                        <span class="small-font">
+                                            <strong>{{ display['project_1']['title']|truncate(30) }}...</strong>
+                                        </span>
+                                    {% else %}
+                                        <strong>{{ display['project_1']['title'].title() }}</strong>
+                                    {% endif %}
                                 </div>
                             </a>
                         </div>
@@ -91,7 +97,13 @@
                                              src="{{ url_for('static', filename=project['poster']) }}">
                                     </div>
                                     <div class="card-footer">
-                                        <strong>{{ project['title'].title() }}</strong>
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
                                     </div>
                                 </a>
                             </div>
@@ -137,8 +149,13 @@
                         <a href="{{ url_for('view_project', id=version['project_id']) }}">
                         <div class="row">
                             <div class="col-7 d-none d-xl-block align-left">
-                                <i><strong>{{ version["title"].title() }}</strong></i>
-                                by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(30)).title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% endif %}
                             </div>
                             <div class="col-5 d-xl-none">
                                 <strong>{{ version["title"].title() }}</strong>
@@ -182,8 +199,13 @@
                         <a href="{{ url_for('view_project', id=version['project_id']) }}">
                         <div class="row">
                             <div class="col-7 d-none d-xl-block align-left">
-                                <i><strong>{{ version["title"].title() }}</strong></i>
-                                by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(30)).title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% endif %}
                             </div>
                             <div class="col-5 d-xl-none">
                                 <strong>{{ version["title"].title() }}</strong>

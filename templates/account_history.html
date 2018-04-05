@@ -6,153 +6,175 @@
 
 {% block main %}
 
-    <div class="container">
+    <div class="align-center" id="account-history">
 
-        <div>
-            <h1>Started Projects</h1>
+        <div id="started-projects">
+            <br>
+            <h3 class="d-none d-md-block">Practice Projects</h3>
+            <h5 class="d-md-none"><strong>Practice Projects</strong></h5>
 
                 {% if started_projects|length == 0 %}
                     <br>
                     <p>You haven't started any projects yet.</p>
                     <br>
                 {% else %}
-                    <div class="row">
-                        <div class="col-xs-3"><strong>Title</strong></div>
-                        <div class="col-xs-2"><strong>Author</strong></div>
-                        <div class="col-xs-1"><strong>Year</strong></div>
-                        <div class="col-xs-1"><strong>Type</strong></div>
-                        <div class="col-xs-1"><strong>From</strong></div>
-                        <div class="col-xs-1"><strong>To</strong></div>
-                        <div class="col-xs-1"><strong>Progress</strong></div>
-                        <div class="col-xs-1"></div>
-                        <div class="col-xs-1"></div>
+                    <br class="history-top-row">
+                    <div class="row history-top-row">
+                        <div class="col-6 col-sm-8 col-md-5 col-lg-4 col-xl-3"><strong>Title</strong></div>
+                        <div class="col-2 d-none d-lg-block"><strong>Author</strong></div>
+                        <div class="col-xl-1 d-none d-xl-block"><strong>Year</strong></div>
+                        <div class="col-xl-1 d-none d-xl-block"><strong>Type</strong></div>
+                        <div class="col-1 d-none d-md-block"><strong>From</strong></div>
+                        <div class="col-1 d-none d-md-block"><strong>To</strong></div>
+                        <div class="col-1 col-md-2 col-lg-1 d-none d-md-block"><strong>Progress</strong></div>
+                        <div class="col-2 col-sm-1"></div>
+                        <div class="col-4 col-sm-3 col-md-2 col-xl-1"></div>
                     </div>
                     <hr>
 
                     {% for project in started_projects %}
-                        <div class="row">
-                            <a href="{{ url_for('view_project', id=project['id']) }}">
-                                <div class="col-xs-3"> {{ project["title"].title() }} </div>
-                                <div class="col-xs-2"> {{ project["author"].title() }} </div>
-                                <div class="col-xs-1"> {{ project["year"] }} </div>
-                                <div class="col-xs-1"> {{ project["type"].title() }} </div>
-                                <div class="col-xs-1"> {{ project["from_language"].title() }} </div>
-                                <div class="col-xs-1"> {{ project["to_language"].title() }} </div>
-                                <div class="col-xs-1"> {{ project["progress"] }} </div>
-                            </a>
-                            <div class="col-xs-1">
+                        <a href="{{ url_for('view_project', id=project['id']) }}">
+                        <div class="row history-row">
+                            <div class="col-6 col-sm-8 col-md-5 col-lg-4 col-xl-3 history-title-row">
+                                {{ project["title"].title() }}
+                            </div>
+                            <div class="col-2 d-none d-lg-block"> {{ project["author"].title() }} </div>
+                            <div class="col-xl-1 d-none d-xl-block"> {{ project["year"] }} </div>
+                            <div class="col-xl-1 d-none d-xl-block"> {{ project["type"].title() }} </div>
+                            <div class="col-1 d-none d-md-block"> {{ project["from_language"].title() }} </div>
+                            <div class="col-1 d-none d-md-block"> {{ project["to_language"].title() }} </div>
+                            <div class="col-1 col-md-2 col-lg-1 d-none d-md-block"> {{ project["progress"] }}% </div>
+                            <div class="col-2 col-sm-1">
                                 <form action="{{ url_for('project_practice') }}" method="post">
-                                    <button type="submit" name="resume_project" value="{{ project['resume_id'] }}">Resume</button>
+                                    <button type="submit" name="resume_project" value="{{ project['resume_id'] }}"
+                                            class="btn btn-sm btn-warning">
+                                        <span class="normal">Resume</span>
+                                        <span class="clipped">Rsm</span>
+                                    </button>
                                 </form>
                             </div>
-                            <div class="col-xs-1">
+                            <div class="col-4 col-sm-3 col-md-2 col-xl-1">
                                 <form action="{{ url_for('discard_project') }}" method="post">
-                                    <button type="submit" name="discard_project" value="{{ project['resume_id'] }}">Discard</button>
+                                    <button type="submit" name="discard_project" value="{{ project['resume_id'] }}"
+                                            class="btn btn-sm btn-danger">
+                                        <span class="normal">Drop</span>
+                                        <span class="clipped">Drp</span>
+                                    </button>
                                 </form>
                             </div>
                         </div>
-
+                        </a>
                     {% endfor %}
                 {% endif %}
         </div>
 
-        <div>
-            <h1>Uploaded Projects</h1>
+        <div id="uploaded-projects">
+            <br>
+            <h3 class="d-none d-md-block">Uploaded Projects</h3>
+            <h5 class="d-md-none"><strong>Uploaded Projects</strong></h5>
 
                 {% if uploaded_projects|length == 0 %}
                     <br>
                     <p>You haven't uploaded any projects yet.</p>
                     <br>
                 {% else %}
-                    <div class="row">
-                        <div class="col-xs-3"><strong>Title</strong></div>
-                        <div class="col-xs-2"><strong>Author</strong></div>
-                        <div class="col-xs-1"><strong>Year</strong></div>
-                        <div class="col-xs-1"><strong>Type</strong></div>
-                        <div class="col-xs-3"><strong>Languages</strong></div>
-                        <div class="col-xs-1"></div>
-                        <div class="col-xs-1"></div>
+                    <br class="history-top-row">
+                    <div class="row history-top-row">
+                        <div class="col-7 col-sm-8 col-md-5 col-lg-4 col-xl-3"><strong>Title</strong></div>
+                        <div class="col-2 d-none d-lg-block"><strong>Author</strong></div>
+                        <div class="col-xl-1 d-none d-xl-block"><strong>Year</strong></div>
+                        <div class="col-xl-1 d-none d-xl-block"><strong>Type</strong></div>
+                        <div class="col-md-4 col-lg-3 d-none d-md-block"><strong>Languages</strong></div>
+                        <div class="col-2 col-sm-1"></div>
+                        <div class="col-4 col-sm-3 col-md-2 col-xl-1"></div>
                     </div>
                     <hr>
 
                     {% for project in uploaded_projects %}
-
-                        <a href="{{ url_for('view_project', id=project['id']) }}">
-                            <div class="row">
-
-                                    <div class="col-xs-3"> {{ project["title"].title() }} </div>
-                                    <div class="col-xs-2"> {{ project["author"].title() }} </div>
-                                    <div class="col-xs-1"> {{ project["year"] }} </div>
-                                    <div class="col-xs-1"> {{ project["type"].title() }} </div>
-                                    <div class="col-xs-3"> {{ project["languages"].title() }} </div>
-                        </a>
-                                    <div class="col-xs-1">
+                            <a href="{{ url_for('view_project', id=project['id']) }}">
+                            <div class="row history-row">
+                                    <div class="col-6 col-sm-8 col-md-5 col-lg-4 col-xl-3 history-title-row">
+                                        {{ project["title"].title() }}
+                                    </div>
+                                    <div class="col-2 d-none d-lg-block"> {{ project["author"].title() }} </div>
+                                    <div class="col-xl-1 d-none d-xl-block"> {{ project["year"] }} </div>
+                                    <div class="col-xl-1 d-none d-xl-block"> {{ project["type"].title() }} </div>
+                                    <div class="col-md-4 col-lg-3 d-none d-md-block"> {{ project["languages"].title() }} </div>
+                                    <div class="col-2 col-sm-1">
                                         <form action="{{ url_for('edit') }}" method="POST">
-                                            <button type="submit" name="want_to_edit_project" value="{{ project['id'] }}">
+                                            <button type="submit" name="want_to_edit_project"
+                                                    value="{{ project['id'] }}" class="btn btn-sm btn-warning">
                                                 Edit
                                             </button>
                                         </form>
                                     </div>
-                                    <div class="col-xs-1">
+                                    <div class="col-4 col-sm-3 col-md-2 col-xl-1">
                                         <form action="{{ url_for('prepare_deletion') }}" method="POST">
-                                            <button type="submit" name="delete_project" value="{{ project['id'] }}">
-                                                Delete
+                                            <button type="submit" name="delete_project" value="{{ project['id'] }}"
+                                                    class="btn btn-sm btn-danger">
+                                                <span class="normal">Delete</span>
+                                                <span class="clipped">Del</span>
                                             </button>
                                         </form>
                                     </div>
-
                             </div>
+                            </a>
                     {% endfor %}
 
                 {% endif %}
         </div>
 
-        <div>
-            <h1>Uploaded Versions</h1>
+        <div id="uploaded-versions">
+            <br>
+            <h3 class="d-none d-md-block">Contributing Versions</h3>
+            <h5 class="d-md-none"><strong>Contributing Versions</strong></h5>
 
                 {% if not_user_projects|length == 0 %}
                     <br>
                     <p>You haven't contributed with any versions to other people's projects yet.</p>
                     <br>
                 {% else %}
-                    <div class="row">
-                        <div class="col-xs-3"><strong>Title</strong></div>
-                        <div class="col-xs-3"><strong>Author</strong></div>
-                        <div class="col-xs-1"><strong>Year</strong></div>
-                        <div class="col-xs-1"><strong>Type</strong></div>
-                        <div class="col-xs-2"><strong>Languages</strong></div>
-                        <div class="col-xs-1"></div>
-                        <div class="col-xs-1"></div>
+                    <br class="history-top-row">
+                    <div class="row history-top-row">
+                        <div class="col-7 col-sm-8 col-md-5 col-lg-4 col-xl-3"><strong>Title</strong></div>
+                        <div class="col-2 d-none d-lg-block"><strong>Author</strong></div>
+                        <div class="col-xl-1 d-none d-xl-block"><strong>Year</strong></div>
+                        <div class="col-xl-1 d-none d-xl-block"><strong>Type</strong></div>
+                        <div class="col-md-4 col-lg-3 d-none d-md-block"><strong>Languages</strong></div>
+                        <div class="col-2 col-sm-1"></div>
+                        <div class="col-4 col-sm-3 col-md-2 col-xl-1"></div>
                     </div>
                     <hr>
 
                     {% for project in not_user_projects %}
-
                         <a href="{{ url_for('view_project', id=project['id']) }}">
-                            <div class="row">
-
-                                    <div class="col-xs-3"> {{ project["title"].title() }} </div>
-                                    <div class="col-xs-3"> {{ project["author"].title() }} </div>
-                                    <div class="col-xs-1"> {{ project["year"] }} </div>
-                                    <div class="col-xs-1"> {{ project["type"].title() }} </div>
-                                    <div class="col-xs-2"> {{ project["languages"].title() }} </div>
+                        <div class="row history-row">
+                                <div class="col-6 col-sm-8 col-md-5 col-lg-4 col-xl-3 history-title-row">
+                                    {{ project["title"].title() }}
+                                </div>
+                                <div class="col-2 d-none d-lg-block"> {{ project["author"].title() }} </div>
+                                <div class="col-xl-1 d-none d-xl-block"> {{ project["year"] }} </div>
+                                <div class="col-xl-1 d-none d-xl-block"> {{ project["type"].title() }} </div>
+                                <div class="col-md-4 col-lg-3 d-none d-md-block"> {{ project["languages"].title() }} </div>
+                                <div class="col-2 col-sm-1">
+                                    <form action="{{ url_for('edit') }}" method="POST">
+                                        <button type="submit" name="want_to_edit_project"
+                                                value="{{ project['id'] }}" class="btn btn-sm btn-warning">
+                                            Edit
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-4 col-sm-3 col-md-2 col-xl-1">
+                                    <form action="{{ url_for('prepare_deletion') }}" method="POST">
+                                        <button type="submit" name="delete_project" value="{{ project['id'] }}"
+                                                class="btn btn-sm btn-danger">
+                                            <span class="normal">Delete</span>
+                                            <span class="clipped">Del</span>
+                                        </button>
+                                    </form>
+                                </div>
+                        </div>
                         </a>
-                                    <div class="col-xs-1">
-                                        <form action="{{ url_for('edit') }}" method="POST">
-                                            <button type="submit" name="want_to_edit_project" value="{{ project['id'] }}">
-                                                Edit
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div class="col-xs-1">
-                                        <form action="{{ url_for('prepare_deletion') }}" method="POST">
-                                            <button type="submit" name="delete_project" value="{{ project['id'] }}">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-
-                            </div>
                     {% endfor %}
 
                 {% endif %}

@@ -70,7 +70,7 @@ def index():
             project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
     # get the 5 newest versions
-    new_versions = db.execute("SELECT * FROM versions ORDER BY timestamp DESC LIMIT 5")
+    new_versions = db.execute("SELECT * FROM versions ORDER BY id DESC LIMIT 5")
 
     # get all the metadata
     for version in new_versions:
@@ -1049,6 +1049,7 @@ def view_history():
             project["author"] = rows[0]["author"]
             project["year"] = rows[0]["year"]
             project["id"] = rows[0]["id"]
+            project["progress"] = int(project["progress"] / rows[0]["line_count"] * 100) + 1
 
             # if tv series, make title include the season & episode
             if project["type"].lower() == "tv series":
