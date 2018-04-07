@@ -1,168 +1,233 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Account History
+    Welcome
 {% endblock %}
 
 {% block main %}
 
-    <div class="align-center" id="account-history">
+    <div class="row">
+        <div class="col-sm-5 col-md-4 col-lg-3 col-xl-2 align-center" id="practice-div">
 
-        <div id="started-projects">
-            <br>
-            <h3>Started Projects</h3>
-                {% if started_projects|length == 0 %}
-                    <br>
-                    <p>You haven't started any projects yet.</p>
-                    <br>
+            <!-- QUICK PRACTICE DIV -->
+            <div class="quick-practice">
+
+                <!-- making only one header with hidden responsive span sections takes html space -->
+                <h4>Quick Practice</h4>
+                {% if display["from_languages"]|length == 0 %}
+                    <p>No languages yet!</p>
                 {% else %}
-                    <div class="row">
-                        <div class="col-3"><strong>Title</strong></div>
-                        <div class="col-2"><strong>Author</strong></div>
-                        <div class="col-1"><strong>Year</strong></div>
-                        <div class="col-1"><strong>Type</strong></div>
-                        <div class="col-1"><strong>From</strong></div>
-                        <div class="col-1"><strong>To</strong></div>
-                        <div class="col-1"><strong>Progress</strong></div>
-                        <div class="col-1"></div>
-                        <div class="col-1"></div>
-                    </div>
-                    <hr>
+                    <p>I'd like to translate from</p>
+                    <p>
+                        <select name="from_language" form="quick_practice_form">
+                            {% for language in display["from_languages"] %}
+                                <option value="{{ language }}">{{ language.title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </p>
+                    <p>to</p>
+                    <p>
+                        <select name="to_language" form="quick_practice_form">
+                            {% for language in display["to_languages"] %}
+                                <option value="{{ language }}">{{ language.title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </br>
+                    </p>
+                    <form action="{{ url_for('quick_practice') }}" method="post" id="quick_practice_form">
+                        <p><button type="submit" class="btn btn-default btn-sm">Go!</button></p>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
 
-                    {% for project in started_projects %}
-                        <div class="row">
-                            <a href="{{ url_for('view_project', id=project['id']) }}">
-                                <div class="col-3"> {{ project["title"].title() }} </div>
-                                <div class="col-2"> {{ project["author"].title() }} </div>
-                                <div class="col-1"> {{ project["year"] }} </div>
-                                <div class="col-1"> {{ project["type"].title() }} </div>
-                                <div class="col-1"> {{ project["from_language"].title() }} </div>
-                                <div class="col-1"> {{ project["to_language"].title() }} </div>
-                                <div class="col-1"> {{ project["progress"] }} </div>
+        <!-- CAROUSEL DIV -->
+        <div class="col-sm-7 col-md-8 col-lg-9 col-xl-10 align-center" id="carousel-div">
+            <div class="carousel slide" data-ride="carousel" id="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="card">
+                            <a href="{{ url_for('view_project', id=display['project_1']['id']) }}">
+                                <div class="card-header">
+                                    [{{ display['project_1']['type'] }}]
+                                </div>
+                                <div class="image-div">
+                                    <img class="card-img-top" alt="poster image"
+                                         src="{{ url_for('static', filename=display['project_1']['poster']) }}">
+                                </div>
+                                <div class="card-footer">
+                                    {% if display['project_1']['title']|length > 28 %}
+                                        <span class="small-font">
+                                            <strong>{{ display['project_1']['title']|truncate(30) }}...</strong>
+                                        </span>
+                                    {% else %}
+                                        <strong>{{ display['project_1']['title'].title() }}</strong>
+                                    {% endif %}
+                                </div>
                             </a>
-                            <div class="col-1">
-                                <form action="{{ url_for('project_practice') }}" method="post">
-                                    <button type="submit" name="resume_project" value="{{ project['resume_id'] }}">Resume</button>
-                                </form>
-                            </div>
-                            <div class="col-1">
-                                <form action="{{ url_for('discard_project') }}" method="post">
-                                    <button type="submit" name="discard_project" value="{{ project['resume_id'] }}">Discard</button>
-                                </form>
+                        </div>
+                    </div>
+
+                    {% for project in display["projects"] %}
+                        <div class="carousel-item">
+                            <div class="card">
+                                <a href="{{ url_for('view_project', id=project['id']) }}">
+                                    <div class="card-header">
+                                        [{{ project['type'] }}]
+                                    </div>
+                                    <div class="image-div">
+                                        <img class="card-img-top" alt="poster image"
+                                             src="{{ url_for('static', filename=project['poster']) }}">
+                                    </div>
+                                    <div class="card-footer">
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </a>
                             </div>
                         </div>
-
                     {% endfor %}
-                {% endif %}
+
+                </div>
+                <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                  <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                  </a>
+            </div>
         </div>
+    </div>
 
-        <div id="uploaded-projects">
-            <br>
-            <h3 class="d-none d-md-block">Uploaded Projects</h3>
-            <h5 class="d-md-none">Uploaded Projects</h5>
+    <div class="row">
 
-                {% if uploaded_projects|length == 0 %}
-                    <br>
-                    <p>You haven't uploaded any projects yet.</p>
-                    <br>
-                {% else %}
-                    <br class="history-top-row">
-                    <div class="row history-top-row">
-                        <div class="col-7 col-sm-8 col-md-5 col-lg-4 col-xl-3"><strong>Title</strong></div>
-                        <div class="col-2 d-none d-lg-block"><strong>Author</strong></div>
-                        <div class="col-xl-1 d-none d-xl-block"><strong>Year</strong></div>
-                        <div class="col-xl-1 d-none d-xl-block"><strong>Type</strong></div>
-                        <div class="col-md-4 col-lg-3 d-none d-md-block"><strong>Languages</strong></div>
-                        <div class="col-2 col-sm-1"></div>
-                        <div class="col-4 col-sm-3 col-md-2 col-xl-1"></div>
+        <!-- RECENT DIV -->
+        <div class="col-lg-5 order-lg-2" id="recent-div">
+
+            <h5>Recent versions</h5>
+
+            {% if display["new_versions"]|length == 0 %}
+
+                <br>
+                <p>No projects yet.</p>
+                <br>
+
+            {% else %}
+                <div class="version-list">
+                    <div class="row title-row">
+                        <div class="col-5 col-xl-7"><strong>Project Title</strong></div>
+                        <div class="col-3 col-xl-2"><strong>Language</strong></div>
+                        <div class="col-4 col-xl-3"><strong>Added</strong></div>
                     </div>
                     <hr>
 
-                    {% for project in uploaded_projects %}
-                        <a href="{{ url_for('view_project', id=project['id']) }}">
-                        <div class="row history-row">
-                                <div class="col-6 col-sm-8 col-md-5 col-lg-4 col-xl-3 history-title-row">
-                                    {{ project["title"].title() }}
-                                </div>
-                                <div class="col-2 d-none d-lg-block"> {{ project["author"].title() }} </div>
-                                <div class="col-xl-1 d-none d-xl-block"> {{ project["year"] }} </div>
-                                <div class="col-xl-1 d-none d-xl-block"> {{ project["type"].title() }} </div>
-                                <div class="col-md-4 col-lg-3 d-none d-md-block"> {{ project["languages"].title() }} </div>
-                                <div class="col-2 col-sm-1">
-                                    <form action="{{ url_for('edit') }}" method="POST">
-                                        <button type="submit" name="want_to_edit_project"
-                                                value="{{ project['id'] }}" class="btn btn-sm btn-warning">
-                                            Edit
-                                        </button>
-                                    </form>
-                                </div>
-                                <div class="col-4 col-sm-3 col-md-2 col-xl-1">
-                                    <form action="{{ url_for('prepare_deletion') }}" method="POST">
-                                        <button type="submit" name="delete_project" value="{{ project['id'] }}"
-                                                class="btn btn-sm btn-danger">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
+                    {% for version in display["new_versions"] %}
+                        <a href="{{ url_for('view_project', id=version['project_id']) }}">
+                        <div class="row">
+                            <div class="col-7 d-none d-xl-block align-left">
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(30)).title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% endif %}
+                            </div>
+                            <div class="col-5 d-xl-none">
+                                <strong>{{ version["title"].title() }}</strong>
+                            </div>
+                            <div class="col-3 col-xl-2">{{ version["language"].title() }}</div>
+                            <div class="col-sm-4 col-xl-3 d-none d-sm-block">
+                                {{ version["timestamp"] }}
+                            </div>
+                            <div class="col-4 d-block d-sm-none">
+                                {{ version["timestamp"][5:] }}
+                            </div>
                         </div>
                         </a>
                     {% endfor %}
+                </div>
+            {% endif %}
 
-                {% endif %}
         </div>
 
-        <div id="uploaded-versions">
-            <br>
-            <h3>Uploaded Versions</h3>
+        <!-- POPULAR DIV -->
+        <div class="col-lg-5 order-lg-3" id="popular-div">
 
-                {% if not_user_projects|length == 0 %}
-                    <br>
-                    <p>You haven't contributed with any versions to other people's projects yet.</p>
-                    <br>
-                {% else %}
-                    <div class="row">
-                        <div class="col-3"><strong>Title</strong></div>
-                        <div class="col-3"><strong>Author</strong></div>
-                        <div class="col-1"><strong>Year</strong></div>
-                        <div class="col-1"><strong>Type</strong></div>
-                        <div class="col-2"><strong>Languages</strong></div>
-                        <div class="col-1"></div>
-                        <div class="col-1"></div>
+            <h5>Popular versions</h5>
+
+            {% if display["popular_versions"]|length == 0 %}
+
+                <br>
+                <p>No projects yet.</p>
+                <br>
+
+            {% else %}
+                <div class="version-list">
+                    <div class="row title-row">
+                        <div class="col-5 col-xl-7"><strong>Project Title</strong></div>
+                        <div class="col-3"><strong>Language</strong></div>
+                        <div class="col-4 col-xl-2"><strong>Rating</strong></div>
                     </div>
                     <hr>
 
-                    {% for project in not_user_projects %}
-
-                        <a href="{{ url_for('view_project', id=project['id']) }}">
-                            <div class="row">
-
-                                    <div class="col-3"> {{ project["title"].title() }} </div>
-                                    <div class="col-3"> {{ project["author"].title() }} </div>
-                                    <div class="col-1"> {{ project["year"] }} </div>
-                                    <div class="col-1"> {{ project["type"].title() }} </div>
-                                    <div class="col-2"> {{ project["languages"].title() }} </div>
-                        </a>
-                                    <div class="col-1">
-                                        <form action="{{ url_for('edit') }}" method="POST">
-                                            <button type="submit" name="want_to_edit_project" value="{{ project['id'] }}">
-                                                Edit
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div class="col-1">
-                                        <form action="{{ url_for('prepare_deletion') }}" method="POST">
-                                            <button type="submit" name="delete_project" value="{{ project['id'] }}">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-
+                    {% for version in display["popular_versions"] %}
+                        <a href="{{ url_for('view_project', id=version['project_id']) }}">
+                        <div class="row">
+                            <div class="col-7 d-none d-xl-block align-left">
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(30)).title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                    by {{ version["author"].title() }}, {{ version["year"] }}
+                                {% endif %}
                             </div>
+                            <div class="col-5 d-xl-none">
+                                <strong>{{ version["title"].title() }}</strong>
+                            </div>
+                            <div class="col-3">{{ version["language"].title() }}</div>
+                            <div class="col-4 col-xl-2">
+                                {{ version["rating"] }}
+                            </div>
+                        </div>
+                        </a>
                     {% endfor %}
+                </div>
+            {% endif %}
 
-                {% endif %}
         </div>
 
+        <!-- CHAT DIV -->
+        <div class="col-lg-2 order-lg-1" id="chat-div">
+            <h5 class="align-center d-lg-none d-xl-block">Feedback Board</h5>
+            <h6 class="align-center d-none d-lg-block d-xl-none">Feedback Board</h6>
+            <div>
+                {% if display["comments"]|length != 0 %}
+                    <ul>
+                        {% for comment in display["comments"] %}
+                            <li>
+                                <i class="fas fa-comments"></i>
+                                <strong>{{ comment["username"] }}</strong>: {{ comment["comment"] }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <form class="form-inline" action="{{ url_for('comment') }}" method="post">
+                <label class="sr-only" for="comment">Comment</label>
+                <input type="text" class="form-control form-control-sm" id="comment"
+                       placeholder="Your feedback here..." name="comment" required>
+                <button type="submit" class="btn btn-primary btn-sm">Post</button>
+            <form>
+        </div>
     </div>
 
 {% endblock %}

@@ -29,6 +29,9 @@
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                   aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
+            {% if has_notifications() %}
+              <i class="fas fa-bell"></i>
+            {% endif %}
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
@@ -66,7 +69,10 @@
                     </li>
                     <li class="nav-item dropdown">
                       <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-                        <i class="fas fa-user"></i> My Account
+                        <i class="fas fa-user"></i>
+                        {% if has_notifications() %}
+                          <i class="fas fa-bell"></i>
+                        {% endif %} My Account
                       </a>
 
                       <!-- https://stackoverflow.com/questions/42046287/bootstrap-4-dropdown-menu-is-going-off-to-the-right-of-the-screen -->
@@ -79,7 +85,11 @@
                             <i class="fas fa-history fa-fw"></i> History
                         </a>
                         <a class="dropdown-item" href="{{ url_for('view_notifications') }}">
-                            <i class="fas fa-bell fa-fw"></i> Notifications
+                            <i class="fas fa-globe fa-fw"></i>
+                            {% if has_notifications() %}
+                              <i class="fas fa-bell"></i>
+                            {% endif %} Notifications
+
                         </a>
                       </div>
                     </li>

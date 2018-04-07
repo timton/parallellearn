@@ -108,7 +108,7 @@ def index():
         username = "anon"
 
     # get all the comments
-    comments = db.execute("SELECT * FROM comments ORDER BY timestamp DESC")
+    comments = db.execute("SELECT * FROM comments ORDER BY id DESC")
     for comment in comments:
         if comment["user_id"] == 0:
             comment["username"] = "anon"
@@ -601,7 +601,6 @@ def new_project_metadata():
         # make sure all versions have the same number of lines
         session["new_project"]["line_count"] = workbook.worksheets[0].max_row
         for worksheet in workbook:
-            print(worksheet.max_row)
             if worksheet.max_row != session["new_project"]["line_count"]:
                 session.pop('new_project', None)
                 return apology("Couldn't upload this project.",
@@ -1626,7 +1625,6 @@ def edit():
                 file.seek(0, os.SEEK_END)
                 size = file.tell()
                 file.seek(old_file_position, os.SEEK_SET)
-                print(size)
                 if size > 307200:
                     return apology("Couldn't edit this project.", "Maximum size for poster images is 300 KB.")
 
@@ -2258,6 +2256,33 @@ def comment():
 
     # go back to the message board once posted
     return redirect("/#chat-div")
+
+
+# check if logged in user has notifications
+# more convenient to declare here than in helpers, as would need to move imports
+def has_notifications():
+
+    if session:
+        if "user_id" in session:
+
+            user_versions = []
+            rows = db.execute("SELECT * FROM versions WHERE user_id = :user_id",
+                                       user_id=session["user_id"])
+            for row in rows:
+                user_versions.append(row["id"])
+
+            notifications = []
+            rows = db.execute("SELECT * FROM corrections")
+            for row in rows:
+                notifications.append(row["version_id"])
+
+            for version in user_versions:
+                if version in notifications:
+                    return True
+    return False
+
+# https://stackoverflow.com/questions/6036082/call-a-python-function-from-jinja2
+app.jinja_env.globals.update(has_notifications=has_notifications)
 
 
 ######################

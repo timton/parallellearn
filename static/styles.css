@@ -9,9 +9,21 @@ main {
     padding: 0 1rem;
 }
 
+/* https://stackoverflow.com/questions/31784519/show-number-of-notifications-on-icon */
+.fa-bell {
+    position: absolute;
+    color: red;
+    font-size: 11px;
+    margin-left: -11px;
+}
+
 /* color scheme https://color.adobe.com/Campfire-color-theme-2528696/ */
 #practice-div, #started-projects {
     background-color: #588c7e;
+}
+
+#index h5 {
+    font-weight: bold;
 }
 
 .quick-practice {
@@ -66,7 +78,7 @@ main {
     border: solid black 1px;
     margin: 0 auto;
     width: 100%;
-    height: 7.5rem;
+    height: 9rem;
     background-color: lightgrey;
     overflow-y: scroll;
     font-size: 11px;
@@ -81,18 +93,34 @@ main {
     color: purple;
 }
 
-#chat-div form {
-    margin-bottom: 1rem;
-}
-
 #chat-div input {
     width: 100%;
-    margin: 5px auto 0 auto;
+    margin: 1rem 0;
 }
 
 #chat-div button {
-    margin: 5px auto 0 auto;
     padding: 5px 15px;
+    margin: 0 auto 1rem auto;
+}
+
+@media (min-width: 1200px) {
+    #chat-div button {
+        margin: 5px auto 0 auto;
+        padding: 5px 15px;
+    }
+    #chat-div input {
+        margin: 5px auto 0 auto;
+    }
+    #chat-div form {
+        margin-bottom: 1rem;
+    }
+    #chat-div div {
+        height: 7.5rem;
+    }
+}
+
+#activity-div > row {
+    height: 100%;
 }
 
 #recent-div {
