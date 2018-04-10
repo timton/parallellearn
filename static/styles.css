@@ -17,6 +17,19 @@ main {
     margin-left: -11px;
 }
 
+/*
+the navbar-collapsed bell notification looks misplaced in chrome on small devices
+https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
+*/
+@media (max-width: 767.98px) and (-webkit-min-device-pixel-ratio:0) {
+
+    /*Chrome CSS here*/
+    .fa-bell:first-of-type {
+        margin-left: 9px;
+        margin-top: -30px;
+    }
+}
+
 /* color scheme https://color.adobe.com/Campfire-color-theme-2528696/ */
 #practice-div, #started-projects {
     background-color: #588c7e;
@@ -70,13 +83,13 @@ main {
     background-color: #f2ae72;
 }
 
-#chat-div h5, #chat-div h6 {
+#chat-div h5 {
     padding-top: 1rem;
 }
 
 #chat-div div {
     border: solid black 1px;
-    margin: 0 auto;
+    margin: 1rem auto 0 auto;
     width: 100%;
     height: 9rem;
     background-color: lightgrey;
@@ -187,17 +200,25 @@ main {
 
 #account-history {
     font-size: 13px;
+    text-align: center;
 }
 
-@media (min-width: 768px) {
-    #account-history > div {
-        min-height: 12rem;
-    }
+#account-history > div {
+    min-height: 11rem;
+}
+
+#account-history table {
+    width: 95%;
+    margin: auto;
+}
+
+#account-history a {
+    color: inherit;
+
 }
 
 #account-history button {
-    margin-top: -0.35rem;
-    padding: 0.1rem 0.5rem;
+    padding: 0 0.5rem;
     font-weight: bold;
 }
 
@@ -213,33 +234,6 @@ main {
         display: inline;
     }
 }
-
-.history-row {
-    padding-bottom: 0.5rem;
-    color: darkblue;
-    font-weight: 500;
-}
-
-.history-top-row + hr {
-    margin-top: 0.25rem;
-}
-
-@media (max-width: 767.98px) {
-    .history-top-row {
-        display: none;
-    }
-}
-
-/* https://css-tricks.com/snippets/css/truncate-string-with-ellipsis/ */
-@media (max-width: 500px) {
-    .history-title-row {
-          width: 80px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-    }
-}
-
 
 #login-form {
     margin-top: 2rem;
