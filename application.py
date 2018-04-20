@@ -426,8 +426,12 @@ def change_email():
     if request.method == "POST":
 
         # ensure new email was submitted
-        if not request.form.get("new_email"):
+        if not request.form.get("new_email") or not request.form.get("confirm_new_email"):
             return apology("must provide new email")
+
+        # ensure emails match
+        if request.form.get("new_email").lower() != request.form.get("confirm_new_email").lower():
+            return apology("emails don't match")
 
         # ensure new email is different from the current one
         user = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])
@@ -461,8 +465,12 @@ def change_username():
     if request.method == "POST":
 
         # ensure new username was submitted
-        if not request.form.get("new_username"):
+        if not request.form.get("new_username") or not request.form.get("confirm_new_username"):
             return apology("must provide new username")
+
+        # ensure usernames match
+        if request.form.get("new_username").lower() != request.form.get("confirm_new_username").lower():
+            return apology("usernames don't match")
 
         # ensure new username is different from the current one
         user = db.execute("SELECT * FROM users WHERE id = :id", id=session["user_id"])

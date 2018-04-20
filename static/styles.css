@@ -247,17 +247,13 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     }
 }
 
-#login-form {
+.pl-form {
     margin-top: 2rem;
 }
 
-#login-form .form-group {
-    width: 15rem;
+.pl-form .form-group {
+    width: 13rem;
     margin: 1rem auto;
-}
-
-#login-form .login-button {
-    text-align: center;
 }
 
 #account-notifications {
