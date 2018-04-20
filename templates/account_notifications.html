@@ -5,46 +5,40 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container account-notifications">
-
-        <h2>Account Notifications</h2>
-
+    <div class="container" id="account-notifications">
+        <br>
+        <strong><h3>Account Notifications</h3></strong>
+        <hr>
         {% if notifications|length == 0 %}
             <br>
             <p>You don't have any notifications.</p>
             <br>
         {% else %}
             <br>
-            <ul>
-                {% for notification in notifications %}
-                    <div class="row">
-                        <li style="text-align: left;">
-                            <div class="col-xs-10">
-                                <b>[{{ notification["title"].title() }}]</b> When translating from
-                                {{ notification["from_language"].title() }} to {{ notification["to_language"].title() }}
-                                the following phrase: "<u><i>{{ notification["context_line"] }}</i></u>"
-                                <b>{{ notification["user"] }}</b> suggests using
-                                <span style="color: green;">"<b><i>{{ notification["suggested_line"] }}</i></b>"</span>
-                                instead of <span style="color: red;">"<i>{{ notification["original_line"] }}</i>"</span>
-                            </div>
-                            <div class="col-xs-1">
-                                <form action="{{ url_for('action_correction') }}" method="POST">
-                                    <button type="submit" name="implement_correction" value="{{ notification['correction_id'] }}">
-                                        Implement
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="col-xs-1">
-                                <form action="{{ url_for('action_correction') }}" method="POST">
-                                    <button type="submit" name="discard_correction" value="{{ notification['correction_id'] }}">
-                                        Discard
-                                    </button>
-                                </form>
-                            </div>
-                        </li>
-                    </div>
+            {% for notification in notifications %}
+                <div class="wrapper align-left">
+                    <p>
+                        - <u><b>{{ notification["title"].title() }}</b></u>:
+                        For <i>"{{ notification["context_line"] }}"</i> ({{ notification["from_language"].title() }})
+                        instead of <i>"{{ notification["original_line"] }}"</i> ({{ notification["to_language"].title() }})
+                        <b>{{ notification["user"] }}</b> suggets using <i>"{{ notification["suggested_line"] }}"</i>.
+                    </p>
+                    <hr>
+                    <form action="{{ url_for('action_correction') }}" method="POST">
+                        <button type="submit" name="implement_correction"
+                        value="{{ notification['correction_id'] }}" class="btn btn-sm btn-success">
+                            Implement
+                        </button>
+                    </form>
+                    <form action="{{ url_for('action_correction') }}" method="POST">
+                        <button type="submit" name="discard_correction"
+                        value="{{ notification['correction_id'] }}" class="btn btn-sm btn-danger">
+                            Discard
+                        </button>
+                    </form>
+                </div>
                 {% endfor %}
-            </ul>
+            <br>
         {% endif %}
     </div>
 {% endblock %}

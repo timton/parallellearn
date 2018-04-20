@@ -1848,13 +1848,26 @@ def contact():
 @app.route("/browse")
 def browse():
 
-    # get all the projects
-    projects = db.execute("SELECT * FROM projects")
+    # get all the projects, sorted by type
+    all_projects = db.execute("SELECT * FROM projects")
+    books = db.execute("SELECT * FROM projects WHERE type = 'book'")
+    movies = db.execute("SELECT * FROM projects WHERE type = 'movie'")
+    songs = db.execute("SELECT * FROM projects WHERE type = 'song'")
 
     # if tv series, make title include the season & episode
-    for project in projects:
+    tv_series = []
+    for project in all_projects:
         if project["type"].lower() == "tv series":
             project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
+            tv_series.append(project)
+
+    # pass one variable
+    projects = {}
+    projects["all_projects"] = all_projects
+    projects["books"] = books
+    projects["tv_series"] = tv_series
+    projects["songs"] = songs
+    projects["movies"] = movies
 
     return render_template("browse.html", projects=projects)
 

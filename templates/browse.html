@@ -5,13 +5,194 @@
 {% endblock %}
 
 {% block main %}
-    {% for project in projects %}
-        <a href="{{ url_for('view_project', id=project['id']) }}" style="text-decoration: none;">
-            <div class="card {{ project['type'] }}">
-                <h5 class="card-title">{{ project['type'].title() }}</h5>
-                <img class="card-img-top" src="{{ url_for('static', filename=project['poster']) }}" alt="Card image cap">
-                <h4 class="card-title">{{ project['title'].title() }}</h4>
+    <div id="browse" class="align-center">
+        <br>
+        <strong><h4>List of Projects</h4></strong>
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#all">All</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#books">Books</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#movies">Movies</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#tv_series">
+                    <span class="d-none d-sm-block">TV Series</span>
+                    <span class="d-block d-sm-none">TV</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#songs">Songs</a>
+            </li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div class="tab-pane active container" id="all">
+                <div class="row">
+                    {% if projects["all_projects"]|length == 0 %}
+                        <br>
+                        The site has no projects.
+                        <br>
+                    {% else %}
+                        {% for project in projects["all_projects"] %}
+                            <div class="card">
+                                <a href="{{ url_for('view_project', id=project['id']) }}">
+                                    <div class="card-header">
+                                        [{{ project['type'] }}]
+                                    </div>
+                                    <div class="image-div">
+                                        <img class="card-img-top" alt="poster image"
+                                             src="{{ url_for('static', filename=project['poster']) }}">
+                                    </div>
+                                    <div class="card-footer">
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
             </div>
-        </a>
-    {% endfor %}
+            <div class="tab-pane container" id="books">
+                <div class="row">
+                    {% if projects["books"]|length == 0 %}
+                        <br>
+                        The site has no books.
+                        <br>
+                    {% else %}
+                        {% for project in projects["books"] %}
+                            <div class="card">
+                                <a href="{{ url_for('view_project', id=project['id']) }}">
+                                    <div class="card-header">
+                                        [{{ project['type'] }}]
+                                    </div>
+                                    <div class="image-div">
+                                        <img class="card-img-top" alt="poster image"
+                                             src="{{ url_for('static', filename=project['poster']) }}">
+                                    </div>
+                                    <div class="card-footer">
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-pane container" id="movies">
+                <div class="row">
+                    {% if projects["movies"]|length == 0 %}
+                        <br>
+                        The site has no movies.
+                        <br>
+                    {% else %}
+                        {% for project in projects["movies"] %}
+                            <div class="card">
+                                <a href="{{ url_for('view_project', id=project['id']) }}">
+                                    <div class="card-header">
+                                        [{{ project['type'] }}]
+                                    </div>
+                                    <div class="image-div">
+                                        <img class="card-img-top" alt="poster image"
+                                             src="{{ url_for('static', filename=project['poster']) }}">
+                                    </div>
+                                    <div class="card-footer">
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-pane container" id="tv_series">
+                <div class="row">
+                    {% if projects["tv_series"]|length == 0 %}
+                        <br>
+                        The site has no TV Series.
+                        <br>
+                    {% else %}
+                        {% for project in projects["tv_series"] %}
+                            <div class="card">
+                                <a href="{{ url_for('view_project', id=project['id']) }}">
+                                    <div class="card-header">
+                                        [{{ project['type'] }}]
+                                    </div>
+                                    <div class="image-div">
+                                        <img class="card-img-top" alt="poster image"
+                                             src="{{ url_for('static', filename=project['poster']) }}">
+                                    </div>
+                                    <div class="card-footer">
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-pane container" id="songs">
+                <div class="row">
+                    {% if projects["songs"]|length == 0 %}
+                        <br>
+                        The site has no songs.
+                        <br>
+                    {% else %}
+                        {% for project in projects["songs"] %}
+                            <div class="card">
+                                <a href="{{ url_for('view_project', id=project['id']) }}">
+                                    <div class="card-header">
+                                        [{{ project['type'] }}]
+                                    </div>
+                                    <div class="image-div">
+                                        <img class="card-img-top" alt="poster image"
+                                             src="{{ url_for('static', filename=project['poster']) }}">
+                                    </div>
+                                    <div class="card-footer">
+                                        {% if project['title']|length > 28 %}
+                                            <span class="small-font">
+                                                <strong>{{ (project['title']|truncate(30)).title() }}</strong>
+                                            </span>
+                                        {% else %}
+                                            <strong>{{ project['title'].title() }}</strong>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

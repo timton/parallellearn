@@ -158,8 +158,19 @@
                                     by {{ version["author"].title() }}, {{ version["year"] }}
                                 {% endif %}
                             </div>
-                            <div class="col-5 d-xl-none">
-                                <strong>{{ version["title"].title() }}</strong>
+                            <div class="col-5 d-none d-sm-block d-xl-none">
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(30)).title() }}</strong></i>
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                {% endif %}
+                            </div>
+                            <div class="col-5 d-sm-none">
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(20)).title() }}</strong></i>
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                {% endif %}
                             </div>
                             <div class="col-3 col-xl-2">{{ version["language"].title() }}</div>
                             <div class="col-sm-4 col-xl-3 d-none d-sm-block">
@@ -206,8 +217,19 @@
                                     by {{ version["author"].title() }}, {{ version["year"] }}
                                 {% endif %}
                             </div>
-                            <div class="col-5 d-xl-none">
-                                <strong>{{ version["title"].title() }}</strong>
+                            <div class="col-5 d-none d-sm-block d-xl-none">
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(30)).title() }}</strong></i>
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                {% endif %}
+                            </div>
+                            <div class="col-5 d-sm-none">
+                                {% if version["title"]|length > 30 %}
+                                    <i><strong>{{ (version["title"]|truncate(20)).title() }}</strong></i>
+                                {% else %}
+                                    <i><strong>{{ version["title"].title() }}</strong></i>
+                                {% endif %}
                             </div>
                             <div class="col-3">{{ version["language"].title() }}</div>
                             <div class="col-4 col-xl-2">
