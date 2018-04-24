@@ -1,67 +1,63 @@
-S{% extends "layout.html" %}
+{% extends "layout.html" %}
 
 {% block title %}
     Edit Project: Name
 {% endblock %}
 
 {% block main %}
+    <div class="container" id="edit-name">
+        <br>
+        <h5><strong>Edit Title</strong></h5>
+        <form action="{{ url_for('edit') }}" method="post" class="pl-form">
+            <fieldset>
+                <div class="form-group">
+                    Project title is <strong>{{ project["title"].title() }}</strong>.
+                    <br>
+                    <label class="sr-only" for="change_title">Change title</label>
+                    <input autocomplete="off" name="change_title" class="form-control"
+                           id="change_title" placeholder="Change title" type="text"/ list="titles">
+                    <datalist id="titles">{% include "select/titles.html" %}</datalist>
+                </div>
 
-    <form action="{{ url_for('edit') }}" method="post">
-        <fieldset>
-            <ol align="left">
+                {% if project["type"] == "tv series" %}
+                    <div class="form-group">
+                        Season: <strong>{{ project["season"] }}</strong>. Episode: <strong>{{ project["episode"] }}</strong>.
+                        <br>
+                        <label class="sr-only" for="change_season">Change season</label>
+                        <input autocomplete="off" name="change_season" class="form-control"
+                               id="change_season" placeholder="Change season" type="number"/>
+                        <label class="sr-only" for="change_episode">Change episode</label>
+                        <input autocomplete="off" name="change_episode" class="form-control"
+                               id="change_episode" placeholder="Change episode" type="number"/>
+                    </div>
+                {% endif %}
 
-                    <li>
-                        <div class="form-group">
-                            Project title is <strong>{{ project["title"].title() }}</strong>.
-                            <br>
-                            <label class="sr-only" for="change_title">Change title</label>
-                            <input autocomplete="off" name="change_title" class="form-control"
-                                   id="change_title" placeholder="Change title" type="text"/ list="titles">
-                            <datalist id="titles">{% include "select/titles.html" %}</datalist>
-                        </div>
-                    </li>
+                <div class="form-group">
+                    Project author is <strong>{{ project["author"].title() }}</strong>.
+                    <br>
+                    <label class="sr-only" for="change_author">Change author</label>
+                    <input autocomplete="off" name="change_author" class="form-control"
+                           id="change_author" placeholder="Change author" type="text"/ list="authors">
+                    <datalist id="authors">{% include "select/authors.html" %}</datalist>
+                </div>
 
-                    {% if project["type"] == "tv series" %}
-                        <li>
-                            <div class="form-group">
-                                Season: <strong>{{ project["season"] }}</strong>. Episode: <strong>{{ project["episode"] }}</strong>.
-                                <br>
-                                <label class="sr-only" for="change_season">Change season</label>
-                                <input autocomplete="off" name="change_season" class="form-control"
-                                       id="change_season" placeholder="Change season" type="number"/>
-                                <label class="sr-only" for="change_episode">Change episode</label>
-                                <input autocomplete="off" name="change_episode" class="form-control"
-                                       id="change_episode" placeholder="Change episode" type="number"/>
-                            </div>
-                        </li>
-                    {% endif %}
+                <div class="form-group">
+                    Project year is <strong>{{ project["year"] }}</strong>.
+                    <br>
+                    <label class="sr-only" for="change_year">Change year</label>
+                    <input autocomplete="off" name="change_year" class="form-control"
+                           id="change_year" placeholder="Change year" type="number"/>
+                </div>
 
-                    <li>
-                        <div class="form-group">
-                            Project author is <strong>{{ project["author"].title() }}</strong>.
-                            <br>
-                            <label class="sr-only" for="change_author">Change author</label>
-                            <input autocomplete="off" name="change_author" class="form-control"
-                                   id="change_author" placeholder="Change author" type="text"/ list="authors">
-                            <datalist id="authors">{% include "select/authors.html" %}</datalist>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="form-group">
-                            Project year is <strong>{{ project["year"] }}</strong>.
-                            <br>
-                            <label class="sr-only" for="change_year">Change year</label>
-                            <input autocomplete="off" name="change_year" class="form-control"
-                                   id="change_year" placeholder="Change year" type="number"/>
-                        </div>
-                    </li>
-            </ol>
-            <div class="form-group">
-                <button class="btn" type="submit" style="float: left;" name="change_project_name" value="{{ project['id'] }}">
-                    Done
-                </button>
-            </div>
-        </fieldset>
-    </form>
+                <div class="form-group">
+                    <button class="btn btn-warning" type="submit"
+                            name="change_project_name" value="{{ project['id'] }}">
+                        Done
+                    </button>
+                </div>
+            </fieldset>
+        </form>
+
+    </div>
 
 {% endblock %}

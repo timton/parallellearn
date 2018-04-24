@@ -5,23 +5,37 @@
 {% endblock %}
 
 {% block main %}
+    <div class="container align-center">
+        <br>
+        <h5><strong>Edit Versions</strong></h5>
+        <br>
+        <!--
+        Multiple level template inheritance in Jinja2?
+        https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+        -->
+        <p>
+            Change your
+            <select name="change_from_version" form="change_version">
+                {% for version in project["versions"] %}
+                    <option value="{{ version['id'] }}">{{ version['language'].title() }}</option>
+                {% endfor %}
+            </select>
+            version to
+            <select name="change_to_version" form="change_version">
+                {% include "select/languages.html" %}
+            </select>.
 
-    <!--
-    Multiple level template inheritance in Jinja2?
-    https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
-    -->
-    Change your
-    <select name="change_from_version" form="change_version">
-        {% for version in project["versions"] %}
-            <option value="{{ version['id'] }}">{{ version['language'].title() }}</option>
-        {% endfor %}
-    </select>
-    version to
-    <select name="change_to_version" form="change_version">{% include "select/languages.html" %}</select>.
-    New version source: <input type="text" name="source" form="change_version" placeholder="Optional">
-    <br><br>
-    <form action="{{ url_for('edit') }}" method="post" id="change_version">
-        <button class="btn btn-default" type="submit" name="change_project_versions" value="{{ project['id'] }}">Done</button>
-    </form>
+        </p>
+        <p>
+            New version source: <input type="text" name="source" form="change_version" placeholder="Optional">
+        </p>
+        <form action="{{ url_for('edit') }}" method="post" id="change_version" class="pl-form">
+            <button class="btn btn-warning" type="submit" name="change_project_versions"
+                    value="{{ project['id'] }}">
+                Done
+            </button>
+        </form>
+
+    </div>
 
 {% endblock %}

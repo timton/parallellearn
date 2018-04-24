@@ -6,17 +6,18 @@
 
 {% block main %}
 
-    <div class="container">
-
-        {% if line_to_edit["user_is_author"] == True %}
-            <p>You are the author of the version this line belongs to. Edit it on the spot:</p>
-        {% else %}
-            <p>This line doesn't belong to you. Submit the correction to the author for review:</p>
-        {% endif %}
+    <div class="container align-center" id="edit-line">
         <br>
+        <h4><strong>Line Editting</strong></h4>
+        <p>
+            {% if line_to_edit["user_is_author"] == True %}
+                <p>You are the author of the version this line belongs to. Edit it on the spot:</p>
+            {% else %}
+                <p>This line doesn't belong to you. Submit the correction to the author for review:</p>
+            {% endif %}
+        </p>
 
-        <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
-        <table style="margin: auto;">
+        <table class="align-left table table-bordered d-none d-sm-table">
             <tr>
                 <th>GOOD LINE: </th>
                 <td>{{ line_to_edit["good_line"] }}</td>
@@ -29,19 +30,44 @@
                 <th>CORRECTION: </th>
                 <td>
                     <form action="{{ url_for('edit_line') }}" method="post" id="edit_line_form">
-                        <input type="text" style="width: 100%" autofocus name="edit_line_text">
+                        <input type="text" autofocus name="edit_line_text">
                     </form>
                 </td>
             </tr>
         </table>
-        </br>
+
+        <div class="align-center d-block d-sm-none">
+            <div>
+                <strong>GOOD LINE</strong>
+                <hr>
+                {{ line_to_edit["good_line"] }}
+            </div>
+            <div>
+                <strong>BAD LINE</strong>
+                <hr>
+                {{ line_to_edit["bad_line"] }}
+            </div>
+            <div>
+                <strong>CORRECTION</strong>
+                <hr>
+                <form action="{{ url_for('edit_line') }}" method="post" id="edit_line_form">
+                    <input type="text" autofocus name="edit_line_text">
+                </form>
+            </div>
+        </div>
+
+        <br>
 
         {% if line_to_edit["user_is_author"] == True %}
-            <button class="btn btn-default" type="submit" name="edit_line" value="{{ line_to_edit['user_is_author'] }},{{ line_to_edit['bad_line_id'] }},{{ line_to_edit['good_line_id'] }}" form="edit_line_form">
+            <button class="btn btn-warning" type="submit" name="edit_line"
+                    value="{{ line_to_edit['user_is_author'] }},{{ line_to_edit['bad_line_id'] }},{{ line_to_edit['good_line_id'] }}"
+                    form="edit_line_form">
                 Edit
             </button>
         {% else %}
-            <button class="btn btn-default" type="submit" name="edit_line" value="{{ line_to_edit['user_is_author'] }},{{ line_to_edit['bad_line_id'] }},{{ line_to_edit['good_line_id'] }}" form="edit_line_form">
+            <button class="btn btn-warning" type="submit" name="edit_line"
+                    value="{{ line_to_edit['user_is_author'] }},{{ line_to_edit['bad_line_id'] }},{{ line_to_edit['good_line_id'] }}"
+                    form="edit_line_form">
                 Submit
             </button>
         {% endif %}

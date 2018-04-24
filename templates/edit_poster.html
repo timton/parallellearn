@@ -5,21 +5,23 @@
 {% endblock %}
 
 {% block main %}
+    <div class="container">
+        <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
+        <form action="{{ url_for('edit') }}" method="post" enctype="multipart/form-data" class="pl-form">
+            <fieldset>
+                <div class="form-group">
+                    <p class="align-center">Upload a new <strong>poster</strong>:</p>
+                    <input autocomplete="off" class="form-control" name="new_poster"
+                           placeholder="New Poster Image" type="file" required />
+                </div>
+                <div class="form-group align-center">
+                    <button class="btn btn-warning" type="submit" name="change_project_poster"
+                            value="{{ project['id'] }}">
+                        Done
+                    </button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
 
-    <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
-    <form action="{{ url_for('edit') }}" method="post" enctype="multipart/form-data">
-        <fieldset>
-            <div class="form-group">
-                Upload a new <strong>poster</strong>:
-                <br><br>
-                <input autocomplete="off" class="form-control" name="new_poster"
-                       placeholder="New Poster Image" type="file"/>
-            </div>
-            <div class="form-group">
-                <button class="btn" type="submit" name="change_project_poster" value="{{ project['id'] }}">
-                    Done
-                </button>
-                    </div>
-        </fieldset>
-    </form>
 {% endblock %}

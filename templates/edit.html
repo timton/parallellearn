@@ -6,58 +6,136 @@
 
 {% block main %}
 
-    <div class="container bordered" style="margin: auto; width: 50%;">
-        <div class="type_box" style="width: 20%; position: relative; float: left; padding-top: 0.5em;">
-            <b><span style="display: inline;">[{{ project["type"].title() }}]</span></b>
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                    <button type="submit" name="want_to_edit_type" value="{{ project['id'] }}">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
-        </div>
-        <div class="title_box" style="width: 80%; position: relative; float: right; padding-top: 0.5em;">
-            <h4 style="display: inline;">{{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})</h4>
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                    <button type="submit" name="want_to_edit_name" value="{{ project['id'] }}">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
-        </div>
-        <br><hr>
-        <div class="poster_box" style="width: 20%; position: relative; float: left; padding-bottom: 1em;">
-            <img src="{{ url_for('static', filename=project['poster']) }}" alt="Project poster"
-                 style="width: 100%;" >
-            {% if project["user_id"] == session["user_id"] %}
+    <div class="container align-center" id="edit">
+        <br>
+        <strong><h4>Edit Project</h4></strong>
+        <br>
+
+        <table class="table table-bordered d-none d-sm-table">
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>Type: </strong>{{ project["type"].title() }}
+                        {% if project["user_id"] == session["user_id"] %}
+                            <form action="{{ url_for('edit') }}" method="POST">
+                                <button class="btn btn-sm btn-warning" type="submit"
+                                        name="want_to_edit_type" value="{{ project['id'] }}">
+                                    Edit
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>Title: </strong>
+                        {{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})
+                        {% if project["user_id"] == session["user_id"] %}
+                            <form action="{{ url_for('edit') }}" method="POST">
+                                <button class="btn btn-sm btn-warning" type="submit"
+                                        name="want_to_edit_name" value="{{ project['id'] }}">
+                                    Edit
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="{{ url_for('static', filename=project['poster']) }}" alt="poster">
+                        {% if project["user_id"] == session["user_id"] %}
+                            <form action="{{ url_for('edit') }}" method="POST">
+                                <button class="btn btn-sm btn-warning" type="submit"
+                                        name="want_to_edit_poster" value="{{ project['id'] }}">
+                                    Edit
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>Description: </strong>{{ project["description"] }}
+                        {% if project["user_id"] == session["user_id"] %}
+                            <form action="{{ url_for('edit') }}" method="POST">
+                                <button class="btn btn-sm btn-warning" type="submit"
+                                        name="want_to_edit_description" value="{{ project['id'] }}">
+                                    Edit
+                                </button>
+                            </form>
+                        {% endif %}
+                        <br><br>
+                        <hr>
+                        <br>
+                        <strong>Languages: </strong>{{ project["languages"].title() }}
+                        <form action="{{ url_for('edit') }}" method="POST">
+                            <button class="btn btn-sm btn-warning" type="submit"
+                                    name="want_to_edit_versions" value="{{ project['id'] }}">
+                                Edit
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="d-block d-sm-none">
+            <p>
+                <strong>Type: </strong> {{ project["type"].title() }}
+                {% if project["user_id"] == session["user_id"] %}
+                    <form action="{{ url_for('edit') }}" method="POST">
+                        <button class="btn btn-sm btn-warning" type="submit"
+                                name="want_to_edit_type" value="{{ project['id'] }}">
+                            Edit
+                        </button>
+                    </form>
+                {% endif %}
+            </p>
+            <hr>
+            <p>
+                <strong>Title: </strong>
+                {{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})
+                {% if project["user_id"] == session["user_id"] %}
+                    <form action="{{ url_for('edit') }}" method="POST">
+                        <button class="btn btn-sm btn-warning" type="submit"
+                                name="want_to_edit_name" value="{{ project['id'] }}">
+                            Edit
+                        </button>
+                    </form>
+                {% endif %}
+            </p>
+            <hr>
+            <p>
+                <img src="{{ url_for('static', filename=project['poster']) }}" alt="Project poster">
+                {% if project["user_id"] == session["user_id"] %}
+                    <form action="{{ url_for('edit') }}" method="POST">
+                        <button class="btn btn-sm btn-warning" type="submit"
+                                name="want_to_edit_poster" value="{{ project['id'] }}">
+                            Edit
+                        </button>
+                    </form>
+                {% endif %}
+            </p>
+            <hr>
+            <p>
+                <strong>Description: </strong>{{ project["description"] }}
+                {% if project["user_id"] == session["user_id"] %}
+                    <form action="{{ url_for('edit') }}" method="POST">
+                        <button class="btn btn-sm btn-warning" type="submit"
+                                name="want_to_edit_description" value="{{ project['id'] }}">
+                            Edit
+                        </button>
+                    </form>
+                {% endif %}
+            </p>
+            <hr>
+            <p>
+                <strong>Languages: </strong>{{ project["languages"].title() }}
                 <form action="{{ url_for('edit') }}" method="POST">
-                    <button type="submit" name="want_to_edit_poster" value="{{ project['id'] }}" style="margin-top: 1em;">
+                    <button class="btn btn-sm btn-warning" type="submit"
+                            name="want_to_edit_versions" value="{{ project['id'] }}">
                         Edit
                     </button>
                 </form>
-            {% endif %}
+            </p>
         </div>
-        <div class="meta_box"
-             style="width: 80%; position: relative; float: right; text-align: left; padding-left: 1em; padding-bottom: 1em;">
-            <span style="display: inline;"><b>Description: </b>{{ project["description"] }}</span>
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                    <button type="submit" name="want_to_edit_description" value="{{ project['id'] }}">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
-            <br><br>
-            <span style="display: inline;"><b>Languages: </b>{{ project["languages"].title() }}</span>
-            <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                <button type="submit" name="want_to_edit_versions" value="{{ project['id'] }}">
-                    Edit
-                </button>
-            </form>
-        </div>
-    </div>
+
     <br>
     {% if project["user_id"] == session["user_id"] %}
         You are the owner of this project.
@@ -65,5 +143,7 @@
     {% else %}
         You are not the owner of this project. You can only edit the language versions you have contributed with.
     {% endif %}
+    <br>
+    </div>
 
 {% endblock %}

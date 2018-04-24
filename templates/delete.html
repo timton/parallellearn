@@ -6,29 +6,34 @@
 
 {% block main %}
 
-    <!-- https://stackoverflow.com/questions/1571648/tab-space-instead-of-multiple-non-breaking-spaces-nbsp -->
-    <div style="text-align: left; padding-left: 5em;">
+    <div class="container align-center" id="delete">
+        <br>
+        <strong><h4>Delete Project</h4></strong>
+        <br>
+
+        <!-- Delete versions -->
         For <b>{{ project["title"].title() }}</b>, you can delete the following versions:
-        <select autofocus name="delete_version" form="submit_version" style="display: inline-block">
+        <select autofocus name="delete_version" form="submit_version">
             {% for version in project["versions_to_delete"] %}
                 <option value="{{ version['id'] }}">{{ version['language'].title() }}</option>
             {% endfor %}
         </select>
-        <form action="{{ url_for('delete') }}" id="submit_version" style="display: inline-block" method="post">
-            <button class="btn btn-default" type="submit">Delete Version</button>
+        <form action="{{ url_for('delete') }}" id="submit_version" method="post">
+            <button class="btn btn-danger btn-sm" type="submit">Delete Version</button>
         </form>
-        <br><br><br>
+        <br><br>
         <!-- Can only delete your own projects -->
         {% if project["user_id"] == session["user_id"] %}
             Alternatively, you can delete the entire project altogether:
 
-            <!-- https://stackoverflow.com/questions/18155809/remove-line-break-html -->
-            <form action="{{ url_for('delete') }}" style="display: inline-block" method="post">
-                <button name="delete_project" value="{{ project['id'] }}" type="submit" class="btn btn-default">
+            <form action="{{ url_for('delete') }}" method="post">
+                <button name="delete_project" value="{{ project['id'] }}"
+                        type="submit" class="btn btn-danger btn-sm">
                     Delete Project
                 </button>
             </form>
         {% endif %}
+
     </div>
 
 {% endblock %}

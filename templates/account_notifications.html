@@ -14,11 +14,10 @@
             <p>You don't have any notifications.</p>
             <br>
         {% else %}
-            <br>
             {% for notification in notifications %}
                 <div class="wrapper align-left">
                     <p>
-                        - <u><b>{{ notification["title"].title() }}</b></u>:
+                        <u><b>{{ notification["title"].title() }}</b></u>:
                         For <i>"{{ notification["context_line"] }}"</i> ({{ notification["from_language"].title() }})
                         instead of <i>"{{ notification["original_line"] }}"</i> ({{ notification["to_language"].title() }})
                         <b>{{ notification["user"] }}</b> suggets using <i>"{{ notification["suggested_line"] }}"</i>.

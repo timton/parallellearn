@@ -252,8 +252,19 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 }
 
 .pl-form .form-group {
-    width: 13rem;
+    width: 16rem;
     margin: 1rem auto;
+}
+
+@media (max-width: 576px) {
+    .pl-form .form-group {
+        width: 13.75rem;
+        font-size: 13px;
+    }
+}
+
+.pl-form button {
+    font-weight: bold;
 }
 
 #account-notifications {
@@ -329,4 +340,128 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 #browse .row card {
     border: 1px solid lightgrey;
 }
+
+#delete select, #delete form {
+    display: inline-block;
+}
+
+#delete button {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+#delete select {
+    margin-bottom: 0.5rem;
+}
+
+#edit {
+    padding-bottom: 2rem;
+    background-color: #bcab90;
+}
+
+#edit > div, #edit table {
+    width: 50%;
+    margin: auto;
+    font-size: 12px;
+    border: 1px solid lightgrey;
+}
+
+#edit form {
+    display: inline-block;
+}
+
+#edit button {
+    font-weight: bold;
+    padding: 0.1rem 0.25rem;
+}
+
+#edit img {
+    width: 150px;
+    margin-bottom: 0.25rem;
+}
+
+#edit p {
+    margin: 0.5rem;
+}
+
+@media (max-width: 575.98px) {
+    #edit img {
+        max-width: 100%;
+    }
+
+    #edit > div {
+        width: 100%;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 1199.98px) {
+    #edit table {
+        width: 75%;
+    }
+}
+
+
+#edit hr {
+    margin: 0;
+}
+
+#edit-line {
+    background-color: #b49d80;
+    padding-bottom: 2rem;
+    margin-top: 1rem;
+}
+
+#edit-line table {
+    margin: auto;
+}
+
+#edit-line button {
+    font-weight: bold;
+}
+
+#edit-line tr:first-of-type,
+#edit-line div div:first-of-type{
+    color: green;
+}
+
+#edit-line tr:nth-of-type(2),
+#edit-line div div:nth-of-type(2){
+    color: darkred;
+}
+
+#edit-line div > div {
+    border: 1px solid white;
+    margin: 1rem;
+}
+
+#edit-line input {
+    width: 100%;
+}
+
+/* https://stackoverflow.com/questions/6382023/changing-the-color-of-an-hr-element */
+#edit-line hr {
+    margin: 0.2rem 0;
+    border-color: white;
+}
+
+@media (max-width: 575.98px) {
+    #edit-line input {
+        margin-bottom: 0.5rem;
+        width: 95%;
+    }
+}
+
+#edit-name {
+    font-size: 13px;
+    text-align: center;
+}
+
+#edit-name .pl-form {
+    margin-top: 0;
+}
+
+#edit-name input {
+    margin-top: 0.5rem;
+}
+
 /* end bs4 */
