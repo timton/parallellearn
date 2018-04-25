@@ -11,33 +11,35 @@
         <p>No existing projects yet.</p>
         <br>
     {% else %}
+        <br>
+        <div class="container align-center creamy">
+            <br>
+            <strong><p>Contributing to an existing project. Most appreciated!</p></strong>
+            <form action="{{ url_for('upload_existing') }}" method="post" class="pl-form"
+                  enctype="multipart/form-data" id="upload_existing">
+                <fieldset>
+                    <div class="form-group">
+                        <p>First, please select the <strong>project</strong> you'd like to contribute to:</p>
+                        <input autocomplete="off" autofocus class="form-control"
+                               list="projects" name="project" id="project" placeholder="Project (select/type)">
+                        <datalist id="projects">
+                            {% for project in existing_projects %}
+                            <option value='{{ project["name"].title() }}'>
+                            {% endfor %}
+                        </datalist>
+                    </div>
 
-
-        <h4>Contributing to an existing project. Most appreciated!</h4>
-        </br>
-        <form action="{{ url_for('upload_existing') }}" method="post" enctype="multipart/form-data" id="upload_existing">
-            <fieldset>
-                <div class="form-group">
-                    <p>First, please select the project you'd like to contribute to:</p>
-                    <input autocomplete="off" autofocus class="form-control"
-                           list="projects" name="project" id="project" placeholder="Project (select/type)">
-                    <datalist id="projects">
-                        {% for project in existing_projects %}
-                        <option value='{{ project["name"].title() }}'>
-                        {% endfor %}
-                    </datalist>
-                </div>
-
-
-                <div class="form-group">
-                    <p>Then select the file with the language versions:</p>
-                    <input autocomplete="off" autofocus class="form-control" name="file" placeholder="File" type="file"/>
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-default" type="submit">Next</button>
-                </div>
-            </fieldset>
-        </form>
+                    <div class="form-group">
+                        <p>Then select the <strong>file</strong> with the language versions:</p>
+                        <input autocomplete="off" autofocus class="form-control" name="file" placeholder="File" type="file"/>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success" type="submit">Next</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+        <br>
     {% endif %}
 
 {% endblock %}

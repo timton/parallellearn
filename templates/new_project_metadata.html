@@ -5,76 +5,62 @@
 {% endblock %}
 
 {% block main %}
+    <br>
+    <div class="container align-center creamy">
+        <br>
+        <p>Uploading a <strong>{{ session["new_project"]["type"].title() }}</strong>. Excellent!</p>
+        <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
+        <form action="{{ url_for('new_project_metadata') }}" method="post"
+              enctype="multipart/form-data" id="upload_new" class="pl-form">
+            <fieldset>
+                <div class="form-group">
+                    First, please input the <strong>title</strong>:
+                    <br/>
+                    <input autofocus autocomplete="off" name="new_project_title" class="form-control"
+                           id="new_project_title" type="text"/ list="titles" placeholder="Title"/>
+                    <datalist id="titles">{% include "select/titles.html" %}</datalist>
+                </div>
 
-    <ul style="list-style: none; text-align: left;">
-        <li>
-            <p>Uploading a {{ session["new_project"]["type"] }}. Excellent!</p>
-        <li>
-    </ul>
-    </br>
-    <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
-    <form action="{{ url_for('new_project_metadata') }}" method="post" enctype="multipart/form-data" id="upload_new">
-        <fieldset>
-            <ol align="left">
-                <li>
+            {% if session["new_project"]["type"] == "tv series" %}
                     <div class="form-group">
-                        Please input the <strong>title</strong>:
-                        <br/>
-                        <input autofocus autocomplete="off" name="new_project_title" class="form-control"
-                               id="new_project_title" type="text"/ list="titles" placeholder="Title"/>
-                        <datalist id="titles">{% include "select/titles.html" %}</datalist>
-                    </div>
-                </li>
-
-                {% if session["new_project"]["type"] == "tv series" %}
-                    <li>
-                        <div class="form-group">
-                            What <strong>season</strong> and <strong>episode</strong>:
-                            <br>
-                            <input autocomplete="off" name="new_project_season" class="form-control"
-                                   type="number" placeholder="Season"/>
-                            <input autocomplete="off" name="new_project_episode" class="form-control"
-                                   type="number" placeholder="Episode"/>
-                        </div>
-                    </li>
-                {% endif %}
-
-                <li>
-                    <div class="form-group">
-                        Next, the <strong>author</strong>:
+                        What <strong>season</strong> and <strong>episode</strong>:
                         <br>
-                        <input autocomplete="off" name="new_project_author" class="form-control"
-                               id="new_project_author" type="text"/ list="authors" placeholder="Author"/>
-                        <datalist id="authors">{% include "select/authors.html" %}</datalist>
+                        <input autocomplete="off" name="new_project_season" class="form-control"
+                               type="number" placeholder="Season"/>
+                        <input autocomplete="off" name="new_project_episode" class="form-control"
+                               type="number" placeholder="Episode"/>
                     </div>
-                </li>
-                <li>
-                    <div class="form-group">
-                        Don't forget about the <strong>year</strong>:
-                        <br>
-                        <input autocomplete="off" name="new_project_year" class="form-control"
-                               type="number" placeholder="Year"/>
-                    </div>
-                </li>
+            {% endif %}
 
-                <li>
-                    <div class="form-group">
-                        Finally, select the <strong>file</strong> itself:
-                        <br>
-                        <input autocomplete="off" class="form-control" name="file"
-                               placeholder="File" type="file"/>
-                    </div>
-                </li>
-            </ol>
-            <ul style="list-style: none;">
-                <li>
-                    <div class="form-group">
-                        <button class="btn" type="submit" style="float: left;">
-                            Upload Project
-                        </button>
-                    </div>
-                <li>
-            </ul>
-        </fieldset>
-    </form>
+                <div class="form-group">
+                    Next, the <strong>author</strong>:
+                    <br>
+                    <input autocomplete="off" name="new_project_author" class="form-control"
+                           id="new_project_author" type="text"/ list="authors" placeholder="Author"/>
+                    <datalist id="authors">{% include "select/authors.html" %}</datalist>
+                </div>
+                <div class="form-group">
+                    Don't forget about the <strong>year</strong>:
+                    <br>
+                    <input autocomplete="off" name="new_project_year" class="form-control"
+                           type="number" placeholder="Year"/>
+                </div>
+                <div class="form-group">
+                    Finally, select the <strong>file</strong> itself:
+                    <br>
+                    <input autocomplete="off" class="form-control" name="file"
+                           placeholder="File" type="file"/>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-success" type="submit">
+                        Upload
+                    </button>
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+
+
 {% endblock %}

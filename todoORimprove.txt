@@ -7,7 +7,7 @@
 - make a db for series and their episodes (only for the cover/description?)
 - upload line by line (live translation)
 - front page chat
-- remaining templates: about, contact
+- remaining templates: about, contact, faq
 - for quick practice, display source project
 
 #########  IMPROVE

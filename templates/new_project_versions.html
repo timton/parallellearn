@@ -5,25 +5,55 @@
 {% endblock %}
 
 {% block main %}
+    <br>
+    <div class="container align-center creamy" id="new-project-versions">
+        <!--
+        Multiple level template inheritance in Jinja2?
+        https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
+        -->
+        <br>
+        <p>We have detected <b>{{ session["new_project"]["number_of_versions"] }}</b> versions. Please specify them:</p>
 
-    <!--
-    Multiple level template inheritance in Jinja2?
-    https://stackoverflow.com/questions/1976651/multiple-level-template-inheritance-in-jinja2
-    -->
-    <p>We have detected <b>{{ session["new_project"]["number_of_versions"] }}</b> versions. Please specify them:</p>
-    </br>
-    <ul style="list-style: none;">
-        {% for i in range(session["new_project"]["number_of_versions"]) %}
-            <li>
-                Version {{ (i + 1) }}:
-                <select name="{{ i }}" form="submit_language">{% include "select/languages.html" %}</select>
-                Source: <input type="text" name="source{{ i }}" form="submit_language" placeholder="Optional">
-            </li>
-            </br>
-        {% endfor %}
-    </ul>
-    <form action="{{ url_for('new_project_versions') }}" method="post" id="submit_language">
-        <button class="btn btn-default" type="submit">Next</button>
-    </form>
+        <table class="table table-bordered d-none d-sm-table">
+            <tbody>
+                {% for i in range(session["new_project"]["number_of_versions"]) %}
+                    <tr>
+                        <td>
+                            <strong>Version {{ (i + 1) }}:</strong>
+                            <select name="{{ i }}" form="submit_language">
+                                {% include "select/languages.html" %}
+                            </select>
+                        </td>
+                        <td>
+                            Source: <input type="text" name="source{{ i }}"
+                                           form="submit_language" placeholder="Optional">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
+        <div class="d-block d-sm-none">
+            {% for i in range(session["new_project"]["number_of_versions"]) %}
+                <div>
+                    <p>
+                        <strong>Version {{ (i + 1) }}:</strong>
+                        <select name="{{ i }}" form="submit_language">
+                            {% include "select/languages.html" %}
+                        </select>
+                    </p>
+                    <p>
+                        Source {{ (i + 1) }}: <input type="text" name="source{{ i }}"
+                                                     form="submit_language" placeholder="Optional">
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form action="{{ url_for('new_project_versions') }}" method="post" id="submit_language" class="pl-form">
+            <button class="btn btn-success" type="submit">Next</button>
+        </form>
+        <br>
+    </div>
+    <br>
 {% endblock %}

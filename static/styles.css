@@ -17,6 +17,10 @@ main {
     text-align: center;
 }
 
+.creamy {
+    background-color: #bcab90;
+}
+
 .navbar {
     font-weight: 600;
 }
@@ -198,7 +202,7 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     font-size: 14px;
 }
 
-/* table appears left-padded on xs */
+/* account details table appears left-padded on xs */
 @media (max-width: 335px) {
     #account-details {
         margin-left: -1.5rem;
@@ -248,23 +252,20 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 }
 
 .pl-form {
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
 .pl-form .form-group {
-    width: 16rem;
     margin: 1rem auto;
-}
-
-@media (max-width: 576px) {
-    .pl-form .form-group {
-        width: 13.75rem;
-        font-size: 13px;
-    }
 }
 
 .pl-form button {
     font-weight: bold;
+}
+
+.pl-form input {
+    width: 16rem;
+    margin: 0.25rem auto;
 }
 
 #account-notifications {
@@ -316,14 +317,6 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     margin: auto 1rem;
 }
 
-@media (max-width: 575.98px) {
-    #browse .nav {
-        font-size: 11px;
-        font-weight: bold;
-        margin: auto 0.75rem;
-    }
-}
-
 #browse .nav a {
     text-decoration: none;
     color: black;
@@ -354,55 +347,47 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     margin-bottom: 0.5rem;
 }
 
-#edit {
-    padding-bottom: 2rem;
-    background-color: #bcab90;
-}
-
-#edit > div, #edit table {
+#edit > div, #edit table,
+#view > div, #view table {
     width: 50%;
     margin: auto;
     font-size: 12px;
     border: 1px solid lightgrey;
 }
 
-#edit form {
+#edit form, #view form {
     display: inline-block;
 }
 
-#edit button {
+#edit button, #view button {
     font-weight: bold;
     padding: 0.1rem 0.25rem;
 }
 
-#edit img {
+#edit img, #view img {
     width: 150px;
     margin-bottom: 0.25rem;
 }
 
-#edit p {
+#edit p, #view p {
     margin: 0.5rem;
 }
 
-@media (max-width: 575.98px) {
-    #edit img {
-        max-width: 100%;
-    }
-
-    #edit > div {
-        width: 100%;
-    }
-}
-
 @media (min-width: 576px) and (max-width: 1199.98px) {
-    #edit table {
+    #edit table, #view table {
         width: 75%;
     }
 }
 
-
-#edit hr {
+#edit hr, #view he {
     margin: 0;
+}
+
+.truncate {
+    width: 15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #edit-line {
@@ -444,13 +429,6 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     border-color: white;
 }
 
-@media (max-width: 575.98px) {
-    #edit-line input {
-        margin-bottom: 0.5rem;
-        width: 95%;
-    }
-}
-
 #edit-name {
     font-size: 13px;
     text-align: center;
@@ -462,6 +440,59 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 
 #edit-name input {
     margin-top: 0.5rem;
+}
+
+#new-project-versions div div {
+    border: 1px solid black;
+    margin-top: 1rem;
+}
+
+#new-project-versions input {
+    width: 10rem;
+}
+
+#new-project-formatting textarea {
+    width: 17rem;
+    margin: auto;
+}
+
+@media (max-width: 575.98px) {
+    .pl-form .form-group {
+        font-size: 13px;
+    }
+
+    .pl-form input {
+        width: 13.75rem;
+    }
+
+    #browse .nav {
+        font-size: 11px;
+        font-weight: bold;
+        margin: auto 0.75rem;
+    }
+
+    #edit img, #view img {
+        max-width: 100%;
+    }
+
+    #edit > div, #view > div {
+        width: 100%;
+    }
+
+    .truncate {
+        width: 10rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #edit-line input {
+        margin-bottom: 0.5rem;
+        width: 95%;
+    }
+    #new-project-formatting textarea {
+        width: 13.5rem;
+    }
 }
 
 /* end bs4 */

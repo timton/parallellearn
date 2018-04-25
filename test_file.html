@@ -1,69 +1,35 @@
-{% extends "layout.html" %}
+        <table class="table table-bordered d-none d-sm-table">
+            <tbody>
+                {% for i in range(session["new_project"]["number_of_versions"]) %}
+                    <tr>
+                        <td>
+                            <strong>Version {{ (i + 1) }}:</strong>
+                            <select name="{{ i }}" form="submit_language">
+                                {% include "select/languages.html" %}
+                            </select>
+                        </td>
+                        <td>
+                            Source: <input type="text" name="source{{ i }}"
+                                           form="submit_language" placeholder="Optional">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-{% block title %}
-    Edit Project
-{% endblock %}
-
-{% block main %}
-
-    <div class="container bordered" style="margin: auto; width: 50%;">
-        <div class="type_box" style="width: 20%; position: relative; float: left; padding-top: 0.5em;">
-            <b><span style="display: inline;">[{{ project["type"].title() }}]</span></b>
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                    <button type="submit" name="want_to_edit_type" value="{{ project['id'] }}">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
+        <div class="d-block d-sm-none">
+            {% for i in range(session["new_project"]["number_of_versions"]) %}
+                <div>
+                    <p>
+                        <strong>Version {{ (i + 1) }}:</strong>
+                        <select name="{{ i }}" form="submit_language">
+                            {% include "select/languages.html" %}
+                        </select>
+                    </p>
+                    <p>
+                        Source: <input type="text" name="source{{ i }}"
+                                       form="submit_language" placeholder="Optional">
+                    </p>
+                </div>
+            {% endfor %}
         </div>
-        <div class="title_box" style="width: 80%; position: relative; float: right; padding-top: 0.5em;">
-            <h4 style="display: inline;">{{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})</h4>
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                    <button type="submit" name="want_to_edit_name" value="{{ project['id'] }}">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
-        </div>
-        <br><hr>
-        <div class="poster_box" style="width: 20%; position: relative; float: left; padding-bottom: 1em;">
-            <img src="{{ url_for('static', filename=project['poster']) }}" alt="Project poster"
-                 style="width: 100%;" >
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST">
-                    <button type="submit" name="want_to_edit_poster" value="{{ project['id'] }}" style="margin-top: 1em;">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
-        </div>
-        <div class="meta_box"
-             style="width: 80%; position: relative; float: right; text-align: left; padding-left: 1em; padding-bottom: 1em;">
-            <span style="display: inline;"><b>Description: </b>{{ project["description"] }}</span>
-            {% if project["user_id"] == session["user_id"] %}
-                <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                    <button type="submit" name="want_to_edit_description" value="{{ project['id'] }}">
-                        Edit
-                    </button>
-                </form>
-            {% endif %}
-            <br><br>
-            <span style="display: inline;"><b>Languages: </b>{{ project["languages"].title() }}</span>
-            <form action="{{ url_for('edit') }}" method="POST" style="display: inline;">
-                <button type="submit" name="want_to_edit_versions" value="{{ project['id'] }}">
-                    Edit
-                </button>
-            </form>
-        </div>
-    </div>
-    <br>
-    {% if project["user_id"] == session["user_id"] %}
-        You are the owner of this project.
-        You can edit both the project metadata, and the language versions you have contributed with.
-    {% else %}
-        You are not the owner of this project. You can only edit the language versions you have contributed with.
-    {% endif %}
-
-{% endblock %}

@@ -2236,11 +2236,8 @@ def discard_project():
         except RuntimeError:
             return apology("Couldn't delete the progress.", "Please try again.")
 
-        return view_history()
-
-    # else if user reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("upload_new.html")
+    # view history upon successful discard / GET request
+    return view_history()
 
 # faq route
 @app.route("/faq")

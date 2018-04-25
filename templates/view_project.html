@@ -6,44 +6,91 @@
 
 {% block main %}
 
-    <div class="container bordered" style="margin: auto; width: 50%;">
-            <div class="type_box" style="width: 20%; position: relative; float: left;">
-                <h4>[{{ project["type"].title() }}]</h4>
-            </div>
-            <div class="title_box" style="width: 80%; position: relative; float: right;">
-                <h4>{{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})</h4>
-            </div>
-            <br><hr>
-            <div class="poster_box" style="width: 20%; position: relative; float: left; padding-bottom: 1em;">
-                <img src="{{ url_for('static', filename=project['poster']) }}" alt="Project poster"
-                     style="width: 100%;" >
-            </div>
-            <div class="meta_box"
-                 style="width: 80%; position: relative; float: right; text-align: left; padding-left: 1em; padding-bottom: 1em;">
-                <b>Description: </b>{{ project["description"] }}
-                <br><br>
-                <b>Languages: </b>{{ project["languages"].title() }}
-                {% if project["sources"]|length != 0 %}
-                    <br><br>
+    <div class="container align-center creamy" id="view">
+        <br>
+        <table class="table table-bordered d-none d-sm-table">
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>Type: </strong>{{ project["type"].title() }}
+                    </td>
+                    <td>
+                        <strong>Title: </strong>
+                        {{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="{{ url_for('static', filename=project['poster']) }}" alt="poster">
+                    </td>
+                    <td>
+                        <strong>Description: </strong>{{ project["description"] }}
+                        <hr>
+                        <strong>Languages: </strong>{{ project["languages"].title() }}
+                        {% if project["sources"]|length != 0 %}
+                            <hr>
+                            <b>Credits: </b>
+                            <select class="truncate">
+                                {% for source in project["sources"] %}
+                                    <option>
+                                        <b>{{ source["user"] }}</b> thanks
+                                        <i>{{ source["source"] }}</i> for
+                                        {{ source["language"].title() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="d-block d-sm-none">
+            <p>
+                <strong>Type: </strong> {{ project["type"].title() }}
+            </p>
+            <hr>
+            <p>
+                <strong>Title: </strong>
+                {{ project["title"].title() }} by {{ project["author"].title() }} ({{ project["year"] }})
+            </p>
+            <hr>
+            <p>
+                <img src="{{ url_for('static', filename=project['poster']) }}" alt="Project poster">
+            </p>
+            <hr>
+            <p>
+                <strong>Description: </strong>{{ project["description"] }}
+            </p>
+            <hr>
+            <p>
+                <strong>Languages: </strong>{{ project["languages"].title() }}
+            </p>
+            {% if project["sources"]|length != 0 %}
+                <hr>
+                <p>
                     <b>Credits: </b>
-                    <select>
+                    <select class="truncate">
                         {% for source in project["sources"] %}
-                            <option><b>{{ source["user"] }}</b> thanks <i>{{ source["source"] }}</i> for {{ source["language"].title() }}</option>
+                            <option>
+                                <b>{{ source["user"] }}</b> thanks <i>{{ source["source"] }}</i> for {{ source["language"].title() }}
+                            </option>
                         {% endfor %}
                     </select>
-                {% endif %}
-            </div>
+                </p>
+            {% endif %}
+        </div>
+        <form action="{{ url_for('prepare_practice') }}" method="POST" class="pl-form">
+            <button type="submit" name="prepare_practice" value="{{ project['id'] }}" class="btn btn-warning">
+                Practice
+            </button>
+        </form>
+        <form action="{{ url_for('prepare_download') }}" method="POST" class="pl-form">
+            <button type="submit" name="prepare_download" value="{{ project['id'] }}" class="btn btn-basic">
+                Download
+            </button>
+        </form>
+        <br><br>
     </div>
-    <br>
-    <form action="{{ url_for('prepare_practice') }}" method="POST" style="display: inline-block;">
-        <button type="submit" name="prepare_practice" value="{{ project['id'] }}">
-            Practice
-        </button>
-    </form>
-    <form action="{{ url_for('prepare_download') }}" method="POST" style="display: inline-block;">
-        <button type="submit" name="prepare_download" value="{{ project['id'] }}">
-            Download
-        </button>
-    </form>
 
 {% endblock %}

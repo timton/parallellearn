@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container align-center">
+    <div class="container align-center" id="edit-versions">
         <br>
-        <h5><strong>Edit Versions</strong></h5>
+        <h5><strong>Edit Version Language</strong></h5>
         <br>
         <!--
         Multiple level template inheritance in Jinja2?
@@ -15,13 +15,17 @@
         -->
         <p>
             Change your
-            <select name="change_from_version" form="change_version">
+            <b>
+                <select name="change_from_version" form="change_version" class="creamy">
                 {% for version in project["versions"] %}
-                    <option value="{{ version['id'] }}">{{ version['language'].title() }}</option>
+                    <option value="{{ version['id'] }}">
+                        {{ version['language'].title() }}
+                    </option>
                 {% endfor %}
-            </select>
+                </select>
+            </b>
             version to
-            <select name="change_to_version" form="change_version">
+            <select name="change_to_version" form="change_version" class="creamy">
                 {% include "select/languages.html" %}
             </select>.
 
