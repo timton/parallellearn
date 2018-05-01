@@ -5,38 +5,40 @@
 {% endblock %}
 
 {% block main %}
-    <h4>
-        {{ project["title"].title() }}
-        {% if project["type"].lower() == "tv series" %}
-            [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
-        {% endif %}
-        - {{ project["author"].title() }} -
-        ({{ project["year"] }})
-    </h4>
-    <br>
-
-    <!-- reverse the list order http://jinja.pocoo.org/docs/2.10/templates/#builtin-filters  -->
-    <p>
-        Translate from
-        <select name="from_version_id" form="start_practice">
-            {% for version in project["versions"] %}
-                <option value="{{ version['id'] }}">
-                    {{ version["language"].title() }} (by {{ version["user"] }} - {{ version["rating"] }})
-                </option>
-            {% endfor %}
-        </select>
-        to
-        <select name="to_version_id" form="start_practice">
-            {% for version in project["versions"]|reverse %}
-                <option value="{{ version['id'] }}">
-                    {{ version["language"].title() }} (by {{ version["user"] }} - {{ version["rating"] }})
-                </option>
-            {% endfor %}
-        </select>
-    </p>
-    <br>
-    <form action="{{ url_for('project_practice') }}" method="post" id="start_practice">
-        <button class="btn btn-default" type="submit" name="start_practice" value="{{ project['id'] }}">Let's go</button>
-    </form>
-
+    <div class="container align-center" id="prepare-practice">
+        <br><br>
+            <h5>
+                <strong>
+                {{ project["title"].title() }}
+                {% if project["type"].lower() == "tv series" %}
+                    [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
+                {% endif %}
+                - {{ project["author"].title() }} -
+                ({{ project["year"] }})
+                </strong>
+            </h5>
+        <br>
+        <!-- reverse the list order http://jinja.pocoo.org/docs/2.10/templates/#builtin-filters  -->
+        <p>
+            Translate from
+            <select name="from_version_id" form="start_practice">
+                {% for version in project["versions"] %}
+                    <option value="{{ version['id'] }}">
+                        {{ version["language"].title() }} (by {{ version["user"] }} - {{ version["rating"] }})
+                    </option>
+                {% endfor %}
+            </select>
+            to
+            <select name="to_version_id" form="start_practice">
+                {% for version in project["versions"]|reverse %}
+                    <option value="{{ version['id'] }}">
+                        {{ version["language"].title() }} (by {{ version["user"] }} - {{ version["rating"] }})
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+        <form action="{{ url_for('project_practice') }}" method="post" id="start_practice" class="pl-form">
+            <button class="btn btn-warning" type="submit" name="start_practice" value="{{ project['id'] }}">Let's go</button>
+        </form>
+    </div>
 {% endblock %}

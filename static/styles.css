@@ -21,6 +21,12 @@ main {
     background-color: #bcab90;
 }
 
+/* https://css-tricks.com/fun-with-blurred-text/ */
+.blurry {
+    color: transparent;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
 .navbar {
     font-weight: 600;
 }
@@ -379,7 +385,7 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     }
 }
 
-#edit hr, #view he {
+#edit hr {
     margin: 0;
 }
 
@@ -445,6 +451,7 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 #new-project-versions div div {
     border: 1px solid black;
     margin-top: 1rem;
+    padding: 0.5rem;
 }
 
 #new-project-versions input {
@@ -454,6 +461,67 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 #new-project-formatting textarea {
     width: 17rem;
     margin: auto;
+}
+
+#prepare-practice select {
+    background-color: #bcab90;
+    margin-top: 0.25rem;
+}
+
+#project-practice .row {
+    border: 1px solid black;
+    margin: 1rem 0;
+    font-size: 14px;
+}
+
+#project-practice .row div {
+    padding: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#project-practice input {
+    width: 95%;
+    margin: 0.25rem auto;
+}
+
+#project-practice .row button {
+    margin-top: -1rem;
+}
+
+#project-practice .row:first-of-type,
+#project-practice .row:last-of-type {
+    background-color: lightgrey;
+}
+
+@media (min-width: 576px) {
+
+    #project-practice .row div:first-of-type {
+        border-right: 1px solid black;
+    }
+
+    #project-practice .row:first-of-type div:last-of-type,
+    #project-practice .row:last-of-type div:last-of-type {
+        border-left: 1px solid black;
+    }
+
+    #project-practice .row:first-of-type div:nth-of-type(2),
+    #project-practice .row:first-of-type div:first-of-type,
+    #project-practice .row:last-of-type div:nth-of-type(2),
+    #project-practice .row:last-of-type div:first-of-type {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #project-practice .row div:first-of-type {
+        border-bottom: 1px solid black;
+    }
+
+    #project-practice .row:first-of-type div:last-of-type,
+    #project-practice .row:last-of-type div:last-of-type {
+        border-top: 1px solid black;
+    }
 }
 
 @media (max-width: 575.98px) {
