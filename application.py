@@ -707,7 +707,7 @@ def new_project_formatting():
             session.pop('new_project', None)
             return apology("Let's not go overboard.", "Description too long (maximum 1000 characters).")
 
-        # try to upload the poster
+        # upload the poster
         try:
             postername = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], postername))
