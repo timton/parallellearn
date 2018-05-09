@@ -1,16 +1,13 @@
 ######### TODO
 
 - display progress whil the server does smth (especially uploading project)
-- browse by category
+- browse by language
 - rating (for each line/version?)
 - favicons
 - make a db for series and their episodes (only for the cover/description?)
-- upload line by line (live translation)
-- front page chat
 - remaining templates: about, contact, faq
-- for quick practice, display source project
+- modal windows for edit/rate
 
 #########  IMPROVE
-- live registration form validation
-jQuery http://www.geektantra.com/projects/jquery-form-validate/advanced_demo/
 - download as ebook?
+- autopopulate with with project details once chosen?

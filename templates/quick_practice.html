@@ -5,59 +5,99 @@
 {% endblock %}
 
 {% block main %}
+    <div class="container align-center practice">
+        <br>
+        <h5>
+            <strong>Practice lines</strong>
+            - (<span id="progress_line">Line 1/{{ project["line_count"] }}</span>)
+        </h5>
+        <progress value="{{ project['starting_line'] + 1 }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
+        <br>
+        <div class="row">
+            <div class="col-sm-2 col-lg-1">
+                <strong>{{ project["from_version"]["language"].upper() }}</strong>
+            </div>
+            <div class="col-sm-8 col-lg-10" id="from_line">
+                {{ project["from_lines"][project["starting_line"]]["line"] }}
 
-    <h4>
-        Practice lines
-        - (<span id="progress_line" style="text-align: center;">Line 1/{{ project["line_count"] }}</span>)
-    </h4>
-    <progress value="{{ project['starting_line'] + 1 }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
-    </br>
-    <div class="container">
+                <!-- hardcode first source, otherwise it displays as raw html -->
+                <span> ({{ project["line0_source"] }})</span>
+            </div>
 
-        <!-- https://www.thoughtco.com/center-table-with-css-3469875 -->
-        <table style="margin: auto;">
-            <tr>
-                <th>{{ project["from_language"].upper() }} </th>
-                <td id="from_line">{{ project["from_lines"][project["starting_line"]]["line"] }}</td>
-                <th>
-                    <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
-                        <button class="btn btn-default" type="submit" id="edit_from_line" name="line_to_edit"
+            <!-- offer logged in users the possibility to either correct or actually edit the lines (for owners) -->
+            <!-- https://css-tricks.com/snippets/html/form-submission-new-window/ edit in a new tab, not to lose progress-->
+            <div class="col-sm-2 col-lg-1">
+                {% if session.user_id %}
+                    <form action="{{ url_for('edit_line') }}" method="post" target="_blank" class="pl-form">
+                        <button class="btn btn-warning btn-sm" type="submit" id="edit_from_line" name="line_to_edit"
                                 value="{{ project['from_lines'][project['starting_line']]['id'] }},{{ project['to_lines'][project['starting_line']]['id'] }}">
                             Edit
                         </button>
                     </form>
-                </th>
-            </tr>
-            <tr>
-                <th>PRACTICE </th>
-                <td>
-                    <!--
-                    javascript prevent form submission on submit
-                    https://stackoverflow.com/questions/8664486/javascript-code-to-stop-form-submission
-                    -->
-                    <form action="#" onsubmit="event.preventDefault(); removeBlur();">
-                        <input type="text" style="width: 100%" autofocus id="practice_line">
-                    </form>
-                </td>
-            </tr>
-            <tr>
-                <th>{{ project["to_language"].upper() }} </th>
-                <td class="blurry" id="to_line">{{ project["to_lines"][project["starting_line"]]["line"] }}</td>
-                <th>
-                    <form action="{{ url_for('edit_line') }}" method="post" target="_blank">
-                        <button class="btn btn-default" type="submit" id="edit_to_line" name="line_to_edit"
-                                value="{{ project['to_lines'][project['starting_line']]['id'] }},{{ project['from_lines'][project['starting_line']]['id'] }}">
-                            Edit
-                        </button>
-                    </form>
-                </th>
-            </tr>
-        </table>
-        </br>
-        <form action="#" onsubmit="event.preventDefault(); displayNextLine({{ project['from_lines'] }}, {{ project['to_lines'] }}, {{ project['line_count'] }}); ">
-            <button class="btn btn-default" type="submit" id="next_line" value="{{ project['starting_line'] }}">Next</button>
+                {% else %}
+                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal">
+                        Edit
+                    </button>
+                {% endif %]
+                <div class="modal" id="myModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                            <h4 class="modal-title">Modal Heading</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+
+                            <!-- Modal body -->
+                            <div class="modal-body">
+                            Modal body..
+                            </div>
+
+                            <!-- Modal footer -->
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 col-lg-1"><strong>PRACTICE</strong></div>
+            <div class="col-sm-10 col-lg-11">
+                <!--
+                javascript prevent form submission on submit
+                https://stackoverflow.com/questions/8664486/javascript-code-to-stop-form-submission
+                -->
+                <form action="#" onsubmit="event.preventDefault(); removeBlur();">
+                    <input type="text" autofocus id="practice_line">
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2 col-lg-1">
+                <strong>{{ project["to_version"]["language"].upper() }}</strong>
+            </div>
+            <div class="col-sm-8 col-lg-10">
+                <span class="blurry" id="to_line">
+                    {{ project["to_lines"][project["starting_line"]]["line"] }}
+                </span>
+            </div>
+            <div class="col-sm-2 col-lg-1">
+                <form action="{{ url_for('edit_line') }}" method="post" target="_blank" class="pl-form">
+                    <button class="btn btn-warning btn-sm" type="submit" id="edit_to_line" name="line_to_edit"
+                            value="{{ project['to_lines'][project['starting_line']]['id'] }},{{ project['from_lines'][project['starting_line']]['id'] }}">
+                        Edit
+                    </button>
+                </form>
+            </div>
+        </div>
+        <br>
+        <form action="#" class="pl-form"
+              onsubmit="event.preventDefault(); displayNextLine({{ project['from_lines'] }}, {{ project['to_lines'] }}, {{ project['line_count'] }}); ">
+            <button class="btn btn-success" type="submit" id="next_line" value="{{ project['starting_line'] }}">Next</button>
         </form>
-
     </div>
-
 {% endblock %}

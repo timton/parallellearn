@@ -353,40 +353,39 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     margin-bottom: 0.5rem;
 }
 
-#edit > div, #edit table,
-#view > div, #view table {
+.view > div, .view table {
     width: 50%;
     margin: auto;
     font-size: 12px;
     border: 1px solid lightgrey;
 }
 
-#edit form, #view form {
+.view form {
     display: inline-block;
 }
 
-#edit button, #view button {
+.view button {
     font-weight: bold;
     padding: 0.1rem 0.25rem;
 }
 
-#edit img, #view img {
+.view img {
     width: 150px;
     margin-bottom: 0.25rem;
 }
 
-#edit p, #view p {
+.view p {
     margin: 0.5rem;
 }
 
 @media (min-width: 576px) and (max-width: 1199.98px) {
-    #edit table, #view table {
+    .view table {
         width: 75%;
     }
 }
 
-#edit hr {
-    margin: 0;
+.view hr {
+    margin: 0.25rem;
 }
 
 .truncate {
@@ -468,59 +467,65 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     margin-top: 0.25rem;
 }
 
-#project-practice .row {
+.practice .row {
     border: 1px solid black;
     margin: 1rem 0;
     font-size: 14px;
 }
 
-#project-practice .row div {
+.practice .row div {
     padding: 0.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-#project-practice input {
+.practice input {
     width: 95%;
     margin: 0.25rem auto;
 }
 
-#project-practice .row button {
+.practice .row button {
     margin-top: -1rem;
 }
 
-#project-practice .row:first-of-type,
-#project-practice .row:last-of-type {
+.practice .row:first-of-type,
+.practice .row:last-of-type {
     background-color: lightgrey;
+}
+
+.practice #from_line span {
+    font-size: 10px;
+    font-style: italic;
+    font-weight: bold;
 }
 
 @media (min-width: 576px) {
 
-    #project-practice .row div:first-of-type {
+    .practice .row div:first-of-type {
         border-right: 1px solid black;
     }
 
-    #project-practice .row:first-of-type div:last-of-type,
-    #project-practice .row:last-of-type div:last-of-type {
+    .practice .row:first-of-type div:last-of-type,
+    .practice .row:last-of-type div:last-of-type {
         border-left: 1px solid black;
     }
 
-    #project-practice .row:first-of-type div:nth-of-type(2),
-    #project-practice .row:first-of-type div:first-of-type,
-    #project-practice .row:last-of-type div:nth-of-type(2),
-    #project-practice .row:last-of-type div:first-of-type {
+    .practice .row:first-of-type div:nth-of-type(2),
+    .practice .row:first-of-type div:first-of-type,
+    .practice .row:last-of-type div:nth-of-type(2),
+    .practice .row:last-of-type div:first-of-type {
         padding: 0.5rem 0.25rem;
     }
 }
 
 @media (max-width: 576px) {
-    #project-practice .row div:first-of-type {
-        border-bottom: 1px solid black;
+    .practice .row div:first-of-type {
+        border-bottom: 1px solid grey;
     }
 
-    #project-practice .row:first-of-type div:last-of-type,
-    #project-practice .row:last-of-type div:last-of-type {
-        border-top: 1px solid black;
+    .practice .row:first-of-type div:last-of-type,
+    .practice .row:last-of-type div:last-of-type {
+        border-top: 1px solid grey;
     }
 }
 
@@ -539,11 +544,11 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
         margin: auto 0.75rem;
     }
 
-    #edit img, #view img {
+    .view img {
         max-width: 100%;
     }
 
-    #edit > div, #view > div {
+    .view > div {
         width: 100%;
     }
 

@@ -4,7 +4,7 @@ from flask_session import Session
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
 from time import gmtime, strftime
-from random import shuffle
+from random import shuffle, choice
 
 # for file uploading, manipulation
 import os
@@ -145,107 +145,90 @@ def quick_practice():
             return apology("Couldn't load the practice interface.", "Must select different practice languages.")
 
         # get all the projects that support the 'from language'
-        from_projects = []
+        from_projects_ids = []
         rows = db.execute("SELECT * FROM versions WHERE language = :language", language=from_language)
         for row in rows:
-            from_projects.append(row["project_id"])
-        from_projects = list(set(from_projects))
+            from_projects_ids.append(row["project_id"])
+        from_projects_ids = list(set(from_projects_ids))
 
         # get all the projects that support both languages
-        possible_projects = []
-        for project_id in from_projects:
+        possible_projects_ids = []
+        for id in from_projects_ids:
             rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
-                              project_id=project_id, language=to_language)
-            if len(rows) > 0:
-                for row in rows:
-                    possible_projects.append(row["project_id"])
+                              project_id=id, language=to_language)
+            for row in rows:
+                possible_projects_ids.append(row["project_id"])
+        possible_projects_ids = list(set(possible_projects_ids))
 
         # make sure combination possible
-        if len(possible_projects) == 0:
+        if len(possible_projects_ids) == 0:
             x = "Sorry, this combination (from {f} to {t}) is not supported.".format(f=from_language, t=to_language)
             y = "Please try a different language combination. Thank you!"
             return apology(x, y)
 
-        # get all the lines, to and from, separately
-        # separately, because we might have different versions with the same language
-        # all lines need corresponding mapping afterwards
-        from_lines = []
+
+        # get all the potential from-versions
+        from_versions_ids = []
+        for id in possible_projects_ids:
+            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
+                              project_id=id, language=from_language)
+            for row in rows:
+                from_versions_ids.append(row["id"])
+
+        # get all the potential from-lines
+        possible_from_lines = []
+        for id in from_versions_ids:
+            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=id)
+
+            for row in rows:
+                possible_from_lines.append(row)
+
+        # randomize the from-lines
+        shuffle(possible_from_lines)
+
+        # make sure max 100 lines per practice session
+        from_lines = possible_from_lines[:100]
+
+        # get the corresponding to-lines
         to_lines = []
-        for project_id in possible_projects:
+        for line in from_lines:
 
-            # get the project, mostly for the line count
-            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
-            project = rows[0]
+            # get all the potential to-versions
+            rows = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
+                              project_id=line["project_id"], language=to_language)
 
-            # get all the from versions
-            from_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
-                                       project_id=project_id, language=from_language)
+            # pick the to-version at random
+            to_version = choice(rows)
 
-            # iterate over the from versions, append all the lines
-            for version in from_versions:
+            # get the corresponding to-line
+            rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id AND line_index = :line_index",
+                              version_id=to_version["id"], line_index=line["line_index"])
+            to_lines.append(rows[0])
 
-                rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version["id"])
+        # append the sources
+        for line in from_lines:
 
-                for row in rows:
-                    from_lines.append(row)
+            # save the first line separately, as it displays raw html, we will hardcode
+            if from_lines.index(line) == 0:
+                rows = db.execute("SELECT * FROM projects WHERE id = :id", id=line["project_id"])
+                line0_source = rows[0]["title"].title()
+                continue
 
-            # same with to versions
-            to_versions = db.execute("SELECT * FROM versions WHERE project_id = :project_id AND language = :language",
-                                     project_id=project_id, language=to_language)
-
-            for version in to_versions:
-
-                rows = db.execute("SELECT * FROM lines WHERE version_id = :version_id", version_id=version["id"])
-
-                for row in rows:
-                    to_lines.append(row)
-
-        # doing the mapping
-        lines = []
-        for from_line in from_lines:
-
-            # in case multiple versions with the same language, prepare a list for possible to_lines
-            possible_to_lines = []
-
-            # get all to lines with same index, from the same project
-            for to_line in to_lines:
-                if to_line["project_id"] == from_line["project_id"] and to_line["line_index"] == from_line["line_index"]:
-                    possible_to_lines.append(to_line)
-
-            # random shuffle of the to lines, in case multiple
-            shuffle(possible_to_lines)
-
-            # map the first
-            x = (from_line, possible_to_lines[0])
-
-            # append the line
-            lines.append(x)
-
-        # shuffle lines before rendering
-        # https://stackoverflow.com/questions/976882/shuffling-a-list-of-objects
-        shuffle(lines)
-
-        # limit to 100 lines, if more
-        line_count = len(lines)
-        if line_count > 100:
-            lines = lines[:100]
-            line_count = 100
-
-        # prepare lists to render
-        from_lines = []
-        to_lines = []
-        for line in lines:
-            from_lines.append(line[0])
-            to_lines.append(line[1])
+            rows = db.execute("SELECT * FROM projects WHERE id = :id", id=line["project_id"])
+            line["line"] += ("<span> (" + rows[0]["title"].title() + ")</span>")
 
         # prepare project to render
         project = {}
-        project["from_language"] = from_language
-        project["to_language"] = to_language
-        project["line_count"] = line_count
+        project["line_count"] = len(from_lines)
         project["from_lines"] = from_lines
         project["to_lines"] = to_lines
         project["starting_line"] = 0
+        project["line0_source"] = line0_source
+
+        # to standardize quick & project practice
+        project["from_version"], project["to_version"] = {}, {}
+        project["from_version"]["language"] = from_language
+        project["to_version"]["language"] = to_language
 
         return render_template("quick_practice.html", project=project)
 
@@ -253,7 +236,6 @@ def quick_practice():
     # go to index
     else:
         return index()
-
 
 # register route
 @app.route("/register", methods=["GET", "POST"])
@@ -331,9 +313,6 @@ def log_out():
 def log_in():
     """Log user in."""
 
-    # forget any user_id
-    session.clear()
-
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
@@ -356,11 +335,25 @@ def log_in():
         # remember which user has logged in
         session["user_id"] = rows[0]["id"]
 
-        # redirect user to home page
-        return redirect(url_for("index"))
+        # redirect to home-page or success-page (when editting/saving practice lines)
+        if "next" in session:
+            next = (session['next'].split("/"))[-1]
+            if next == 'edit_line' or next == 'save_progress':
+                session['next'] = next
+                return success("You have successfully logged in.")
+
+        return redirect(url_for('index'))
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
+
+        # forget any user_id
+        session.clear()
+
+        # save the next arg, if possible
+        if request.args.get('next'):
+            session['next'] = request.args.get('next')
+
         return render_template("login.html")
 
 # view account details route

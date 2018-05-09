@@ -6,8 +6,20 @@
 
 {% block main %}
     <div class="align-center">
+        <br>
         <strong><h4>Excellent!</h4></strong>
         <br>
         <p>{{ success_message }}</p>
+        <br>
+
+        <!--
+        give possibility to close second browser window when editting/saving lines
+        https://stackoverflow.com/questions/8057802/html-button-close-window
+        -->
+        {% if session.next == 'edit_line' or session.next == 'save_progress' %}
+            <button type="button" class="btn btn-primary" onclick="self.close()">
+                Continue
+            </button>
+        {% endif %}
     </div>
 {% endblock %}
