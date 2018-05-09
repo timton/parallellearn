@@ -64,9 +64,9 @@ def index():
     # get all the projects
     projects = db.execute("SELECT * FROM projects")
 
-    # if tv series, make title include the season & episode
+    # if series, make title include the season & episode
     for project in projects:
-        if project["type"].lower() == "tv series":
+        if project["type"].lower() == "series":
             project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
     # get the 5 newest versions
@@ -80,7 +80,7 @@ def index():
         version["year"] = rows[0]["year"]
         version["title"] = rows[0]["title"]
 
-        if rows[0]["type"].lower() == "tv series":
+        if rows[0]["type"].lower() == "series":
             version["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
         version["timestamp"] = version["timestamp"].split()[1]
@@ -96,7 +96,7 @@ def index():
         version["year"] = rows[0]["year"]
         version["title"] = rows[0]["title"]
 
-        if rows[0]["type"].lower() == "tv series":
+        if rows[0]["type"].lower() == "series":
             version["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
     # get the username, if user logged in
@@ -527,8 +527,8 @@ def new_project_metadata():
         else:
             session["new_project"]["title"] = request.form.get("new_project_title").lower()
 
-        # for tv series, save the season and episode
-        if session["new_project"]["type"].lower() == "tv series":
+        # for series, save the season and episode
+        if session["new_project"]["type"].lower() == "series":
             if not request.form.get("new_project_season") or not request.form.get("new_project_episode"):
                 session.pop('new_project', None)
                 return apology("Couldn't upload this project.",
@@ -572,7 +572,7 @@ def new_project_metadata():
                            "Allowed extensions: xls/xlsx/xlsm/xltx/xltm.")
 
         # make sure project doesn't exist already
-        if session["new_project"]["type"].lower() == "tv series":
+        if session["new_project"]["type"].lower() == "series":
             rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND author = :author AND \
                               year = :year AND season = :season AND episode = :episode",
                               type=session["new_project"]["type"].lower(), title=session["new_project"]["title"].lower(),
@@ -717,7 +717,7 @@ def new_project_formatting():
 
         # upload new project metadata
         try:
-            if session["new_project"]["type"] != "tv series":
+            if session["new_project"]["type"] != "series":
                 db.execute("INSERT INTO projects (type, title, author, year, user_id, line_count, poster, description) \
                            VALUES (:type, :title, :author, :year, :user_id, :line_count, :poster, :description)",
                            type=session["new_project"]["type"], title=session["new_project"]["title"],
@@ -786,7 +786,7 @@ def new_project_formatting():
 
         # if successful, pop the session variable and inform
         # personalize the message just to be kewl
-        if session["new_project"]["type"].lower() == "tv series":
+        if session["new_project"]["type"].lower() == "series":
                 session["new_project"]["title"] += (" (s" + str(session["new_project"]["season"]) + \
                                                     "/(e" + str(session["new_project"]["episode"]) +")")
         s = "\"" + session["new_project"]["title"].title() + "\"" + " by " + session["new_project"]["author"].title() + \
@@ -806,10 +806,10 @@ def upload_existing():
     # query for all the existing projects
     existing_projects = db.execute("SELECT * FROM projects")
 
-    # modify title for tv series
+    # modify title for series
     # and construct project name to be displayed
     for project in existing_projects:
-        if project["type"] == "tv series":
+        if project["type"] == "series":
             project["title"] = (project["title"] + " - s" + str(project["season"]) + \
                                "e" + str(project["episode"]))
         project["name"] = "[" + project["type"] + "] " + project["title"] + " - " + \
@@ -966,7 +966,7 @@ def existing_project_versions():
 
         # if successful, pop the session variable and inform
         # personalize the message just to be kewl
-        if session["existing_project"]["type"].lower() == "tv series":
+        if session["existing_project"]["type"].lower() == "series":
                 session["existing_project"]["title"] += (" (s" + str(session["existing_project"]["season"]) + \
                                                         "/(e" + str(session["existing_project"]["episode"]) +")")
         s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
@@ -989,8 +989,8 @@ def view_project(id):
     rows = db.execute("SELECT * FROM projects WHERE id = :id", id=id)
     project = rows[0]
 
-    # if tv series, make title include the season & episode
-    if project["type"].lower() == "tv series":
+    # if series, make title include the season & episode
+    if project["type"].lower() == "series":
         project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
     # get project languages and sources
@@ -1051,8 +1051,8 @@ def view_history():
             project["id"] = rows[0]["id"]
             project["progress"] = int(project["progress"] / rows[0]["line_count"] * 100) + 1
 
-            # if tv series, make title include the season & episode
-            if project["type"].lower() == "tv series":
+            # if series, make title include the season & episode
+            if project["type"].lower() == "series":
                 project["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
 
@@ -1064,8 +1064,8 @@ def view_history():
     if len(uploaded_projects) > 0:
         for project in uploaded_projects:
 
-            # if tv series, make title include the season & episode
-            if project["type"].lower() == "tv series":
+            # if series, make title include the season & episode
+            if project["type"].lower() == "series":
                 project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
 
@@ -1119,8 +1119,8 @@ def view_history():
             project["year"] = rows[0]["year"]
 
 
-            # if tv series, make title include the season & episode
-            if project["type"].lower() == "tv series":
+            # if series, make title include the season & episode
+            if project["type"].lower() == "series":
                 project["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
             # add user's language versions
@@ -1161,8 +1161,8 @@ def prepare_deletion():
         rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
         project = rows[0]
 
-        # if tv series, make title include the season & episode
-        if project["type"].lower() == "tv series":
+        # if series, make title include the season & episode
+        if project["type"].lower() == "series":
             project["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
 
@@ -1376,8 +1376,8 @@ def edit():
             rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
             project = rows[0]
 
-            # if tv series, make title include the season & episode
-            if project["type"].lower() == "tv series":
+            # if series, make title include the season & episode
+            if project["type"].lower() == "series":
                 project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
 
             # get user project languages
@@ -1464,8 +1464,8 @@ def edit():
                 if project["type"] == new_type:
                     return apology("Couldn't edit project.", "Make sure the new type differs from the current one.")
 
-                # if new type tv series, render the input season/episode template
-                if new_type == "tv series":
+                # if new type series, render the input season/episode template
+                if new_type == "series":
                     return render_template("edit_episode.html", project=project)
 
                 # otherwise, make sure project wouldn't exist already in its new form
@@ -1482,22 +1482,22 @@ def edit():
 
                 return view_history()
 
-            # if user actually changes type to tv series
-            if request.form.get('change_to_tv_series'):
+            # if user actually changes type to series
+            if request.form.get('change_to_series'):
 
                 # make sure episode submitted
                 if not request.form.get('new_episode') or not request.form.get('new_season'):
                     return apology("Couldn't edit project.", "Please input the season and/or episode.")
 
                 # get the project id and the episode/season
-                project_id = request.form.get('change_to_tv_series')
+                project_id = request.form.get('change_to_series')
                 rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
                 project = rows[0]
                 new_episode = request.form.get('new_episode')
                 new_season = request.form.get('new_season')
 
                 # make sure project wouldn't exist already in its new form
-                rows = db.execute("SELECT * FROM projects WHERE type = 'tv series' AND title = :title AND author = :author AND \
+                rows = db.execute("SELECT * FROM projects WHERE type = 'series' AND title = :title AND author = :author AND \
                                   year = :year AND season = :season AND episode = :episode", title=project["title"],
                                   author=project["author"], year=project["year"], season=new_season, episode=new_episode)
                 if len(rows) > 0:
@@ -1505,7 +1505,7 @@ def edit():
 
                 # try to edit
                 try:
-                    db.execute("UPDATE projects SET type = 'tv series', season = :season, episode = :episode WHERE id = :id",
+                    db.execute("UPDATE projects SET type = 'series', season = :season, episode = :episode WHERE id = :id",
                                season=new_season, episode=new_episode, id=project_id)
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
@@ -1523,7 +1523,7 @@ def edit():
                 # ensure something is being changed
                 if not request.form.get('change_title') and not request.form.get('change_author') and \
                 not request.form.get('change_year'):
-                    if project["type"] == "tv series":
+                    if project["type"] == "series":
                         if not request.form.get('change_season') and not request.form.get('change_episode'):
                             return apology("Gotta change something.")
                     else:
@@ -1545,7 +1545,7 @@ def edit():
                 else:
                     year = project["year"]
 
-                if project["type"] == "tv series":
+                if project["type"] == "series":
                     if request.form["change_season"]:
                         season = request.form["change_season"]
                     else:
@@ -1556,7 +1556,7 @@ def edit():
                     else:
                         episode = project["episode"]
 
-                if project["type"] == "tv series":
+                if project["type"] == "series":
                     rows = db.execute("SELECT * FROM projects WHERE type = :type AND title = :title AND \
                                       author = :author AND year = :year AND season = :season AND episode = :episode",
                                       type=project["type"], title=title, author=author, year=year, season=season, episode=episode)
@@ -1581,7 +1581,7 @@ def edit():
                         db.execute("UPDATE projects SET year = :year WHERE id = :id",
                                    year=request.form["change_year"], id=project_id)
 
-                    if project["type"] == "tv series":
+                    if project["type"] == "series":
                         if request.form["change_season"]:
                             db.execute("UPDATE projects SET season = :season WHERE id = :id",
                                        season=request.form["change_season"], id=project_id)
@@ -1855,18 +1855,18 @@ def browse():
     movies = db.execute("SELECT * FROM projects WHERE type = 'movie'")
     songs = db.execute("SELECT * FROM projects WHERE type = 'song'")
 
-    # if tv series, make title include the season & episode
-    tv_series = []
+    # if series, make title include the season & episode
+    series = []
     for project in all_projects:
-        if project["type"].lower() == "tv series":
+        if project["type"].lower() == "series":
             project["title"] += (" (s" + str(project["season"]) + "/e" + str(project["episode"]) +")")
-            tv_series.append(project)
+            series.append(project)
 
     # pass one variable
     projects = {}
     projects["all_projects"] = all_projects
     projects["books"] = books
-    projects["tv_series"] = tv_series
+    projects["series"] = series
     projects["songs"] = songs
     projects["movies"] = movies
 
@@ -2139,7 +2139,7 @@ def project_download():
         # save the workbook
         try:
             filename = project["title"].title()
-            if project["type"].lower() == "tv series":
+            if project["type"].lower() == "series":
                 filename += (" (s" + str(project["season"]) + "e" + str(project["episode"]) +")")
             filename += ".xlsx"
             wb.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))

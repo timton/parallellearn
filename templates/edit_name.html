@@ -19,7 +19,7 @@
                     <datalist id="titles">{% include "select/titles.html" %}</datalist>
                 </div>
 
-                {% if project["type"] == "tv series" %}
+                {% if project["type"] == "series" %}
                     <div class="form-group">
                         Season: <strong>{{ project["season"] }}</strong>. Episode: <strong>{{ project["episode"] }}</strong>.
                         <br>

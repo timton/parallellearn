@@ -21,9 +21,9 @@
                 <a class="nav-link" data-toggle="tab" href="#movies">Movies</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tv_series">
-                    <span class="d-none d-sm-block">TV Series</span>
-                    <span class="d-block d-sm-none">TV</span>
+                <a class="nav-link" data-toggle="tab" href="#series">
+                    <span class="d-none d-sm-block">Series</span>
+                    <span class="d-block d-sm-none">Srs</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -129,14 +129,14 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="tab-pane container" id="tv_series">
+            <div class="tab-pane container" id="series">
                 <div class="row">
-                    {% if projects["tv_series"]|length == 0 %}
+                    {% if projects["series"]|length == 0 %}
                         <br>
-                        The site has no TV Series.
+                        The site has no Series.
                         <br>
                     {% else %}
-                        {% for project in projects["tv_series"] %}
+                        {% for project in projects["series"] %}
                             <div class="card">
                                 <a href="{{ url_for('view_project', id=project['id']) }}">
                                     <div class="card-header">

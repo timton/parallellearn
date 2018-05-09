@@ -10,7 +10,7 @@
             <h5>
                 <strong>
                 {{ project["title"].title() }}
-                {% if project["type"].lower() == "tv series" %}
+                {% if project["type"].lower() == "series" %}
                     [Season: {{ project["season"] }} Episode: {{ project["episode"] }}]
                 {% endif %}
                 - {{ project["author"].title() }} -

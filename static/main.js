@@ -141,10 +141,10 @@ function addEpisode(n){
         // Container <div> where dynamic content will be placed
         var upload_episode_container = document.getElementById("upload_episode_container");
 
-        // ensure type tv series
+        // ensure type series
         var type = document.getElementById("type").value;
         var type1 = type.toLowerCase();
-        var type2 = "tv series";
+        var type2 = "series";
         var n = type1.localeCompare(type2)
         if (n != 0) {
 
@@ -153,7 +153,7 @@ function addEpisode(n){
                 upload_episode_container.removeChild(upload_episode_container.lastChild);
             }
 
-            window.alert('Only for TV Series.');
+            window.alert('Only for Series.');
             return;
         }
 
@@ -207,10 +207,10 @@ function addEpisode(n){
         // Container <div> where dynamic content will be placed
         var edit_episode_container = document.getElementById("edit_episode_container");
 
-        // ensure type tv series
+        // ensure type series
         var type = document.getElementById("change_type").value;
         var type1 = type.toLowerCase();
-        var type2 = "tv series";
+        var type2 = "series";
         var n = type1.localeCompare(type2)
         if (n != 0) {
 
@@ -219,7 +219,7 @@ function addEpisode(n){
                 edit_episode_container.removeChild(edit_episode_container.lastChild);
             }
 
-            window.alert('Only for TV Series.');
+            window.alert('Only for Series.');
             return;
         }
 

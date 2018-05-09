@@ -6,7 +6,6 @@
 - favicons
 - make a db for series and their episodes (only for the cover/description?)
 - remaining templates: about, contact, faq
-- modal windows for edit/rate
 
 #########  IMPROVE
 - download as ebook?

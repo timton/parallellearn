@@ -4,7 +4,7 @@ import urllib.request
 from flask import redirect, render_template, request, session, url_for
 from functools import wraps
 
-SUPPORTED_TYPES = ["book", "movie", "tv series", "song"]
+SUPPORTED_TYPES = ["book", "movie", "series", "song"]
 ALLOWED_FILE_EXTENSIONS = set(['xls', 'xlsx', 'xlsm', 'xltx', 'xltm'])
 
 # https://stackoverflow.com/questions/2336522/png-vs-gif-vs-jpeg-vs-svg-when-best-to-use

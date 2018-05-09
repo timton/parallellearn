@@ -9,7 +9,7 @@
         <br>
         <h5><strong>
             {{ project["title"].title() }}
-            {% if project["type"].lower() == "tv series" %}
+            {% if project["type"].lower() == "series" %}
                 [S{{ project["season"] }}/E{{ project["episode"] }}]
             {% endif %}
             - (<span id="progress_line">Line {{ project["starting_line"] + 1 }}/{{ project["line_count"] }}</span>)
