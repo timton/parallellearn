@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Rate Version
+{% endblock %}
+
+{% block main %}
+    <div class="align-center" id="rating">
+        <br><br>
+        <h5>
+            <strong>{{ version["title"].title() }}</strong>
+             by <strong>{{ version["username"] }}</strong> -
+            <strong>{{ version["language"].title() }}</strong>
+        </h5>
+        <br>
+        <p>
+            {% if version["already_rated"] %}
+                You've already rated this version!
+                Current rating: <strong>{{ version["current_rating"] }}</strong>.
+                Rate again:
+            {% else %}
+                Rate this version:
+            {% endif %}
+            <strong><span id="current-star"></span></strong>
+        </p>
+        <br>
+        <span onmouseleave="empty()">
+
+            <!-- in mozilla the button steals all mouse events for its children
+             that's why I put the event on the button itself
+             https://bugzilla.mozilla.org/show_bug.cgi?id=843003
+             -->
+            {% for i in range(5) %}
+                <form action="{{ url_for('rate') }}" method="post" class="align-center">
+                    <button class="btn" type="submit" name="rate" value="{{ version['id'] }},{{ i }}"
+                            id="{{ i }}" onmouseenter="fill({{ i }})">
+                        <i class="far fa-star" id="star{{ i }}"></i>
+                    </button>
+                </form>
+            {% endfor %}
+        </span>
+        <br><br>
+    </div>
+{% endblock %}
