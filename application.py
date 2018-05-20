@@ -338,8 +338,8 @@ def log_in():
         # redirect to home-page or success-page (when editting/saving practice lines)
         if "next" in session:
             next = (session['next'].split("/"))[-1]
-            if next == 'edit_line' or next == 'save_progress':
-                session['next'] = next
+            if next == 'edit_line' or next == 'save_progress' or next == 'prepare_to_rate':
+                session['next'] = "popup"
                 return success("You have successfully logged in.")
 
         return redirect(url_for('index'))
@@ -793,6 +793,8 @@ def new_project_formatting():
             " has been successfully uploaded."
         session.pop('new_project', None)
 
+        # so that we don't get any close window message
+        session['next'] = ""
         return success(s)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
@@ -972,6 +974,9 @@ def existing_project_versions():
         s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
             session["existing_project"]["author"].title() + " has been successfully updated."
         session.pop('existing_project', None)
+
+        # so that we don't get any close window message
+        session['next'] = ""
         return success(s)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
@@ -2294,6 +2299,106 @@ def has_notifications():
 
 # https://stackoverflow.com/questions/6036082/call-a-python-function-from-jinja2
 app.jinja_env.globals.update(has_notifications=has_notifications)
+
+
+# prepare to rate a project version
+@app.route("/prepare_to_rate", methods=["GET", "POST"])
+@login_required
+def prepare_to_rate():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the id of the version to rate
+        version_id = request.form.get("rating_id")
+
+        # check whether user already rated this version
+        rows = db.execute("SELECT * FROM ratings WHERE user_id = :user_id AND version_id = :version_id",
+                          user_id=session["user_id"], version_id=version_id)
+
+        if len(rows) == 0:
+            already_rated = False
+            current_rating = None
+        else:
+            already_rated = True
+            current_rating = rows[0]["rating"]
+
+        # get the version metadata
+        rows = db.execute("SELECT * FROM versions WHERE id = :id", id=version_id)
+        language = rows[0]["language"]
+        user_id = rows[0]["user_id"]
+        project_id = rows[0]["project_id"]
+        rows = db.execute("SELECT * FROM users WHERE id = :id", id=user_id)
+        username = rows[0]["username"]
+        rows = db.execute("SELECT * FROM projects WHERE id = :id", id=project_id)
+        version = rows[0]
+        if version["type"].lower() == "series":
+            version["title"] += (" (s" + str(version["season"]) + "/e" + str(version["episode"]) +")")
+
+        version["id"] = version_id
+        version["already_rated"] = already_rated
+        version["current_rating"] = current_rating
+        version["language"] = language
+        version["username"] = username
+
+        return render_template("rate.html", version=version)
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("browse.html")
+
+# rate a project version
+@app.route("/rate", methods=["GET", "POST"])
+@login_required
+def rate():
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # get the version id, rating (0-indexed)
+        verating = request.form.get("rate")
+        verating = verating.split(",")
+        version_id = int(verating[0])
+        rating = int(verating[1]) + 1
+
+        # check whether user already rated this version
+        rows = db.execute("SELECT * FROM ratings WHERE user_id = :user_id AND version_id = :version_id",
+                          user_id=session["user_id"], version_id=version_id)
+
+        # insert new rating or update existing rating
+        if len(rows) == 0:
+            try:
+                key = db.execute("INSERT INTO ratings (version_id, user_id, rating) \
+                                 VALUES(:version_id, :user_id, :rating)",
+                                 version_id=version_id, user_id=session["user_id"], rating=rating)
+            except RuntimeError:
+                return apology("Couldn't save rating.", "Please try again later.")
+        else:
+            try:
+                db.execute("UPDATE ratings SET rating = :rating WHERE id = :id",
+                           rating=rating, id=rows[0]["id"])
+            except RuntimeError:
+                return apology("Couldn't update rating.", "Please try again later.")
+
+        # calculate the new version rating
+        rows = db.execute("SELECT * FROM ratings WHERE version_id = :version_id", version_id=version_id)
+        new_rating = 0.0
+        for row in rows:
+            new_rating += row["rating"]
+        new_rating = round(new_rating / len(rows), 2)
+
+        # update version rating
+        try:
+            db.execute("UPDATE versions SET rating = :rating WHERE id = :id",
+                       rating=new_rating, id=version_id)
+        except RuntimeError:
+            return apology("Couldn't update version rating.", "Please try again later.")
+
+        return success("Thank you for rating this version.")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("browse.html")
 
 
 ######################

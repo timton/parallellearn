@@ -2,11 +2,11 @@
 
 - display progress whil the server does smth (especially uploading project)
 - browse by language
-- rating (for each line/version?)
 - favicons
-- make a db for series and their episodes (only for the cover/description?)
 - remaining templates: about, contact, faq
+- forgot password?
 
 #########  IMPROVE
 - download as ebook?
 - autopopulate with with project details once chosen?
+- make a db for series and their episodes (only for the cover/description?)

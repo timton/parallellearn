@@ -27,41 +27,13 @@
             <!-- offer logged in users the possibility to either correct or actually edit the lines (for owners) -->
             <!-- https://css-tricks.com/snippets/html/form-submission-new-window/ edit in a new tab, not to lose progress-->
             <div class="col-sm-2 col-lg-1">
-                {% if session.user_id %}
-                    <form action="{{ url_for('edit_line') }}" method="post" target="_blank" class="pl-form">
-                        <button class="btn btn-warning btn-sm" type="submit" id="edit_from_line" name="line_to_edit"
-                                value="{{ project['from_lines'][project['starting_line']]['id'] }},{{ project['to_lines'][project['starting_line']]['id'] }}">
-                            Edit
-                        </button>
-                    </form>
-                {% else %}
-                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#myModal">
+
+                <form action="{{ url_for('edit_line') }}" method="post" target="_blank" class="pl-form">
+                    <button class="btn btn-danger btn-sm" type="submit" id="edit_from_line" name="line_to_edit"
+                            value="{{ project['from_lines'][project['starting_line']]['id'] }},{{ project['to_lines'][project['starting_line']]['id'] }}">
                         Edit
                     </button>
-                {% endif %]
-                <div class="modal" id="myModal">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-
-                            <!-- Modal Header -->
-                            <div class="modal-header">
-                            <h4 class="modal-title">Modal Heading</h4>
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            </div>
-
-                            <!-- Modal body -->
-                            <div class="modal-body">
-                            Modal body..
-                            </div>
-
-                            <!-- Modal footer -->
-                            <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
         <div class="row">
@@ -87,7 +59,7 @@
             </div>
             <div class="col-sm-2 col-lg-1">
                 <form action="{{ url_for('edit_line') }}" method="post" target="_blank" class="pl-form">
-                    <button class="btn btn-warning btn-sm" type="submit" id="edit_to_line" name="line_to_edit"
+                    <button class="btn btn-danger btn-sm" type="submit" id="edit_to_line" name="line_to_edit"
                             value="{{ project['to_lines'][project['starting_line']]['id'] }},{{ project['from_lines'][project['starting_line']]['id'] }}">
                         Edit
                     </button>

@@ -16,9 +16,9 @@
         give possibility to close second browser window when editting/saving lines
         https://stackoverflow.com/questions/8057802/html-button-close-window
         -->
-        {% if session.next == 'edit_line' or session.next == 'save_progress' %}
+        {% if session.next == 'popup' %}
             <button type="button" class="btn btn-primary" onclick="self.close()">
-                Continue
+                Close
             </button>
         {% endif %}
     </div>

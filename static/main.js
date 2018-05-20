@@ -324,6 +324,43 @@ function addLanguages(n){
     }
 }
 
+// rating interface
+// in mozilla the button steals all mouse events for its children
+// that's why I put the event on the button itself
+// https://bugzilla.mozilla.org/show_bug.cgi?id=843003
+function fill(n) {
+    for (i = 0; i <= n; i++) {
+        var m = "star" + i.toString();
+        var star = document.getElementById(m);
+        star.removeAttribute("class");
+        star.setAttribute("class", "fas fa-star");
+        star.style.color = "gold";
+    }
+
+    for (i = (n + 1); i < 5; i++) {
+        var m = "star" + i.toString();
+        var star = document.getElementById(m);
+        star.removeAttribute("class");
+        star.removeAttribute("style");
+        star.setAttribute("class", "far fa-star");
+    }
+
+    var current_star = (n + 1).toString();
+    document.getElementById("current-star").innerHTML = current_star;
+}
+
+function empty() {
+    for (i = 0; i < 5; i++) {
+        var m = "star" + i.toString();
+        var star = document.getElementById(m);
+        star.removeAttribute("class");
+        star.removeAttribute("style");
+        star.setAttribute("class", "far fa-star");
+    }
+
+    document.getElementById("current-star").innerHTML = "";
+}
+
 // adds dropdown languages menu for different versions
 function addDropdownLanguages(language_container) {
 
