@@ -15,6 +15,11 @@ from werkzeug.utils import secure_filename
 # for excel manipulation
 import openpyxl
 
+# for email sending
+# https://docs.python.org/3/library/email.examples.html
+import smtplib
+from email.message import EmailMessage
+
 from helpers import *
 
 # configure application
@@ -1846,9 +1851,42 @@ def about():
 
 
 # contact info route
-@app.route("/contact")
+####### EMAIL ARE NOT RECEIVED FOR NOW #######
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        # ensure name was submitted
+        if not request.form.get("name"):
+            return apology("Must provide name.")
+
+        # ensure username was submitted
+        elif not request.form.get("email"):
+            return apology("Must provide email.")
+
+        # ensure password was submitted
+        elif not request.form.get("message"):
+            return apology("Must provide message.")
+
+        message = EmailMessage()
+        message.set_content(request.form.get("message"))
+        message['Subject'] = 'Parallellearn: Message from % s' % request.form.get("name")
+        message['From'] = request.form.get("email")
+        message['To'] = 'h2912420@nwytg.com'
+
+        try:
+            s = smtplib.SMTP('localhost', 1025)
+            s.send_message(message)
+            s.quit()
+            return success("Thank you for your message! I will try to answer you as soon as possible.")
+        except ConnectionRefusedError:
+            return apology("Couldn't send your message! Please try again later.")
+
+    # else if user reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("contact.html")
 
 # browse route
 @app.route("/browse")

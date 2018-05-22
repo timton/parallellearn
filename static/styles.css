@@ -524,6 +524,26 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     padding: 2rem 0;
 }
 
+#about > div, #faq > div {
+    font-size: 14px;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+#contact form {
+    width: 20rem;
+    text-align: center;
+    margin: 0.5rem auto;
+}
+
+#contact .input-group {
+    margin: 0.5rem auto;
+}
+
+#contact button {
+    margin-top: 0.5rem;
+}
+
 @media (min-width: 576px) {
 
     .practice .row div:first-of-type {
@@ -587,7 +607,12 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
         margin-bottom: 0.5rem;
         width: 95%;
     }
+
     #new-project-formatting textarea {
         width: 13.5rem;
+    }
+
+    #contact form {
+        width: 95%;
     }
 }

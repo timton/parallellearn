@@ -17,8 +17,11 @@
         <!-- our custom CSS -->
         <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet"/>
 
-
         <title>Parallellearn: {% block title %}{% endblock %}</title>
+
+        <!-- https://www.favicon-generator.org/ -->
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 
     </head>
 
@@ -38,6 +41,15 @@
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('browse') }}">Browse</a>
               </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                  Upload
+                </a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{{ url_for('new_project_type') }}">Brand new project</a>
+                  <a class="dropdown-item" href="{{ url_for('upload_existing') }}">Version for existing project</a>
+                </div>
+              </li>
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
               </li>
@@ -47,16 +59,6 @@
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
               </li>
-
-              <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-                    Upload
-                  </a>
-                  <div class="dropdown-menu">
-                    <a class="dropdown-item" href="{{ url_for('new_project_type') }}">Brand new project</a>
-                    <a class="dropdown-item" href="{{ url_for('upload_existing') }}">Version for existing project</a>
-                  </div>
-                </li>
             </ul>
 
               <!-- https://stackoverflow.com/questions/40178386/bootstrap-4-navbar-items-on-right-side -->

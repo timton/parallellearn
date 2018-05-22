@@ -1,9 +1,11 @@
+#### DO ONCE DEPLOYED
+- server address (localhost)
+- email server (contact)
+
 ######### TODO
 
 - display progress whil the server does smth (especially uploading project)
 - browse by language
-- favicons
-- remaining templates: about, contact, faq
 - forgot password?
 
 #########  IMPROVE
