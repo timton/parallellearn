@@ -1,12 +1,12 @@
 #### DO ONCE DEPLOYED
 - server address (localhost)
 - email server (contact)
+- forgot password?
 
 ######### TODO
 
 - display progress whil the server does smth (especially uploading project)
 - browse by language
-- forgot password?
 
 #########  IMPROVE
 - download as ebook?
