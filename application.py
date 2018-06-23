@@ -123,8 +123,12 @@ def index():
 
     # prepare vars for rendering
     # we separate the first project, because the carousel requires a specific active element, so can't use a loop
-    display["project_1"] = projects[0]
-    display["projects"] = projects[1:]
+    if len(projects) > 0:
+        display["project_1"] = projects[0]
+
+    if len(projects) > 1:
+        display["projects"] = projects[1:]
+
     display["new_versions"] = new_versions
     display["popular_versions"] = popular_versions
     display["username"] = username

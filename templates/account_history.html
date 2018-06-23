@@ -6,14 +6,14 @@
 
 {% block main %}
 
-    <div id="account-history">
+    <div class="container-fluid" id="account-history">
 
         <div id="started-projects">
             <br>
             <h5><strong>Practice Projects</strong></h5>
 
                 {% if started_projects|length == 0 %}
-                    <br>
+                    <hr><br>
                     <p>You haven't started any projects yet.</p>
                     <br>
                 {% else %}
@@ -83,7 +83,7 @@
             <h5><strong>Uploaded Projects</strong></h5>
 
                 {% if uploaded_projects|length == 0 %}
-                    <br>
+                    <hr><br>
                     <p>You haven't uploaded any projects yet.</p>
                     <br>
                 {% else %}
@@ -148,7 +148,7 @@
             <h5><strong>Contributing Versions</strong></h5>
 
                 {% if not_user_projects|length == 0 %}
-                    <br>
+                    <hr><br>
                     <p>You haven't contributed with any versions to other people's projects yet.</p>
                     <br>
                 {% else %}

@@ -7,12 +7,15 @@
 {% block main %}
 
     {% if existing_projects|length == 0 %}
-        <br>
-        <p>No existing projects yet.</p>
-        <br>
+        <div class='align-center'>
+            <br><br><br>
+            <h1>This website is empty!</h1>
+            <br><br><br>
+            <p>No projects.</p>
+        </div>
     {% else %}
         <br>
-        <div class="container align-center creamy">
+        <div class="container-fluid align-center creamy">
             <br>
             <strong><p>Contributing to an existing project. Most appreciated!</p></strong>
             <form action="{{ url_for('upload_existing') }}" method="post" class="pl-form"

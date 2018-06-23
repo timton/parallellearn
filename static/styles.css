@@ -227,6 +227,11 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     min-height: 11rem;
 }
 
+#account-history hr, #account-notifications hr {
+    border-color: black;
+    width: 40%;
+}
+
 #account-history table {
     width: 95%;
     margin: auto;
@@ -234,7 +239,6 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 
 #account-history a {
     color: inherit;
-
 }
 
 #account-history button {
