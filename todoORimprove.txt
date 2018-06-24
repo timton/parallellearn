@@ -2,6 +2,8 @@
 - server address (localhost)
 - email server (contact)
 - forgot password?
+- tidy up all methods (save post arguments for comparison, improve error messaging, try except db queries)
+- improve db (prototypes / actual projects / series etc.)
 
 ######### TODO
 
