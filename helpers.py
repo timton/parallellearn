@@ -59,3 +59,10 @@ def login_required(f):
             return redirect(url_for("log_in", next=request.url))
         return f(*args, **kwargs)
     return decorated_function
+
+# convert list of objects into list of dictionaries
+def dict_conversion(objs):
+    dicts = []
+    for obj in objs:
+        dicts.append(obj.asdict())
+    return dicts

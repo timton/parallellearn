@@ -1,3 +1,7 @@
+all_versions = []
+for object in objects:
+    all_versions.append(object.asdict())
+
 #query all
 all_versions = Version.query.all()
 
@@ -34,17 +38,13 @@ Version.query.filter(Version.id == from_version_id)
 User.query.filter(User.id == 2).delete()
 db.session.commit()
 
-# multiple lines
-subkeyword = (
-    Session.query(
-        Subkeyword.subkeyword_id,
-        Subkeyword.subkeyword_word
-    )
-    .filter_by(subkeyword_company_id=self.e_company_id)
-    .filter_by(subkeyword_word=subkeyword_word)
-    .filter_by(subkeyword_active=True)
-    .one()
-)
+# multiple lines need backslash if query not in parantheses, or if values not separated by commas
+Project.query.filter(Project.id == project_id)\
+             .update({"user_id": version["user_id"]})
+dict_conversion(Version.query.filter(Version.project_id == version.project_id)
+                             .order_by(Version.timestamp.asc()).all())
+Project.query.filter(and_(Project.type == "series",
+                          Project.title == project["title"])).all()
 
 # configure database models
 class Comment(db.Model):
