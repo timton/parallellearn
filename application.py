@@ -374,14 +374,14 @@ def quick_practice():
 
             # get all the potential to-versions
             rows = dict_conversion(Version.query.filter(and_(Version.project_id == line["project_id"],
-                                                             Version.language=to_language)).all())
+                                                             Version.language == to_language)).all())
 
             # pick the to-version at random
             to_version = choice(rows)
 
             # get the corresponding to-line
             rows = dict_conversion(Line.query.filter(and_(Line.version_id == to_version["id"],
-                                                          Line.line_index=line["line_index"])).all())
+                                                          Line.line_index == line["line_index"])).all())
             to_lines.append(rows[0])
 
         # append the sources
