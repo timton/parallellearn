@@ -6,6 +6,9 @@
 - display progress whil the server does smth (especially uploading project)
 - browse by language
 - separate the app file: manage.py models.py app.py
+- remove the obj-to-dict conversion
+- can't login live with id's from development?
+- what happens to the uploaded files (posters)?
 
 #########  IMPROVE
 - download as ebook?

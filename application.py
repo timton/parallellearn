@@ -19,9 +19,8 @@ from werkzeug.utils import secure_filename
 import openpyxl
 
 # for email sending
-# https://docs.python.org/3/library/email.examples.html
-import smtplib
-from email.message import EmailMessage
+# https://code.tutsplus.com/tutorials/intro-to-flask-adding-a-contact-page--net-28982
+from flask_mail import Message, Mail
 
 from helpers import *
 
@@ -34,10 +33,23 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 db = SQLAlchemy(app)
 
+# mail object
+mail = Mail()
+
 # database migration script
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
+
+# mail configuration
+# http://settings.email/corp.mail.ru-email-settings.html
+app.config["MAIL_SERVER"] = "smtp.mail.ru"
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = 'gunter333@mail.ru'
+app.config["MAIL_PASSWORD"] = '1qaz@WSX'
+
+mail.init_app(app)
 
 # configure database models
 class Comment(db.Model):
@@ -2097,16 +2109,16 @@ def contact():
         elif not request.form.get("message"):
             return apology("Must provide message.")
 
-        message = EmailMessage()
-        message.set_content(request.form.get("message"))
-        message['Subject'] = 'Parallellearn: Message from % s' % request.form.get("name")
-        message['From'] = request.form.get("email")
-        message['To'] = 'h2912420@nwytg.com'
+        msg = Message("Parallellearn Message", sender='gunter333@mail.ru', recipients=['timofei.tonu@gmail.com'])
+        msg.body = """
+		From: %s <%s>
+		%s
+		""" % (request.form.get("name"), 
+			   request.form.get("email"), 
+			   request.form.get("message"))
 
         try:
-            s = smtplib.SMTP('localhost', 1025)
-            s.send_message(message)
-            s.quit()
+            mail.send(msg)
             return success("Thank you for your message! I will try to answer you as soon as possible.")
         except ConnectionRefusedError:
             return apology("Couldn't send your message! Please try again later.")
