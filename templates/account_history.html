@@ -51,7 +51,7 @@
                                 <td class="d-none d-xl-table-cell">{{ project["type"].title() }}</td>
                                 <td class="d-none d-sm-table-cell">{{ project["from_language"].title() }}</td>
                                 <td class="d-none d-sm-table-cell">{{ project["to_language"].title() }}</td>
-                                <td class="d-none d-md-table-cell">{{ project["progress"] }}%</td>
+                                <td class="d-none d-md-table-cell">{{ project["current_line_id"] }}%</td>
                                 <td>
                                     <form action="{{ url_for('project_practice') }}" method="post">
                                         <button type="submit" name="resume_project" value="{{ project['resume_id'] }}"

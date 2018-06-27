@@ -71,12 +71,12 @@
                     </div>
                 </div>
                 <div class="tab-pane container" id="books">
-                    <div class="row">
-                        {% if projects["books"]|length == 0 %}
-                            <br>
-                            The site has no books.
-                            <br>
-                        {% else %}
+                    {% if projects["books"]|length == 0 %}
+                        <br><br><br><br>
+                        <p class="align-center">No books.</p>
+                        <br>
+                    {% else %}
+                        <div class="row">
                             {% for project in projects["books"] %}
                                 <div class="card">
                                     <a href="{{ url_for('view_project', id=project['id']) }}">
@@ -99,16 +99,16 @@
                                     </a>
                                 </div>
                             {% endfor %}
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="tab-pane container" id="movies">
-                    <div class="row">
-                        {% if projects["movies"]|length == 0 %}
-                            <br>
-                            The site has no movies.
-                            <br>
-                        {% else %}
+                    {% if projects["movies"]|length == 0 %}
+                        <br><br><br><br>
+                        <p class="align-center">No movies.</p>
+                        <br>
+                    {% else %}
+                        <div class="row">
                             {% for project in projects["movies"] %}
                                 <div class="card">
                                     <a href="{{ url_for('view_project', id=project['id']) }}">
@@ -131,16 +131,16 @@
                                     </a>
                                 </div>
                             {% endfor %}
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="tab-pane container" id="series">
-                    <div class="row">
-                        {% if projects["series"]|length == 0 %}
-                            <br>
-                            The site has no series.
-                            <br>
-                        {% else %}
+                    {% if projects["series"]|length == 0 %}
+                        <br><br><br><br>
+                        <p class="align-center">No series.</p>
+                        <br>
+                    {% else %}
+                        <div class="row">
                             {% for project in projects["series"] %}
                                 <div class="card">
                                     <a href="{{ url_for('view_project', id=project['id']) }}">
@@ -163,16 +163,16 @@
                                     </a>
                                 </div>
                             {% endfor %}
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="tab-pane container" id="songs">
-                    <div class="row">
-                        {% if projects["songs"]|length == 0 %}
-                            <br>
-                            The site has no songs.
-                            <br>
-                        {% else %}
+                    {% if projects["songs"]|length == 0 %}
+                        <br><br><br><br>
+                        <p class="align-center">No songs.</p>
+                        <br>
+                    {% else %}    
+                        <div class="row">
                             {% for project in projects["songs"] %}
                                 <div class="card">
                                     <a href="{{ url_for('view_project', id=project['id']) }}">
@@ -195,8 +195,8 @@
                                     </a>
                                 </div>
                             {% endfor %}
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

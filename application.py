@@ -2,9 +2,11 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, or_
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
-from time import gmtime, strftime
+from datetime import datetime
 from random import shuffle, choice
 
 # for file uploading, manipulation
@@ -32,6 +34,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 db = SQLAlchemy(app)
 
+# database migration script
+migrate = Migrate(app, db)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
+
 # configure database models
 class Comment(db.Model):
     __tablename__ = 'comments'
@@ -39,7 +46,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     # initially we had sqlite which returns lists of dicts
     # sqlalchemy returns lists of object, so we add a dict method
@@ -102,8 +109,8 @@ class Project(db.Model):
     year = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     line_count = db.Column(db.Integer, nullable=False)
-    season = db.Column(db.Integer, nullable=False)
-    episode = db.Column(db.Integer, nullable=False)
+    season = db.Column(db.Integer, nullable=True)
+    episode = db.Column(db.Integer, nullable=True)
     poster = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text, nullable=False)
 
@@ -162,8 +169,8 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.Text, nullable=False)
-    username = db.Column(db.Text, nullable=False)
+    email = db.Column(db.Text, nullable=False, unique=True)
+    username = db.Column(db.Text, nullable=False, unique=True)
     hash = db.Column(db.Text, nullable=False)
 
     def asdict(self):
@@ -181,9 +188,9 @@ class Version(db.Model):
     project_id = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, nullable=False)
     language = db.Column(db.Text, nullable=False)
-    source = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
-    rating = db.Column(db.Float, nullable=False)
+    source = db.Column(db.Text, nullable=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    rating = db.Column(db.Float, default=0.0)
 
     def asdict(self):
         return {
@@ -257,14 +264,14 @@ def index():
         if rows[0]["type"].lower() == "series":
             version["title"] += (" (s" + str(rows[0]["season"]) + "/e" + str(rows[0]["episode"]) +")")
 
-        version["timestamp"] = version["timestamp"].split()[1]
+        version["timestamp"] = str(version["timestamp"]).split()[0]
 
     # get the 5 most popular versions
     popular_versions = dict_conversion(Version.query.order_by(Version.rating.desc()).limit(5).all())
 
     # get all the metadata
     for version in popular_versions:
-        rows = dict_conversion(Project.query.filter(Project.id == version.project_id).all())
+        rows = dict_conversion(Project.query.filter(Project.id == version["project_id"]).all())
         version["type"] = rows[0]["type"]
         version["author"] = rows[0]["author"].split()[-1]
         version["year"] = rows[0]["year"]
@@ -350,7 +357,7 @@ def quick_practice():
         # get all the potential from-versions
         from_versions_ids = []
         for id in possible_projects_ids:
-            rows = dict_conversion(Versions.query.filter(and_(Version.project_id == id,
+            rows = dict_conversion(Version.query.filter(and_(Version.project_id == id,
                                                               Version.language == from_language)).all())
             for row in rows:
                 from_versions_ids.append(row["id"])
@@ -452,7 +459,7 @@ def register():
         # ensure username uniqueness
         rows = dict_conversion(User.query.filter(User.username == request.form.get("username")).all())
 
-        if row:
+        if rows:
             return apology("try another username")
 
         # try to register new user
@@ -584,6 +591,7 @@ def change_password():
         # update new password hash
         User.query.filter(User.id == session["user_id"])\
                   .update({"hash": pwd_context.hash(request.form.get("new_password"))})
+        db.session.commit()         
 
         # redirect user to home page
         return redirect(url_for("index"))
@@ -623,6 +631,7 @@ def change_email():
         # update new email
         User.query.filter(User.id == session["user_id"])\
                   .update({"email": request.form.get("new_email")})
+        db.session.commit()
 
         # redirect user to home page
         return redirect(url_for("view_details"))
@@ -661,6 +670,7 @@ def change_username():
 
         # update new username
         User.query.filter(User.id == session["user_id"]).update({"username": request.form.get("new_username")})
+        db.session.commit()
 
         # redirect user to home page
         return redirect(url_for("view_details"))
@@ -927,8 +937,7 @@ def new_project_formatting():
             try:
                 version = Version(project_id=session["new_project"]["project_id"],
                                   user_id=session["user_id"],
-                                  language=session["new_project"]["versions"][i],
-                                  timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()),
+                                  language=session["new_project"]["versions"][i],                                
                                   source=session["new_project"]["sources"][i])
                 db.session.add(version)
                 db.session.commit()
@@ -1110,19 +1119,18 @@ def existing_project_versions():
 
         # upload new language versions
         # prepare to delete, if something goes wrong
-        timestamps = []
+        vids = []
         for i in range(session["existing_project"]["number_of_versions"]):
-            timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime())
-            timestamps.append(timestamp)
             try:
                 version = Version(project_id=session["existing_project"]["id"],
                                   user_id=session["user_id"], language=session["existing_project"]["versions"][i],
-                                  timestamp=timestamp, source=session["existing_project"]["sources"][i])
+                                  source=session["existing_project"]["sources"][i])
                 db.session.add(version)
                 db.session.commit()
+                vids.append(version.id)
             except RuntimeError:
-                for timestamp in timestamps:
-                    Version.query.filter(Version.timestamp == timestamp).delete()
+                for vid in vids:
+                    Version.query.filter(Version.id == vid).delete()
                     db.session.commit()
                 session.pop('existing_project', None)
                 return apology("Couldn't save the new language versions in the database.")
@@ -1246,7 +1254,7 @@ def view_history():
             project["author"] = rows[0]["author"]
             project["year"] = rows[0]["year"]
             project["id"] = rows[0]["id"]
-            project["progress"] = int(project["progress"] / rows[0]["line_count"] * 100) + 1
+            project["current_line_id"] = int(project["current_line_id"] / rows[0]["line_count"] * 100) + 1
 
             # if series, make title include the season & episode
             if project["type"].lower() == "series":
@@ -1508,7 +1516,7 @@ def delete():
                 return apology("Couldn't proceed with the deletion.", "Please try again.")
 
             # if no versions left for the project, delete the project itself
-            remaining_versions = dict_conversion(Version.query.filter(Version.project_id == version.project_id)
+            remaining_versions = dict_conversion(Version.query.filter(Version.project_id == project_id)
                                                               .order_by(Version.timestamp.asc()).all())
 
             if len(remaining_versions) == 0:
@@ -1546,6 +1554,7 @@ def delete():
                             try:
                                 Project.query.filter(Project.id == project_id)\
                                              .update({"user_id": version["user_id"]})
+                                db.session.commit()
                             except RuntimeError:
                                 return apology("Couldn't change the owner of the project.")
                             break
@@ -1682,6 +1691,7 @@ def edit():
                 try:
                     Project.query.filter(Project.id == project_id)\
                                  .update({"type": new_type, "season": None, "episode": None})
+                    db.session.commit()
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
@@ -1716,6 +1726,7 @@ def edit():
                 try:
                     Project.query.filter(Project.id == project_id)\
                                  .update({"type": "series", "season": new_season, "episode": new_episode})
+                    db.session.commit()
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
@@ -1786,23 +1797,28 @@ def edit():
                     if request.form["change_title"]:
                         Project.query.filter(Project.id == project_id)\
                                      .update({"title": request.form["change_title"].lower()})
+                        db.session.commit()
 
                     if request.form["change_author"]:
                         Project.query.filter(Project.id == project_id)\
                                      .update({"author": request.form["change_author"].lower()})
+                        db.session.commit()
 
                     if request.form["change_year"]:
                         Project.query.filter(Project.id == project_id)\
                                      .update({"year": request.form["change_year"]})
+                        db.session.commit()
 
                     if project["type"] == "series":
                         if request.form["change_season"]:
                             Project.query.filter(Project.id == project_id)\
                                          .update({"season": request.form["change_season"]})
+                            db.session.commit()
 
                         if request.form["change_episode"]:
                             Project.query.filter(Project.id == project_id)\
                                          .update({"episode": request.form["change_episode"]})
+                            db.session.commit()
 
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
@@ -1859,6 +1875,7 @@ def edit():
                 # try to edit the metadata
                 try:
                     Project.query.filter(Project.id == project_id).update({"poster": postername})
+                    db.session.commit()
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
@@ -1885,6 +1902,7 @@ def edit():
                 # try to edit
                 try:
                     Project.query.filter(Project.id == project_id).update({"description": new_description})
+                    db.session.commit()
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
@@ -1926,6 +1944,7 @@ def edit():
                 try:
                     Version.query.filter(Version.id == from_version_id)\
                                  .update({"language": to_version, "source": source})
+                    db.session.commit()
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
@@ -2002,7 +2021,7 @@ def project_practice():
                                                                    Resumable.to_version_id == to_version_id)).all())
 
                 if len(rows) > 0:
-                    project["starting_line"] = rows[0]["progress"]
+                    project["starting_line"] = rows[0]["current_line_id"]
 
 
             # prepare lines and project for rendering
@@ -2018,7 +2037,7 @@ def project_practice():
             # get resume metadata
             resume_id = request.form.get("resume_project")
             rows = dict_conversion(Resumable.query.filter(Resumable.id == resume_id).all())
-            starting_line = rows[0]["progress"]
+            starting_line = rows[0]["current_line_id"]
             from_lines = dict_conversion(Line.query.filter(Line.version_id == rows[0]["from_version_id"])
                                                    .order_by(Line.id.asc()).all())
             to_lines = dict_conversion(Line.query.filter(Line.version_id == rows[0]["to_version_id"])
@@ -2190,6 +2209,7 @@ def edit_line():
             if user_is_author == "True":
                 try:
                     Line.query.filter(Line.id == bad_line_id).update({"line": line_text})
+                    db.session.commit()
                 except RuntimeError:
                         return apology("Couldn't edit this line.", "Please try again later.")
 
@@ -2274,6 +2294,7 @@ def action_correction():
             # change the line
             try:
                 Line.query.filter(Line.id == corrected_line_id).update({"line": correction})
+                db.session.commit()
             except RuntimeError:
                 return apology("Couldn't implement the correction.", "Please try again later.")
 
@@ -2443,14 +2464,15 @@ def save_progress():
 
         if len(rows) > 0:
             try:
-                Resumable.query.filter(Resumable.id == rows[0]["id"]).update({"progress": line_index})
+            	Resumable.query.filter(Resumable.id == rows[0]["id"]).update({"current_line_id": line_index})
+            	db.session.commit()
             except RuntimeError:
                 return apology("Couldn't save the progress.", "Please try again later.")
 
         # otherwise save it as a new started project
         else:
             try:
-                resumable = Resumable(user_id=session["user_id"], progress=line_index, project_id=project_id,
+                resumable = Resumable(user_id=session["user_id"], current_line_id=line_index, project_id=project_id,
                                       from_version_id=from_version_id, to_version_id=to_version_id)
                 db.session.add(resumable)
                 db.session.commit()
@@ -2503,7 +2525,7 @@ def comment():
         comment = request.form.get("comment")
 
         # back to the message board, if empty
-        if comment == "":
+        if ''.join(comment.split()) == "":
             return redirect("/#chat-div")
 
         # check whether user logged in
@@ -2514,8 +2536,7 @@ def comment():
 
         # try saving it to the database
         try:
-            comment = Comment(user_id=user_id, comment=comment,
-                              timestamp=strftime("%H:%M:%S %Y-%m-%d", gmtime()))
+            comment = Comment(user_id=user_id, comment=comment)
             db.session.add(comment)
             db.session.commit()
         except RuntimeError:
@@ -2550,7 +2571,6 @@ def has_notifications():
 
 # https://stackoverflow.com/questions/6036082/call-a-python-function-from-jinja2
 app.jinja_env.globals.update(has_notifications=has_notifications)
-
 
 # prepare to rate a project version
 @app.route("/prepare_to_rate", methods=["GET", "POST"])
@@ -2627,6 +2647,7 @@ def rate():
         else:
             try:
                 Rating.query.filter(Rating.id == rows[0]["id"]).update({"rating": rating})
+                db.session.commit()
             except RuntimeError:
                 return apology("Couldn't update rating.", "Please try again later.")
 
@@ -2640,6 +2661,7 @@ def rate():
         # update version rating
         try:
             Version.query.filter(Version.id == version_id).update({"rating": new_rating})
+            db.session.commit()
         except RuntimeError:
             return apology("Couldn't update version rating.", "Please try again later.")
 
@@ -2649,6 +2671,9 @@ def rate():
     else:
         return render_template("browse.html")
 
+
+if __name__ == '__main__':
+	manager.run()
 
 ######################
 # DONE UP UNTIL HERE #
@@ -2666,9 +2691,7 @@ def rate():
 
 
 
-
-
-
+'''
 # prototype
 @app.route("/whatever", methods=["GET", "POST"])
 @login_required
@@ -2681,3 +2704,4 @@ def whatever():
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("upload_new.html")
+'''
