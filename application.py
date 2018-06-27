@@ -1470,8 +1470,8 @@ def delete():
             # if only one version remains
             if len(other_versions) == 1:
                 return apology("Couldn't proceed with the deletion.",
-                               "At least two different language versions uploaded by the same user should remain \
-                               (for practice/deletion purposes).")
+                               "At least two different language versions should remain \
+                               (for practice purposes).")
 
             # if 2+ versions remain
             elif len(other_versions) >= 2:

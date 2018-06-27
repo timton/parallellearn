@@ -6,7 +6,6 @@
 - display progress whil the server does smth (especially uploading project)
 - browse by language
 - separate the app file: manage.py models.py app.py
-- remove the obj-to-dict conversion
 
 #########  IMPROVE
 - download as ebook?
