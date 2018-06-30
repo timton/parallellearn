@@ -470,7 +470,6 @@ def register():
 
         # ensure username uniqueness
         rows = dict_conversion(User.query.filter(User.username == request.form.get("username")).all())
-
         if rows:
             return apology("try another username")
 
@@ -484,6 +483,20 @@ def register():
         except RuntimeError:
             return apology("error while performing registration")
 
+        msg = Message("Parallellearn Message", sender='gunter333@mail.ru', recipients=[request.form.get("email")])
+        msg.body = """
+		Hi %s! 
+
+		Thank you for registering.
+
+		Regards,
+		Parallellearn
+		""" % (request.form.get("name"))
+
+        try:
+            mail.send(msg)
+        except ConnectionRefusedError:
+            pass
 
         # once successfully registered, log user in automatically
         session["user_id"] = user.id
