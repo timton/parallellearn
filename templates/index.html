@@ -51,12 +51,12 @@
                                         </div>
                                         <div class="image-div">
                                             <img class="card-img-top" alt="poster image"
-                                                 src="{{ url_for('static', filename=display['project_1']['poster']) }}">
+                                                 src="{{ display['project_1']['poster'] }}">
                                         </div>
                                         <div class="card-footer">
                                             {% if display['project_1']['title']|length > 28 %}
                                                 <span class="small-font">
-                                                    <strong>{{ display['project_1']['title']|truncate(30) }}...</strong>
+                                                    <strong>{{ (display['project_1']['title']|truncate(30)).title() }}</strong>
                                                 </span>
                                             {% else %}
                                                 <strong>{{ display['project_1']['title'].title() }}</strong>
@@ -75,7 +75,7 @@
                                             </div>
                                             <div class="image-div">
                                                 <img class="card-img-top" alt="poster image"
-                                                     src="{{ url_for('static', filename=project['poster']) }}">
+                                                     src="{{ project['poster'] }}">
                                             </div>
                                             <div class="card-footer">
                                                 {% if project['title']|length > 28 %}
