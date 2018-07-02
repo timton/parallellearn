@@ -44,6 +44,7 @@ main {
 
 /*
 the navbar-collapsed bell notification looks misplaced in chrome on small devices
+the navbar brand img looks misplaced in chrome
 https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 */
 @media (max-width: 767.98px) and (-webkit-min-device-pixel-ratio:0) {
@@ -52,6 +53,10 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     .fa-bell:first-of-type {
         margin-left: 9px;
         margin-top: -30px;
+    }
+
+    .navbar img {
+        margin-bottom: 0.5rem;
     }
 }
 
