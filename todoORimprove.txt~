@@ -2,7 +2,7 @@
 - (BUY DOMAIN EMAIL) forgot password? email confirmation upon registration?
 - tidy up all methods (save post arguments for comparison, improve error messaging, try except db queries)
 - improve db (prototypes / actual projects / series, foreign keys etc.)
-- display progress whil the server does smth (especially uploading project)
+- display progress while the server does smth (especially uploading project)
 - browse by language
 - separate the app file: manage.py models.py app.py
 - remove the obj-to-dict conversion
