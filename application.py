@@ -870,35 +870,13 @@ def new_project_formatting():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # ENSURE POSTER SELECTED FOR UPLOAD
-        # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
-        # check if the post request has the file part
-        if 'poster' not in request.files:
+		# get the new project poster link, store it in the new project object
+        # ensure poster link of the project was submitted
+        if not request.form.get("new_project_poster"):
             session.pop('new_project', None)
-            return apology("Couldn't upload this project.", "Please select a poster image.")
-
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        file = request.files['poster']
-        if not file or file.filename == '':
-            session.pop('new_project', None)
-            return apology("Couldn't upload this project.", "Please select a poster image.")
-
-        # ensure poster file (extension) allowed
-        if forbidden_poster(file.filename):
-            session.pop('new_project', None)
-            return apology("Couldn't upload this project.",
-                           "Allowed extensions for poster images: jpeg/jpeg/png/svg.")
-
-        # ensure poster image not too large
-        # https://stackoverflow.com/questions/2104080/how-to-check-file-size-in-python
-        old_file_position = file.tell()
-        file.seek(0, os.SEEK_END)
-        size = file.tell()
-        file.seek(old_file_position, os.SEEK_SET)
-        if size > 307200:
-            session.pop('new_project', None)
-            return apology("Couldn't upload this project.", "Maximum size for poster images is 300 KB.")
+            return apology("Couldn't upload this project.", "Please provide a poster image URL.")
+        else:
+            session["new_project"]["poster"] = request.form.get("new_project_poster")
 
         # get the new project description, store it in the new project object
         # ensure description of the project was submitted
@@ -913,27 +891,19 @@ def new_project_formatting():
             session.pop('new_project', None)
             return apology("Let's not go overboard.", "Description too long (maximum 1000 characters).")
 
-        # upload the poster
-        try:
-            postername = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], postername))
-        except RuntimeError:
-            session.pop('new_project', None)
-            return apology("Couldn't upload this project.", "Please try again later.")
-
         # upload new project metadata
         try:
             if session["new_project"]["type"] != "series":
                 project = Project(type=session["new_project"]["type"], title=session["new_project"]["title"],
                                   author=session["new_project"]["author"], year=session["new_project"]["year"],
                                   user_id=session["user_id"], line_count=session["new_project"]["line_count"],
-                                  poster=postername, description=session["new_project"]["description"])
+                                  poster=session["new_project"]["poster"], description=session["new_project"]["description"])
             else:
                 project = Project(type=session["new_project"]["type"], title=session["new_project"]["title"],
                                   author=session["new_project"]["author"], year=session["new_project"]["year"],
                                   user_id=session["user_id"], line_count=session["new_project"]["line_count"],
                                   season=session["new_project"]["season"], episode=session["new_project"]["episode"],
-                                  poster=postername, description=session["new_project"]["description"])
+                                  poster=session["new_project"]["poster"], description=session["new_project"]["description"])
             db.session.add(project)
             db.session.commit()
 
@@ -1446,13 +1416,6 @@ def delete():
             except RuntimeError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
-            # remove the poster
-            rows = dict_conversion(Project.query.filter(Project.id == project_id).all())
-            try:
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], rows[0]["poster"]))
-            except RuntimeError:
-                return apology("Couldn't delete this project.", "Please try again.")
-
             # then the project itself
             try:
                 Project.query.filter(Project.id == project_id).delete()
@@ -1532,14 +1495,6 @@ def delete():
                                                               .order_by(Version.timestamp.asc()).all())
 
             if len(remaining_versions) == 0:
-
-                # remove the poster
-                rows = dict_conversion(Project.query.filter(Project.id == project_id).all())
-                try:
-                    os.remove(rows[0]["poster"])
-                except RuntimeError:
-                    return apology("Deleted the versions, but not the project.", "Please try again.")
-
                 try:
                     Project.query.filter(Project.id == project_id).delete()
                     db.session.commit()
@@ -1845,48 +1800,15 @@ def edit():
                 rows = dict_conversion(Project.query.filter(Project.id == project_id).all())
                 project = rows[0]
 
-                # ENSURE NEW POSTER SELECTED FOR UPLOAD
-                # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
-                # check if the post request has the file part
-                if 'new_poster' not in request.files:
-                    return apology("Couldn't edit this project.", "Please select a new poster image.")
-
-                # if user does not select file, browser also
-                # submit a empty part without filename
-                file = request.files['new_poster']
-                if not file or file.filename == '':
-                    return apology("Couldn't edit this project.", "Please select a new poster image.")
-
-                # ensure poster file (extension) allowed
-                if forbidden_poster(file.filename):
-                    return apology("Couldn't edit this project.",
-                                   "Allowed extensions for poster images: jpeg/jpeg/png/svg.")
-
-                # ensure poster image not too large
-                # https://stackoverflow.com/questions/2104080/how-to-check-file-size-in-python
-                old_file_position = file.tell()
-                file.seek(0, os.SEEK_END)
-                size = file.tell()
-                file.seek(old_file_position, os.SEEK_SET)
-                if size > 307200:
-                    return apology("Couldn't edit this project.", "Maximum size for poster images is 300 KB.")
-
-                # try to upload the new poster
-                try:
-                    postername = secure_filename(file.filename)
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], postername))
-                except RuntimeError:
-                    return apology("Couldn't edit this project.", "Please try again later.")
-
-                # try to remove the old poster
-                try:
-                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], project["poster"]))
-                except RuntimeError:
-                    return apology("Couldn't edit this project.", "Please try again.")
-
+                # ensure new poster link of the project was submitted, save it
+                if not request.form.get("new_poster"):
+                	return apology("Couldn't edit this project.", "Please provide a new poster image URL.")
+                else:
+                	new_poster = request.form.get('new_poster')
+                
                 # try to edit the metadata
                 try:
-                    Project.query.filter(Project.id == project_id).update({"poster": postername})
+                    Project.query.filter(Project.id == project_id).update({"poster": new_poster})
                     db.session.commit()
                 except RuntimeError:
                     return apology("Couldn't update the project.", "Please try again later.")

@@ -21,7 +21,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <img src="{{ url_for('static', filename=project['poster']) }}" alt="poster">
+                        <img src="{{ project['poster'] }}" alt="poster">
                     </td>
                     <td>
                         <strong>Description: </strong>{{ project["description"] }}
@@ -56,7 +56,7 @@
             </p>
             <hr>
             <p>
-                <img src="{{ url_for('static', filename=project['poster']) }}" alt="Project poster">
+                <img src="{{ project['poster'] }}" alt="Project poster">
             </p>
             <hr>
             <p>

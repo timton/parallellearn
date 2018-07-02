@@ -8,15 +8,13 @@
     <br>
     <div class="container creamy align-center" id="new-project-formatting">
         <br>
-        <p>Lastly, please provide a small <b>poster image</b> and a short <b>description</b> for this project:</p>
-        <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
-        <form action="{{ url_for('new_project_formatting') }}" method="post"
-              enctype="multipart/form-data" class="pl-form">
+        <p>Lastly, please provide a <b>poster image (link)</b> and a short <b>description</b> for this project:</p>
+        <form action="{{ url_for('new_project_formatting') }}" method="post" class="pl-form">
             <fieldset>
                 <div class="form-group">
                     Poster image:
-                    <input autofocus class="form-control" name="poster" placeholder="Poster"
-                           type="file" required />
+                    <input autocomplete="off" autofocus class="form-control" name="new_project_poster"
+                     placeholder="Poster image url" type="text" required />
                 </div>
                 <br>
 
