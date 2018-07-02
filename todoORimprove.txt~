@@ -8,6 +8,7 @@
 - remove the obj-to-dict conversion
 - can't login live with id's from development? in production logsin then out
 - what happens to the uploaded files (posters)? only share link to posters, not save them?
+- view versions in html form side by side, numbered?
 
 #########  IMPROVE
 - download as ebook?

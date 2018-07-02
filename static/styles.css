@@ -29,6 +29,11 @@ main {
     font-weight: 600;
 }
 
+.navbar img {
+    height: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
 /* https://stackoverflow.com/questions/31784519/show-number-of-notifications-on-icon */
 .fa-bell {
     position: absolute;

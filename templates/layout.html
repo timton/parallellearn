@@ -28,7 +28,10 @@
     <body>
 
         <nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
-          <a class="navbar-brand" href="{{ url_for('index') }}">Parallellearn</a>
+          <a class="navbar-brand" href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='favicon.ico') }}" class="d-inline-block" alt="">
+            Parallellearn
+          </a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                   aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
