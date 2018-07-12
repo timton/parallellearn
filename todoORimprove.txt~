@@ -6,8 +6,9 @@
 - browse by language
 - separate the app file: manage.py models.py app.py
 - remove the obj-to-dict conversion
-- can't login live with id's from development? in production logsin then out
+- production doesn't log in
 - view versions in html form side by side, numbered?
+- new project/version font awesome
 
 #########  IMPROVE
 - download as ebook?

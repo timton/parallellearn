@@ -6,9 +6,10 @@
 - browse by language
 - separate the app file: manage.py models.py app.py
 - remove the obj-to-dict conversion
-- production doesn't log in
+- session object doesn't save all the time
 - view versions in html form side by side, numbered?
 - new project/version font awesome
+- shawshank french version at the end offset
 
 #########  IMPROVE
 - download as ebook?

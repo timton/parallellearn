@@ -92,6 +92,7 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 
 .card-footer {
     color: lightblue;
+    font-size: 14px;
 }
 
 .image-div {
@@ -106,10 +107,6 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 
 .card-header, .card-footer {
     padding: 0;
-}
-
-.small-font {
-    font-size: 13px;
 }
 
 #chat-div, #uploaded-projects {

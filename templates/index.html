@@ -47,17 +47,15 @@
                                 <div class="card">
                                     <a href="{{ url_for('view_project', id=display['project_1']['id']) }}">
                                         <div class="card-header">
-                                            [{{ display['project_1']['type'] }}]
+                                            {{ display['project_1']['type'].title() }}
                                         </div>
                                         <div class="image-div">
                                             <img class="card-img-top" alt="poster image"
                                                  src="{{ display['project_1']['poster'] }}">
                                         </div>
                                         <div class="card-footer">
-                                            {% if display['project_1']['title']|length > 28 %}
-                                                <span class="small-font">
-                                                    <strong>{{ (display['project_1']['title']|truncate(30)).title() }}</strong>
-                                                </span>
+                                            {% if display['project_1']['title']|length > 24 %}
+                                                <strong>{{ (display['project_1']['title']|truncate(30)).title() }}</strong>
                                             {% else %}
                                                 <strong>{{ display['project_1']['title'].title() }}</strong>
                                             {% endif %}
@@ -71,17 +69,15 @@
                                     <div class="card">
                                         <a href="{{ url_for('view_project', id=project['id']) }}">
                                             <div class="card-header">
-                                                [{{ project['type'] }}]
+                                                {{ project['type'].title() }}
                                             </div>
                                             <div class="image-div">
                                                 <img class="card-img-top" alt="poster image"
                                                      src="{{ project['poster'] }}">
                                             </div>
                                             <div class="card-footer">
-                                                {% if project['title']|length > 28 %}
-                                                    <span class="small-font">
-                                                        <strong>{{ (project['title']|truncate(30)).title() }}</strong>
-                                                    </span>
+                                                {% if project['title']|length > 24 %}
+                                                    <strong>{{ (project['title']|truncate(30)).title() }}</strong>
                                                 {% else %}
                                                     <strong>{{ project['title'].title() }}</strong>
                                                 {% endif %}
