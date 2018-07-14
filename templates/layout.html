@@ -49,8 +49,12 @@
                   Upload
                 </a>
                 <div class="dropdown-menu">
-                  <a class="dropdown-item" href="{{ url_for('new_project_type') }}">Brand new project</a>
-                  <a class="dropdown-item" href="{{ url_for('upload_existing') }}">Version for existing project</a>
+                  <a class="dropdown-item" href="{{ url_for('new_project_type') }}">
+                    <i class="fas fa-umbrella fa-fw"></i>New project
+                  </a>
+                  <a class="dropdown-item" href="{{ url_for('upload_existing') }}">
+                    <i class="fas fa-code-branch fa-fw"></i>New version
+                  </a>
                 </div>
               </li>
               <li class="nav-item">

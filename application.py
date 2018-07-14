@@ -361,8 +361,8 @@ def quick_practice():
 
         # make sure combination possible
         if len(possible_projects_ids) == 0:
-            x = "Sorry, this combination (from {f} to {t}) is not supported.".format(f=from_language, t=to_language)
-            y = "Please try a different language combination. Thank you!"
+            x = "This combination ({f} / {t}) is not supported.".format(f=from_language.title(), t=to_language.title())
+            y = "Please try something else."
             return apology(x, y)
 
 
@@ -403,17 +403,14 @@ def quick_practice():
                                                           Line.line_index == line["line_index"])).all())
             to_lines.append(rows[0])
 
-        # append the sources
-        for line in from_lines:
+        # add the line sources (for translation context purposes)
+        # save the first line source separately, as it displays raw html, we will hardcode
+        rows = dict_conversion(Project.query.filter(Project.id == from_lines[0]["project_id"]).all())
+        line0_source = rows[0]["title"].title()	
 
-            # save the first line separately, as it displays raw html, we will hardcode
-            if from_lines.index(line) == 0:
-                rows = dict_conversion(Project.query.filter(Project.id == line["project_id"]).all())
-                line0_source = rows[0]["title"].title()
-                continue
-
-            rows = dict_conversion(Project.query.filter(Project.id == line["project_id"]).all())
-            line["line"] += ("<span> (" + rows[0]["title"].title() + ")</span>")
+        for line in from_lines[1:]:
+        	rows = dict_conversion(Project.query.filter(Project.id == line["project_id"]).all())
+        	line["line"] += ("<span> (" + rows[0]["title"].title() + ")</span>")
 
         # prepare project to render
         project = {}
@@ -423,7 +420,7 @@ def quick_practice():
         project["starting_line"] = 0
         project["line0_source"] = line0_source
 
-        # to standardize quick & project practice
+        # to standardize quick practive & project practice
         project["from_version"], project["to_version"] = {}, {}
         project["from_version"]["language"] = from_language
         project["to_version"]["language"] = to_language
@@ -438,52 +435,62 @@ def quick_practice():
 # register route
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """Register user."""
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # ensure email was submitted
+        # ensure email was submitted, save it
         if not request.form.get("email"):
-            return apology("must provide email")
+            return apology("Must provide email.")
+        else:
+        	email = request.form.get("email")
 
-        # ensure username was submitted
-        elif not request.form.get("username"):
-            return apology("must provide username")
+        # ensure username was submitted, save it
+        if not request.form.get("username"):
+            return apology("Must provide username.")
+        else:
+        	username = request.form.get("username")
 
-        # ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password")
+        # ensure password was submitted, save it
+        if not request.form.get("password"):
+            return apology("Must provide password.")
+        else:
+        	password = request.form.get("password")        
 
-        # ensure password was confirmed
-        elif not request.form.get("confirm_password"):
-            return apology("must confirm password")
+        # ensure password was confirmed, save it
+        if not request.form.get("confirm_password"):
+            return apology("Must confirm password.")
+        else:
+        	confirm_password = request.form.get("confirm_password")
 
         # ensure passwords match
-        elif not request.form.get("password") == request.form.get("confirm_password"):
-            return apology("passwords do not match")
+        if not password == confirm_password:
+            return apology("Passwords do not match.")
 
         # ensure email uniqueness
-        rows = dict_conversion(User.query.filter(User.email == request.form.get("email")).all())
+        rows = dict_conversion(User.query.filter(User.email == email).all())
         if rows:
-            return apology("try another email")
+            return apology("Email already in use.")
 
         # ensure username uniqueness
-        rows = dict_conversion(User.query.filter(User.username == request.form.get("username")).all())
+        rows = dict_conversion(User.query.filter(User.username == username).all())
         if rows:
-            return apology("try another username")
+            return apology("Username already in use.")
 
         # try to register new user
         try:
-            user = User(email=request.form.get("email"),
-                        username=request.form.get("username"),
-                        hash=pwd_context.hash(request.form.get("password")))
+            user = User(email=email,
+                        username=username,
+                        hash=pwd_context.hash(password))
             db.session.add(user)
             db.session.commit()
         except RuntimeError:
-            return apology("error while performing registration")
+            return apology("Error while registering.", "Please try again later.")
 
-        msg = Message("Parallellearn Message", sender='gunter333@mail.ru', recipients=[request.form.get("email")])
+        # send confirmation email
+        msg = Message("Parallellearn Message", 
+        	          sender='gunter333@mail.ru', 
+        	          recipients=[email])
         msg.body = """
 		Hi %s! 
 
@@ -491,7 +498,7 @@ def register():
 
 		Regards,
 		Parallellearn
-		""" % (request.form.get("name"))
+		""" % (username)
 
         try:
             mail.send(msg)
@@ -501,8 +508,7 @@ def register():
         # once successfully registered, log user in automatically
         session["user_id"] = user.id
 
-        # redirect user to home page
-        return redirect(url_for("index"))
+        return success("Thank you for registering!")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -511,7 +517,6 @@ def register():
 # logout route
 @app.route("/log_out")
 def log_out():
-    """Log user out."""
 
     # forget any user_id
     session.clear()
@@ -522,29 +527,28 @@ def log_out():
 #login route
 @app.route("/log_in", methods=["GET", "POST"])
 def log_in():
-    """Log user in."""
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
         # ensure email/username was submitted
         if not request.form.get("email_or_username"):
-            return apology("must provide email or username")
+            return apology("Must provide email or username.")
         else:
-            eoru = request.form.get("email_or_username")
+            e_or_u = request.form.get("email_or_username")
 
         # ensure password was submitted
         if not request.form.get("password"):
-            return apology("must provide password")
+            return apology("Must provide password.")
         else:
-            pwd = request.form.get("password")
+            password = request.form.get("password")
 
         # query database for email or username
-        rows = dict_conversion(User.query.filter(or_(User.email == eoru, User.username == eoru)).all())
+        rows = dict_conversion(User.query.filter(or_(User.email == e_or_u, User.username == e_or_u)).all())
 
         # ensure email/username exists and password is correct
-        if len(rows) != 1 or not pwd_context.verify(pwd, rows[0]["hash"]):
-            return apology("invalid email/username and/or password")
+        if len(rows) != 1 or not pwd_context.verify(password, rows[0]["hash"]):
+            return apology("Username/email and/or password incorrect.")
 
         # remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -561,10 +565,10 @@ def log_in():
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
 
-        # forget any user_id
+        # empty the session object
         session.clear()
 
-        # save the next arg, if possible
+        # save the next arg, if possible (if page requests login)
         if request.args.get('next'):
             session['next'] = request.args.get('next')
 
@@ -576,9 +580,9 @@ def log_in():
 def view_details():
 
     # fetch the user
-    user = dict_conversion(User.query.filter(User.id == session["user_id"]).all())
+    rows = dict_conversion(User.query.filter(User.id == session["user_id"]).all())
 
-    return render_template("account_details.html", user=user[0])
+    return render_template("account_details.html", user=rows[0])
 
 # change password route
 @app.route("/change_password", methods=["GET", "POST"])
@@ -590,36 +594,41 @@ def change_password():
 
         # ensure old password was submitted
         if not request.form.get("old_password"):
-            return apology("must provide current password")
+            return apology("Must provide old password.")
+        else:
+        	old_password = request.form.get("old_password")
 
         # ensure new password was submitted
-        elif not request.form.get("new_password"):
-            return apology("must provide new password")
+        if not request.form.get("new_password"):
+            return apology("Must provide new password.")
+        else:
+        	new_password = request.form.get("new_password")
 
         # ensure new password was confirmed
-        elif not request.form.get("confirm_password"):
-            return apology("must confirm new password")
+        if not request.form.get("confirm_password"):
+            return apology("Must confirm new password.")
+        else:
+        	confirm_password = request.form.get("confirm_password")
 
         # ensure old password is correct
         rows = dict_conversion(User.query.filter(User.id == session["user_id"]).all())
-        if not pwd_context.verify(request.form.get("old_password"), rows[0]["hash"]):
-            return apology("current password incorrect")
+        if not pwd_context.verify(old_password, rows[0]["hash"]):
+            return apology("Old password incorrect.")
 
-        # ensure new password is input twice
-        elif request.form.get("new_password") != request.form.get("confirm_password"):
-            return apology("new password must be input twice")
+        # ensure new password confirmed correctly
+        if new_password != confirm_password:
+            return apology("New password not confirmed.")
 
         # ensure new password is different from the old one
-        if pwd_context.verify(request.form.get("new_password"), rows[0]["hash"]):
-            return apology("new password must be different from current one")
+        if pwd_context.verify(new_password, rows[0]["hash"]):
+            return apology("New password must differ from old one.")
 
         # update new password hash
         User.query.filter(User.id == session["user_id"])\
-                  .update({"hash": pwd_context.hash(request.form.get("new_password"))})
+                  .update({"hash": pwd_context.hash(new_password)})
         db.session.commit()         
 
-        # redirect user to home page
-        return redirect(url_for("index"))
+        return success("Password changed successfully.")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -634,32 +643,45 @@ def change_email():
     if request.method == "POST":
 
         # ensure new email was submitted
-        if not request.form.get("new_email") or not request.form.get("confirm_new_email"):
-            return apology("must provide new email")
-
-        # ensure emails match
-        if request.form.get("new_email").lower() != request.form.get("confirm_new_email").lower():
-            return apology("emails don't match")
+        if not request.form.get("new_email"):
+            return apology("Must provide new email.")
+        else:
+        	new_email = request.form.get("new_email")
 
         # ensure new email is different from the current one
         users = dict_conversion(User.query.filter(User.id == session["user_id"]).all())
-
-        if request.form.get("new_email") == users[0]["email"]:
-            return apology("new email must be different from current one")
+        if new_email == users[0]["email"]:
+            return apology("New email must differ from old one.")
 
         # ensure email not already registered
-        rows = dict_conversion(User.query.filter(User.email == request.form.get("new_email")).all())
-
+        rows = dict_conversion(User.query.filter(User.email == new_email).all())
         if len(rows) > 0:
-            return apology("try another email")
+            return apology("Email already in use.")
 
         # update new email
         User.query.filter(User.id == session["user_id"])\
-                  .update({"email": request.form.get("new_email")})
+                  .update({"email": new_email})
         db.session.commit()
 
-        # redirect user to home page
-        return redirect(url_for("view_details"))
+		# send confirmation email
+        msg = Message("Parallellearn Message", 
+        	          sender='gunter333@mail.ru', 
+        	          recipients=[new_email])
+        msg.body = """
+		Hi! 
+
+		Your email has been changed.
+
+		Regards,
+		Parallellearn
+		"""
+
+        try:
+            mail.send(msg)
+        except ConnectionRefusedError:
+            pass
+
+        return success("Email changed successfully.")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -674,31 +696,28 @@ def change_username():
     if request.method == "POST":
 
         # ensure new username was submitted
-        if not request.form.get("new_username") or not request.form.get("confirm_new_username"):
-            return apology("must provide new username")
-
-        # ensure usernames match
-        if request.form.get("new_username").lower() != request.form.get("confirm_new_username").lower():
-            return apology("usernames don't match")
+        if not request.form.get("new_username"):
+            return apology("Must provide new username.")
+        else:
+        	new_username = request.form.get("new_username")    
 
         # ensure new username is different from the current one
-        user = dict_conversion(User.query.filter(User.id == session["user_id"]).all())
+        rows = dict_conversion(User.query.filter(User.id == session["user_id"]).all())
 
-        if request.form.get("new_username") == user[0]["username"]:
-            return apology("new username must be different from current one")
+        if new_username == rows[0]["username"]:
+            return apology("New username must be differ from old one.")
 
         # ensure username not already registered
-        row = dict_conversion(User.query.filter(User.username == request.form.get("new_username")).all())
+        rows = dict_conversion(User.query.filter(User.username == new_username).all())
 
-        if row:
-            return apology("try another username")
+        if rows:
+            return apology("Username already in use.")
 
         # update new username
         User.query.filter(User.id == session["user_id"]).update({"username": request.form.get("new_username")})
         db.session.commit()
 
-        # redirect user to home page
-        return redirect(url_for("view_details"))
+        return success("Username changed successfully.")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -748,7 +767,7 @@ def new_project_metadata():
             if not request.form.get("new_project_season") or not request.form.get("new_project_episode"):
                 session.pop('new_project', None)
                 return apology("Couldn't upload this project.",
-                               "Please provide a season and/or an episode number.")
+                               "Please provide the season and/or the episode.")
             else:
                 session["new_project"]["season"] = request.form.get("new_project_season")
                 session["new_project"]["episode"] = request.form.get("new_project_episode")
@@ -805,18 +824,18 @@ def new_project_metadata():
             session.pop('new_project', None)
             return apology("This project already exists.", "Try simply uploading versions for it.")
 
-        # ensure 2 <-> 5 language versions
+        # ensure 2 <-> 4 language versions
         workbook = openpyxl.load_workbook(file)
         session["new_project"]["number_of_versions"] = len(workbook.worksheets)
 
-        if session["new_project"]["number_of_versions"] > 5:
+        if session["new_project"]["number_of_versions"] > 4:
             session.pop('new_project', None)
             return apology("Couldn't upload this project.",
-                           "Don't overwork - neither yourself, nor the server (maximum 5 language versions allowed per file).")
+                           "Maximum 4 versions per file allowed.")
         elif session["new_project"]["number_of_versions"] < 2:
             session.pop('new_project', None)
             return apology("Couldn't upload this project.",
-                           "A new project must have at least two language versions.")
+                           "Minimum 2 versions required.")
 
         # make sure all versions have the same number of lines
         session["new_project"]["line_count"] = workbook.worksheets[0].max_row
@@ -867,7 +886,7 @@ def new_project_versions():
         if len(set(session["new_project"]["versions"])) == 1:
             session.pop('new_project', None)
             return apology("Couldn't upload this project.",
-                           "New project must have at least two different language versions.")
+                           "At least two different language versions required.")
 
         return render_template("new_project_formatting.html")
 
@@ -890,6 +909,13 @@ def new_project_formatting():
             return apology("Couldn't upload this project.", "Please provide a poster image URL.")
         else:
             session["new_project"]["poster"] = request.form.get("new_project_poster")
+
+        # ensure poster valid
+        if forbidden_poster(session["new_project"]["poster"]):
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "Please provide a valid URL to a png/jpeg/jpg/svg.")
+
 
         # get the new project description, store it in the new project object
         # ensure description of the project was submitted
@@ -997,40 +1023,11 @@ def new_project_formatting():
 @login_required
 def upload_existing():
 
-    # query for all the existing projects
-    existing_projects = dict_conversion(Project.query.all())
-
-    # modify title for series
-    # and construct project name to be displayed
-    for project in existing_projects:
-        if project["type"] == "series":
-            project["title"] = (project["title"] + " - s" + str(project["season"]) + \
-                               "e" + str(project["episode"]))
-        project["name"] = "[" + project["type"] + "] " + project["title"] + " - " + \
-                          project["author"] + " (" + str(project["year"]) + ")"
-
-
-
-
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # ensure project submitted and ...
-        if not request.form.get("project"):
-            return apology("Must choose project to update.")
-        else:
-            project_name = request.form.get("project").lower()
-
-        # ... ensure project exists
-        project_id = -1
-        for project in existing_projects:
-            if project["name"].lower() == project_name:
-                project_id = project["id"]
-                break
-        if project_id == -1:
-            return apology("Must choose among existing projects (better select from the dropdown menu).")
-
-        # get project metadata
+        # get project id and its metadata
+        project_id = request.form.get("project_id")
         rows = dict_conversion(Project.query.filter(Project.id == project_id).all())
         session["existing_project"] = rows[0]
 
@@ -1054,18 +1051,18 @@ def upload_existing():
             return apology("Couldn't update this project.",
                            "Allowed extensions: xls/xlsx/xlsm/xltx/xltm.")
 
-        # ensure 1 <-> 5 language versions
+        # ensure 1 <-> 4 language versions
         workbook = openpyxl.load_workbook(file)
         session["existing_project"]["number_of_versions"] = len(workbook.worksheets)
 
-        if session["existing_project"]["number_of_versions"] > 5:
+        if session["existing_project"]["number_of_versions"] > 4:
             session.pop('existing_project', None)
             return apology("Couldn't update the project with your file.",
-                           "Don't overwork - neither yourself, nor the server (maximum 5 language versions allowed per file).")
+                           "Maximum four versions allowed.")
         elif session["existing_project"]["number_of_versions"] < 1:
             session.pop('existing_project', None)
             return apology("Couldn't update the project with your file.",
-                           "You must contribute with at least one language version.")
+                           "At least one version required.")
 
         # make sure all the new versions have the same number of lines as the original project
         for worksheet in workbook:
@@ -1090,9 +1087,21 @@ def upload_existing():
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
+		
+		# query for all the existing projects
+    	existing_projects = dict_conversion(Project.query.all())
 
-        # return the list of projects for the user to choose from
-        return render_template("upload_existing.html", existing_projects=existing_projects)
+    	# modify title for series
+    	# and construct project name to be displayed
+    	for project in existing_projects:
+    		if project["type"] == "series":
+    			project["title"] = (project["title"] + " - s" + str(project["season"]) + \
+	                               "e" + str(project["episode"]))
+    		project["name"] = "[" + project["type"] + "] " + project["title"] + " - " + \
+	                          project["author"] + " (" + str(project["year"]) + ")"
+
+    	# return the list of projects for the user to choose from
+    	return render_template("upload_existing.html", existing_projects=existing_projects)
 
 # add to existing project - project versions
 @app.route("/existing_project_versions", methods=["GET", "POST"])

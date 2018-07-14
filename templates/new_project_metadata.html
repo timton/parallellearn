@@ -6,9 +6,11 @@
 
 {% block main %}
     <br>
-    <div class="container align-center creamy">
+    <div class="container align-center creamy" id="new-project-metadata">
         <br>
-        <p>Uploading a <strong>{{ session["new_project"]["type"].title() }}</strong>. Excellent!</p>
+        <h3>Uploading a <strong>{{ session["new_project"]["type"].title() }}</strong>. Excellent!</h3>
+        <br>
+        <p>Let's register it properly. Please Google the correct details, if not sure.</p>
         <!-- enctype needed for file uploading http://flask.pocoo.org/docs/0.12/patterns/fileuploads/ -->
         <form action="{{ url_for('new_project_metadata') }}" method="post"
               enctype="multipart/form-data" id="upload_new" class="pl-form">
@@ -17,18 +19,17 @@
                     First, please input the <strong>title</strong>:
                     <br/>
                     <input autofocus autocomplete="off" name="new_project_title" class="form-control"
-                           id="new_project_title" type="text"/ list="titles" placeholder="Title"/>
-                    <datalist id="titles">{% include "select/titles.html" %}</datalist>
+                           id="new_project_title" type="text" placeholder="Title" required/>
                 </div>
 
             {% if session["new_project"]["type"] == "series" %}
-                    <div class="form-group">
+                    <div class="form-group" id="series">
                         What <strong>season</strong> and <strong>episode</strong>:
                         <br>
                         <input autocomplete="off" name="new_project_season" class="form-control"
-                               type="number" placeholder="Season"/>
+                               type="number" placeholder="Season" required/>
                         <input autocomplete="off" name="new_project_episode" class="form-control"
-                               type="number" placeholder="Episode"/>
+                               type="number" placeholder="Episode" required/>
                     </div>
             {% endif %}
 
@@ -36,20 +37,20 @@
                     Next, the <strong>author</strong>:
                     <br>
                     <input autocomplete="off" name="new_project_author" class="form-control"
-                           id="new_project_author" type="text"/ list="authors" placeholder="Author"/>
-                    <datalist id="authors">{% include "select/authors.html" %}</datalist>
+                           id="new_project_author" type="text" placeholder="Author" required/>
                 </div>
                 <div class="form-group">
                     Don't forget about the <strong>year</strong>:
                     <br>
                     <input autocomplete="off" name="new_project_year" class="form-control"
-                           type="number" placeholder="Year"/>
+                           type="number" placeholder="Year" required/>
                 </div>
                 <div class="form-group">
-                    Finally, select the <strong>file</strong> itself:
+                    Finally, select the <strong>file</strong>* itself:
                     <br>
                     <input autocomplete="off" class="form-control" name="file"
-                           placeholder="File" type="file"/>
+                           placeholder="File" type="file" required/>
+                    <div class="file-caveat">*Only Excel files allowed (xls/xlsx/xlsm/xltx/xltm). Minimum two versions, maximum four. Make sure the versions have the same number of lines.</span>
                 </div>
 
                 <div class="form-group">
@@ -57,7 +58,6 @@
                         Upload
                     </button>
                 </div>
-
             </fieldset>
         </form>
     </div>

@@ -27,6 +27,7 @@ main {
 
 .navbar {
     font-weight: 600;
+    font-size: 14px;
 }
 
 .navbar-brand img {
@@ -451,6 +452,16 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     margin-top: 0.5rem;
 }
 
+#new-project-metadata #series input {
+    display: inline-block;
+}
+
+.file-caveat {
+    font-size: 10px;
+    width: 13rem;
+    margin: auto;
+}
+
 #new-project-versions div div {
     border: 1px solid black;
     margin-top: 1rem;
@@ -552,6 +563,10 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
 
 @media (min-width: 576px) {
 
+    #carousel-div .card {
+        margin-top: 2rem;
+    }
+
     .practice .row div:first-of-type {
         border-right: 1px solid black;
         padding-top: 0.5rem;
@@ -585,7 +600,7 @@ https://stackoverflow.com/questions/2447511/can-you-target-google-chrome
     }
 
     .pl-form input {
-        width: 13.75rem;
+        width: 12rem;
     }
 
     #browse .nav {

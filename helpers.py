@@ -1,5 +1,6 @@
 import csv
 import urllib.request
+import requests
 
 from flask import redirect, render_template, request, session, url_for
 from functools import wraps
@@ -30,12 +31,24 @@ def forbidden_file(filename):
     return '.' not in filename or \
            filename.rsplit('.', 1)[1].lower() not in ALLOWED_FILE_EXTENSIONS
 
-# ensure selected poster image allowed
-# extension must present and allowed
-def forbidden_poster(filename):
-    return '.' not in filename or \
-           filename.rsplit('.', 1)[1].lower() not in ALLOWED_POSTER_EXTENSIONS
+# ensure poster url exists and it points to an image of an allowed format
+# https://stackoverflow.com/questions/16778435/python-check-if-website-exists
+# https://stackoverflow.com/questions/16511337/correct-way-to-try-except-using-python-requests-module/16511493
+def forbidden_poster(poster_url):
 
+    try:
+        request = requests.get(poster_url)
+    except requests.exceptions.MissingSchema:
+        return True
+
+    if request.status_code not in range(200,400):
+        return True
+
+    if '.' not in poster_url or \
+        poster_url.rsplit('.', 1)[1].lower() not in ALLOWED_POSTER_EXTENSIONS:
+        return True
+
+    return False
 
 def apology(error_message="", error_cause=""):
     """Renders message as an apology to user."""

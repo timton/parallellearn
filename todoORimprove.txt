@@ -9,7 +9,9 @@
 - session object doesn't save all the time
 - view versions in html form side by side, numbered?
 - new project/version font awesome
-- shawshank french version at the end offset
+- when receiving an error, offer a link to go back
+- remove autosuggestion
+- fewer templates, more checks with var passed to render different things on the same template
 
 #########  IMPROVE
 - download as ebook?
