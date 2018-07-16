@@ -226,7 +226,7 @@ if app.config["DEBUG"]:
 
 # configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
-app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_PERMANENT"] = True
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
@@ -1189,9 +1189,9 @@ def existing_project_versions():
         return upload_existing()
 
 
+# display project info
 # route with parameters
 # https://stackoverflow.com/questions/14032066/can-flask-have-optional-url-parameters
-# display project info
 @app.route("/view_project/<id>")
 def view_project(id):
 
@@ -1221,6 +1221,7 @@ def view_project(id):
     languages = ""
     for language in language_list:
         languages += (language + ", ")
+    # remove the last comma and space
     languages = languages[:-2]
     project["languages"] = languages
     project["sources"] = sources
@@ -1456,11 +1457,18 @@ def delete():
             if rows[0]["user_id"] != session["user_id"]:
                 return apology("Can only delete your own versions.")
 
+            # can't delete the version if used by somebody else
+            rows = dict_conversion(Resumable.query.filter(or_(Resumable.from_version_id == version_id,
+                                                              Resumable.to_version_id == version_id)).all())
+            if rows:
+            	return apology("Can't delete this version. Somebody is using it for practice.",
+                               "Try deleting some other version.")
+
             # ''' make sure 2+ different language versions uploaded by the same user are left '''
             # get the project id
             project_id = rows[0]["project_id"]
 
-            # get all the versions of this project
+            # get all the other versions of this project
             other_versions = dict_conversion(Version.query.filter(and_(Version.project_id == project_id,
                                                                        Version.id != version_id)).all())
 
@@ -1473,18 +1481,22 @@ def delete():
             # if 2+ versions remain
             elif len(other_versions) >= 2:
 
-                same_user_different_versions = False
+            	# flag var, flag object
+                same_user_multiple_versions = False
                 users_languages = {}
 
+                # iterate through versions
+                # append each combination user.id, version.language as a tuple
+                # if user.id already present with a different version, can delete
                 for version in other_versions:
                     if version["user_id"] not in users_languages:
                         users_languages[version["user_id"]] = version["language"]
                     else:
                         if users_languages[version["user_id"]] != version["language"]:
-                            same_user_different_versions = True
+                            same_user_multiple_versions = True
                             break
 
-                if not same_user_different_versions:
+                if not same_user_multiple_versions:
                     return apology("Couldn't proceed with the deletion.",
                                    "None or at least two different language versions uploaded by the same user should remain.")
             # ''' made sure 2+ different language versions uploaded by the same user are left '''
