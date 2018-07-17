@@ -28,7 +28,7 @@ from helpers import *
 # set the secret key for session
 # don't track changes (or track them), otherwise error
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = "lhsdbfnvjsndfviKHBJKHBki"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # configure SQLAlchemy database
