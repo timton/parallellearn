@@ -9,9 +9,9 @@
         <br>
         <h5>
             <strong>Practice lines</strong>
-            - (<span id="progress_line">Line 1/{{ project["line_count"] }}</span>)
+            - (<span id="progress_line">Line {{ project['starting_line'] + 1 }}/{{ project["line_count"] }}</span>)
         </h5>
-        <progress value="{{ project['starting_line'] + 1 }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
+        <progress value="{{ project['starting_line'] }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
         <br>
         <div class="row">
             <div class="col-sm-2 col-lg-1">
@@ -69,7 +69,7 @@
         <br>
         <form action="#" class="pl-form"
               onsubmit="event.preventDefault(); displayNextLine({{ project['from_lines'] }}, {{ project['to_lines'] }}, {{ project['line_count'] }}); ">
-            <button class="btn btn-success" type="submit" id="next_line" value="{{ project['starting_line'] }}">Next</button>
+            <button class="btn btn-success" type="submit" id="next_line" value="{{ project['starting_line'] + 1}}">Next</button>
         </form>
     </div>
 {% endblock %}

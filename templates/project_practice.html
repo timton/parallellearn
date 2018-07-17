@@ -14,7 +14,7 @@
             {% endif %}
             - (<span id="progress_line">Line {{ project["starting_line"] + 1 }}/{{ project["line_count"] }}</span>)
         </strong></h5>
-        <progress value="{{ project['starting_line'] + 1 }}" max="{{ project['line_count'] - 1 }}" id="progress_bar" ></progress>
+        <progress value="{{ project['starting_line'] }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
         <form action="{{ url_for('save_progress') }}" method="post" target="_blank" class="pl-form">
             <button type="submit" name="save_progress" id="save_progress" class="btn btn-secondary btn-sm"
                     value="{{ project['starting_line'] }},{{ project['id'] }},{{ project['from_version']['id'] }},{{ project['to_version']['id'] }}">
@@ -86,7 +86,7 @@
         <br>
         <form action="#" class="pl-form"
               onsubmit="event.preventDefault(); displayNextLine({{ project['from_lines'] }}, {{ project['to_lines'] }}, {{ project['line_count'] }}); ">
-            <button class="btn btn-success" type="submit" id="next_line" value="{{ project['starting_line'] }}">Next</button>
+            <button class="btn btn-success" type="submit" id="next_line" value="{{ project['starting_line'] + 1 }}">Next</button>
         </form>
 
     </div>

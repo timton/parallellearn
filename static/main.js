@@ -9,48 +9,12 @@ function removeBlur() {
 
     // move focus to the 'next line' button
     document.getElementById("next_line").focus();
-}
-
-/* displays the next line */
-function displayNextLine(from_lines, to_lines, size) {
 
     // get the index of the current line, increment it
     var x = document.getElementById("next_line").getAttribute("value");
     var y = parseInt(x);
-    y += 1;
 
-    // update the progress line
-    var progress_line1 = "Line ";
-    var progress_line2 = y.toString();
-    var progress_line3 = "/";
-    var progress_line4 = size.toString();
-    var progress_line = progress_line1 + progress_line2 + progress_line3 + progress_line4;
-    document.getElementById("progress_line").innerHTML = progress_line;
-
-    // update the progress bar
-    document.getElementById("progress_bar").removeAttribute("value");
-    document.getElementById("progress_bar").setAttribute("value", y);
-
-    // alert, if no more lines
-    if (y >= size) {
-        alert("You finished!");
-        return;
-    }
-
-    // set the incremented index as the value of the next line button
-    document.getElementById("next_line").removeAttribute("value");
-    document.getElementById("next_line").setAttribute("value", y);
-
-    // update the edit buttons with the new id values
-    var from_line_id = from_lines[y].id.toString();
-    var to_line_id = to_lines[y].id.toString();
-    var edit_from_line = from_line_id + "," + to_line_id;
-    var edit_to_line = to_line_id + "," + from_line_id;
-    document.getElementById("edit_from_line").removeAttribute("value");
-    document.getElementById("edit_from_line").setAttribute("value", edit_from_line);
-    document.getElementById("edit_to_line").removeAttribute("value");
-    document.getElementById("edit_to_line").setAttribute("value", edit_to_line);
-
+    // once line unblurred, count current line as passed
     // update the save progress button with the new values, if on actual project practice, not random
     // https://stackoverflow.com/questions/5629684/how-to-check-if-element-exists-in-the-visible-dom
     var save_possible = document.getElementById("save_progress");
@@ -61,10 +25,48 @@ function displayNextLine(from_lines, to_lines, size) {
         document.getElementById("save_progress").removeAttribute("value");
         document.getElementById("save_progress").setAttribute("value", save_progress_new);
     }
+}
+
+/* displays the next line */
+function displayNextLine(from_lines, to_lines, size) {
+
+    // get the index of the current line, increment it
+    var x = document.getElementById("next_line").getAttribute("value");
+    var y = parseInt(x);
+
+    // update the progress bar first (it progresses only once the next button is hit)
+    document.getElementById("progress_bar").removeAttribute("value");
+    document.getElementById("progress_bar").setAttribute("value", y);
+
+    y += 1;
+
+    // alert, if no more lines
+    if (y > size) {
+        alert("You finished!");
+        return;
+    }
+
+    // update the progress line
+    var progress_line1 = "Line ";
+    var progress_line2 = y.toString();
+    var progress_line3 = "/";
+    var progress_line4 = size.toString();
+    var progress_line = progress_line1 + progress_line2 + progress_line3 + progress_line4;
+    document.getElementById("progress_line").innerHTML = progress_line;
+
+    // update the edit buttons with the new id values
+    var from_line_id = from_lines[y - 1].id.toString();
+    var to_line_id = to_lines[y - 1].id.toString();
+    var edit_from_line = from_line_id + "," + to_line_id;
+    var edit_to_line = to_line_id + "," + from_line_id;
+    document.getElementById("edit_from_line").removeAttribute("value");
+    document.getElementById("edit_from_line").setAttribute("value", edit_from_line);
+    document.getElementById("edit_to_line").removeAttribute("value");
+    document.getElementById("edit_to_line").setAttribute("value", edit_to_line);
 
     // get the next from & to lines
-    var from_line = from_lines[y];
-    var to_line = to_lines[y];
+    var from_line = from_lines[y - 1];
+    var to_line = to_lines[y - 1];
 
     // display the next from & to lines, empty the practice field
     from_line_tag = document.getElementById("from_line");
@@ -73,6 +75,10 @@ function displayNextLine(from_lines, to_lines, size) {
     to_line_tag.innerHTML = to_line.line;
     practice_line_tag = document.getElementById("practice_line");
     practice_line_tag.value="";
+
+    // set the incremented index as the value of the next line button
+    document.getElementById("next_line").removeAttribute("value");
+    document.getElementById("next_line").setAttribute("value", y);
 
     // blur the to line
     var line_to_blur = document.getElementById("to_line");

@@ -51,14 +51,28 @@
                                 <td class="d-none d-xl-table-cell">{{ project["type"].title() }}</td>
                                 <td class="d-none d-sm-table-cell">{{ project["from_language"].title() }}</td>
                                 <td class="d-none d-sm-table-cell">{{ project["to_language"].title() }}</td>
-                                <td class="d-none d-md-table-cell">{{ project["current_line_id"] }}%</td>
+                                <td class="d-none d-md-table-cell">
+                                    {% if project["current_line_id"] != 100 %}
+                                        {{ project["current_line_id"] }}%
+                                    {% else %}
+                                        Finished
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <form action="{{ url_for('project_practice') }}" method="post">
-                                        <button type="submit" name="resume_project" value="{{ project['resume_id'] }}"
-                                                class="btn btn-sm btn-warning">
-                                            <span class="normal">Resume</span>
-                                            <span class="clipped">Rzm</span>
-                                        </button>
+                                        {% if project["current_line_id"] != 100 %}
+                                            <button type="submit" name="resume_project" 
+                                                    value="{{ project['resume_id'] }}"
+                                                    class="btn btn-sm btn-warning">
+                                                <span class="normal">Resume</span>
+                                                <span class="clipped">Rzm</span>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-warning" disabled>
+                                                <span class="normal">Resume</span>
+                                                <span class="clipped">Rzm</span>
+                                            </button>
+                                        {% endif %}
                                     </form>
                                 </td>
                                 <td>

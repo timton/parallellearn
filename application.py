@@ -1262,7 +1262,7 @@ def view_history():
             project["author"] = rows[0]["author"]
             project["year"] = rows[0]["year"]
             project["id"] = rows[0]["id"]
-            project["current_line_id"] = int(project["current_line_id"] / rows[0]["line_count"] * 100) + 1
+            project["current_line_id"] = int((project["current_line_id"]) / rows[0]["line_count"] * 100)
 
             # if series, make title include the season & episode
             if project["type"].lower() == "series":
