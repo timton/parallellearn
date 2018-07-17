@@ -6,11 +6,9 @@
 - browse by language
 - separate the app file: manage.py models.py app.py
 - remove the obj-to-dict conversion
-- session object doesn't save all the time
 - view versions in html form side by side, numbered?
 - new project/version font awesome
 - when receiving an error, offer a link to go back
-- remove autosuggestion
 - fewer templates, more checks with var passed to render different things on the same template
 
 #########  IMPROVE

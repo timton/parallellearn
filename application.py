@@ -5,7 +5,7 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import shuffle, choice
 
 # for file uploading, manipulation
@@ -25,13 +25,21 @@ from helpers import *
 
 # configure application
 # set the secret key for session
-# don't track changes (or track them), otherwise error
+# session valid 24 hours
+# https://stackoverflow.com/questions/19760486/resetting-the-expiration-time-for-a-cookie-in-flask
 app = Flask(__name__)
 app.secret_key = "lhsdbfnvjsndfviKHBJKHBki"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.permanent_session_lifetime = timedelta(hours=24)
+
+# 5-day timer resets on user activity
+@app.before_request
+def make_session_permanent():
+    session.modified = True
 
 # configure SQLAlchemy database
+# don't track changes (or track them), otherwise error
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # mail object
