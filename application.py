@@ -1,4 +1,5 @@
 from flask import Flask, flash, redirect, render_template, request, session, url_for, send_file, after_this_request
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, or_
 from flask_script import Manager
@@ -24,7 +25,7 @@ from flask_mail import Message, Mail
 from helpers import *
 
 # configure application
-# set the secret key for sessions
+# set the secret key for session
 # don't track changes (or track them), otherwise error
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -224,6 +225,12 @@ if app.config["DEBUG"]:
         response.headers["Expires"] = 0
         response.headers["Pragma"] = "no-cache"
         return response
+
+# configure session to use filesystem (instead of signed cookies)
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 # uploading files
 # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
