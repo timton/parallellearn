@@ -1428,6 +1428,13 @@ def delete():
             except RuntimeError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
+            # from my history, if applicable
+            try:
+                Resumable.query.filter(Resumable.project_id == project_id).delete()
+                db.session.commit()
+            except RuntimeError:
+                return apology("Couldn't delete this project.", "Please try again.")            
+
             # then the lines
             try:
                 Line.query.filter(Line.project_id == project_id).delete()
@@ -1449,6 +1456,8 @@ def delete():
             except RuntimeError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
+            return success("Successfully deleted the project.")
+
         # if deleting versions one by one
         elif request.form.get('delete_version'):
 
@@ -1460,15 +1469,20 @@ def delete():
             if rows[0]["user_id"] != session["user_id"]:
                 return apology("Can only delete your own versions.")
 
-            # can't delete the version if used by somebody else
+            # can't delete the version if used by somebody
             rows = dict_conversion(Resumable.query.filter(or_(Resumable.from_version_id == version_id,
                                                               Resumable.to_version_id == version_id)).all())
-            if rows:
-            	return apology("Can't delete this version. Somebody is using it for practice.",
-                               "Try deleting some other version.")
+            for row in rows:
+                if row["user_id"] != session["user_id"]:
+                	return apology("Can't delete this version. Somebody is using it for practice.",
+                                   "Try deleting some other version.")
+                else:
+                    return apology("Can't delete this version. You're currently using it.",
+                                   "Please drop it from your activity history page and try again.")
 
             # ''' make sure 2+ different language versions uploaded by the same user are left '''
             # get the project id
+            rows = dict_conversion(Version.query.filter(Version.id == version_id).all())
             project_id = rows[0]["project_id"]
 
             # get all the other versions of this project
@@ -1477,9 +1491,8 @@ def delete():
 
             # if only one version remains
             if len(other_versions) == 1:
-                return apology("Couldn't proceed with the deletion.",
-                               "At least two different language versions should remain \
-                               (for practice purposes).")
+                return apology("Can't have only one version left",
+                               "Delete the project altogether.")
 
             # if 2+ versions remain
             elif len(other_versions) >= 2:
@@ -1488,9 +1501,10 @@ def delete():
                 same_user_multiple_versions = False
                 users_languages = {}
 
-                # iterate through versions
+                # iterate through versions                
                 # append each combination user.id, version.language as a tuple
-                # if user.id already present with a different version, can delete
+                # user.ids work as keys, languages work as values
+                # if user.id already present with a language version different from the current one, can delete
                 for version in other_versions:
                     if version["user_id"] not in users_languages:
                         users_languages[version["user_id"]] = version["language"]
@@ -1500,8 +1514,8 @@ def delete():
                             break
 
                 if not same_user_multiple_versions:
-                    return apology("Couldn't proceed with the deletion.",
-                                   "None or at least two different language versions uploaded by the same user should remain.")
+                    return apology("None or at least two different language versions \
+                                    uploaded by the same user should remain.")
             # ''' made sure 2+ different language versions uploaded by the same user are left '''
 
 
@@ -1527,30 +1541,19 @@ def delete():
             except RuntimeError:
                 return apology("Couldn't proceed with the deletion.", "Please try again.")
 
-            # if no versions left for the project, delete the project itself
-            remaining_versions = dict_conversion(Version.query.filter(Version.project_id == project_id)
-                                                              .order_by(Version.timestamp.asc()).all())
-
-            if len(remaining_versions) == 0:
-                try:
-                    Project.query.filter(Project.id == project_id).delete()
-                    db.session.commit()
-                except RuntimeError:
-                    return apology("Deleted the versions, but not the project.", "Please try again.")
-
-            # if no versions of the original user remain
+            # if one or no versions of the original author remain
             # change the project user to the next one with the oldest two different versions
-            different_user_needed = True
-            for version in remaining_versions:
-                if version["user_id"] == session["user_id"]:
-                    different_user_needed = False
-                    break
+            rows = dict_conversion(Version.query.filter(and_(Version.project_id == project_id,
+                                                             Version.user_id == session["user_id"])).all())                                                                       
 
-            if different_user_needed:
+            if len(rows) < 2:
+                rows2 = dict_conversion(Version.query.filter(and_(Version.project_id == project_id,
+                                                                  Version.user_id != session["user_id"]))
+                                                     .order_by(Version.timestamp.asc()).all())
 
                 users_languages = {}
 
-                for version in remaining_versions:
+                for version in rows2:
                     if version["user_id"] not in users_languages:
                         users_languages[version["user_id"]] = version["language"]
                     else:
