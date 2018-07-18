@@ -1443,6 +1443,15 @@ def delete():
             except exc.SQLAlchemyError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
+            # then the ratings
+            try:
+                rows = dict_conversion(Version.query.filter(Version.project_id == project_id).all())
+                for row in rows:
+                    Rating.query.filter(Rating.version_id == row["id"]).delete()                    
+                    db.session.commit()
+            except exc.SQLAlchemyError:
+                return apology("Couldn't delete this project.", "Please try again.")
+
             # then the versions
             try:
                 Version.query.filter(Version.project_id == project_id).delete()
@@ -1534,6 +1543,13 @@ def delete():
                 db.session.commit()
             except exc.SQLAlchemyError:
                 return apology("Couldn't proceed with the deletion.", "Please try again.")
+
+            # then the ratings
+            try:
+                Rating.query.filter(Rating.version_id == version_id).delete()                    
+                db.session.commit()
+            except exc.SQLAlchemyError:
+                return apology("Couldn't delete this project.", "Please try again.")
 
             # then the version itself
             try:
