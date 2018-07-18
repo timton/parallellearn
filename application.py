@@ -1,6 +1,6 @@
 from flask import Flask, flash, redirect, render_template, request, session, url_for, send_file, after_this_request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, exc
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from passlib.apps import custom_app_context as pwd_context
@@ -487,7 +487,8 @@ def register():
                         hash=pwd_context.hash(password))
             db.session.add(user)
             db.session.commit()
-        except RuntimeError:
+        #https://stackoverflow.com/questions/2193670/catching-sqlalchemy-exceptions
+        except exc.SQLAlchemyError:
             return apology("Error while registering.", "Please try again later.")
 
         # send confirmation email
@@ -949,7 +950,7 @@ def new_project_formatting():
             db.session.add(project)
             db.session.commit()
 
-        except RuntimeError:
+        except exc.SQLAlchemyError:
             session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")
 
@@ -965,7 +966,7 @@ def new_project_formatting():
                                   source=session["new_project"]["sources"][i])
                 db.session.add(version)
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 Project.query.filter(Project.id == session["new_project"]["project_id"]).delete()
                 db.session.commit()
                 Version.query.filter(Version.project_id == session["new_project"]["project_id"]).delete()
@@ -994,7 +995,7 @@ def new_project_formatting():
                                 version_id=version_ids[i], line_index=index, line=line)
                     db.session.add(line)
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     for id in version_ids:
                         Line.query.filter(Line.version_id == id).delete()
                         db.session.commit()
@@ -1135,7 +1136,7 @@ def existing_project_versions():
                 db.session.add(version)
                 db.session.commit()
                 vids.append(version.id)
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 for vid in vids:
                     Version.query.filter(Version.id == vid).delete()
                     db.session.commit()
@@ -1163,7 +1164,7 @@ def existing_project_versions():
                                 version_id=version_ids[i], line_index=index, line=line)
                     db.session.add(line)
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     for id in version_ids:
                         Line.query.filter(Line.version_id == id).delete()
                         db.session.commit()
@@ -1425,35 +1426,35 @@ def delete():
             try:
                 Correction.query.filter(Correction.project_id == project_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
             # from my history, if applicable
             try:
                 Resumable.query.filter(Resumable.project_id == project_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't delete this project.", "Please try again.")            
 
             # then the lines
             try:
                 Line.query.filter(Line.project_id == project_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
             # then the versions
             try:
                 Version.query.filter(Version.project_id == project_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
             # then the project itself
             try:
                 Project.query.filter(Project.id == project_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't delete this project.", "Please try again.")
 
             return success("Successfully deleted the project.")
@@ -1524,21 +1525,21 @@ def delete():
             try:
                 Correction.query.filter(Correction.version_id == version_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't proceed with the deletion.", "Please try again.")
 
             # then the lines
             try:
                 Line.query.filter(Line.version_id == version_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't proceed with the deletion.", "Please try again.")
 
             # then the version itself
             try:
                 Version.query.filter(Version.id == version_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't proceed with the deletion.", "Please try again.")
 
             # if one or no versions of the original author remain
@@ -1562,7 +1563,7 @@ def delete():
                                 Project.query.filter(Project.id == project_id)\
                                              .update({"user_id": version["user_id"]})
                                 db.session.commit()
-                            except RuntimeError:
+                            except exc.SQLAlchemyError:
                                 return apology("Couldn't change the owner of the project.")
                             break
 
@@ -1699,7 +1700,7 @@ def edit():
                     Project.query.filter(Project.id == project_id)\
                                  .update({"type": new_type, "season": None, "episode": None})
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
                 return view_history()
@@ -1734,7 +1735,7 @@ def edit():
                     Project.query.filter(Project.id == project_id)\
                                  .update({"type": "series", "season": new_season, "episode": new_episode})
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
                 return view_history()
@@ -1827,7 +1828,7 @@ def edit():
                                          .update({"episode": request.form["change_episode"]})
                             db.session.commit()
 
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
                 return view_history()
@@ -1855,7 +1856,7 @@ def edit():
                 try:
                     Project.query.filter(Project.id == project_id).update({"poster": new_poster})
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
                 return view_history()
@@ -1882,7 +1883,7 @@ def edit():
                 try:
                     Project.query.filter(Project.id == project_id).update({"description": new_description})
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
                 return view_history()
@@ -1921,7 +1922,7 @@ def edit():
                     Version.query.filter(Version.id == from_version_id)\
                                  .update({"language": to_version, "source": source})
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                     return apology("Couldn't update the project.", "Please try again later.")
 
                 return view_history()
@@ -2183,7 +2184,7 @@ def edit_line():
                 try:
                     Line.query.filter(Line.id == bad_line_id).update({"line": line_text})
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                         return apology("Couldn't edit this line.", "Please try again later.")
 
                 return success("The line has been successfully updated.")
@@ -2196,7 +2197,7 @@ def edit_line():
                                             context_line_id=good_line_id)
                     db.session.add(correction)
                     db.session.commit()
-                except RuntimeError:
+                except exc.SQLAlchemyError:
                         return apology("Couldn't correct this line.", "Please try again later.")
 
                 return success("The correction has been submitted to the owner of the project.")
@@ -2268,14 +2269,14 @@ def action_correction():
             try:
                 Line.query.filter(Line.id == corrected_line_id).update({"line": correction})
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't implement the correction.", "Please try again later.")
 
             # delete the suggestion
             try:
                 Correction.query.filter(Correction.id == correction_id).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Implemented the correction, couldn't delete it though.", "Please try again later.")
 
         # else if user directly discards the suggested correction
@@ -2285,7 +2286,7 @@ def action_correction():
             try:
                 Correction.query.filter(Correction.id == request.form.get('discard_correction')).delete()
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't delete the correction.", "Please try again later.")
 
         return view_notifications()
@@ -2362,7 +2363,7 @@ def project_download():
         try:
             filename = "parallellearn-version.xlsx"
             wb.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        except RuntimeError:
+        except exc.SQLAlchemyError:
             return apology("Couldn't download this project.", "Please try again later.")
 
         # delete after downloading
@@ -2371,7 +2372,7 @@ def project_download():
         def remove_file(response):
             try:
                 os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't remove the created file.")
             return response
 
@@ -2410,7 +2411,7 @@ def save_progress():
             try:
             	Resumable.query.filter(Resumable.id == rows[0]["id"]).update({"current_line_id": line_index})
             	db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't save the progress.", "Please try again later.")
 
         # otherwise save it as a new started project
@@ -2420,7 +2421,7 @@ def save_progress():
                                       from_version_id=from_version_id, to_version_id=to_version_id)
                 db.session.add(resumable)
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                     return apology("Couldn't save the progress.", "Please try again later.")
 
         return success("Progress saved.")
@@ -2446,7 +2447,7 @@ def discard_project():
         try:
             Resumable.query.filter(Resumable.id == discard_id).delete()
             db.session.commit()
-        except RuntimeError:
+        except exc.SQLAlchemyError:
             return apology("Couldn't delete the progress.", "Please try again.")
 
     # view history upon successful discard / GET request
@@ -2483,7 +2484,7 @@ def comment():
             comment = Comment(user_id=user_id, comment=comment)
             db.session.add(comment)
             db.session.commit()
-        except RuntimeError:
+        except exc.SQLAlchemyError:
             return apology("Couldn't post the message.", "Please try again later.")
 
     # go back to the message board once posted
@@ -2586,13 +2587,13 @@ def rate():
                 rating = Rating(version_id=version_id, user_id=session["user_id"], rating=rating)
                 db.session.add(rating)
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't save rating.", "Please try again later.")
         else:
             try:
                 Rating.query.filter(Rating.id == rows[0]["id"]).update({"rating": rating})
                 db.session.commit()
-            except RuntimeError:
+            except exc.SQLAlchemyError:
                 return apology("Couldn't update rating.", "Please try again later.")
 
         # calculate the new version rating
@@ -2606,7 +2607,7 @@ def rate():
         try:
             Version.query.filter(Version.id == version_id).update({"rating": new_rating})
             db.session.commit()
-        except RuntimeError:
+        except exc.SQLAlchemyError:
             return apology("Couldn't update version rating.", "Please try again later.")
 
         return success("Thank you for rating this version.")
