@@ -15,8 +15,7 @@
                     <br>
                     <label class="sr-only" for="change_title">Change title</label>
                     <input autocomplete="off" name="change_title" class="form-control"
-                           id="change_title" placeholder="Change title" type="text"/ list="titles">
-                    <datalist id="titles">{% include "select/titles.html" %}</datalist>
+                           id="change_title" placeholder="Change title" type="text"/>
                 </div>
 
                 {% if project["type"] == "series" %}
@@ -37,8 +36,7 @@
                     <br>
                     <label class="sr-only" for="change_author">Change author</label>
                     <input autocomplete="off" name="change_author" class="form-control"
-                           id="change_author" placeholder="Change author" type="text"/ list="authors">
-                    <datalist id="authors">{% include "select/authors.html" %}</datalist>
+                           id="change_author" placeholder="Change author" type="text"/>
                 </div>
 
                 <div class="form-group">

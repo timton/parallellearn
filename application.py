@@ -1679,7 +1679,7 @@ def edit():
 
                 # new type must differ
                 if project["type"] == new_type:
-                    return apology("Couldn't edit project.", "Make sure the new type differs from the current one.")
+                    return apology("Couldn't edit project.", "New type must be different.")
 
                 # if new type series, render the input season/episode template
                 if new_type == "series":
@@ -1846,6 +1846,11 @@ def edit():
                 else:
                 	new_poster = request.form.get('new_poster')
                 
+                # ensure poster valid
+                if forbidden_poster(new_poster):
+                    return apology("Couldn't edit this project.",
+                                   "Please provide a valid URL to a png/jpeg/jpg/svg.")
+
                 # try to edit the metadata
                 try:
                     Project.query.filter(Project.id == project_id).update({"poster": new_poster})
@@ -1905,12 +1910,9 @@ def edit():
 
                 # make sure we would be left with at least two different language versions for this project
                 rows = dict_conversion(Version.query.filter(and_(Version.project_id == project_id,
-                                                                 Version.id != from_version_id)).all())
-                remaining_languages = []
-                for row in rows:
-                    remaining_languages.append(row["language"])
-                remaining_languages.append(to_version)
-                if len(set(remaining_languages)) < 2:
+                                                                 Version.language != to_version),
+                                                                 Version.id != from_version_id).all())
+                if not rows:
                     return apology("Couldn't update the project.",
                                    "Must have at least two different language versions for every project.")
 
@@ -1970,12 +1972,9 @@ def project_practice():
             rows = dict_conversion(Project.query.filter(Project.id == project_id).all())
             project = rows[0]
 
-            # ensure translate from & to languages submitted
-            if not request.form.get("from_version_id") or not request.form.get("to_version_id"):
-                return apology("Couldn't start practice.", "Please choose from & to which language to translate.")
-            else:
-                from_version_id = request.form.get("from_version_id")
-                to_version_id = request.form.get("to_version_id")
+            # save from & to languages submitted
+            from_version_id = request.form.get("from_version_id")
+            to_version_id = request.form.get("to_version_id")
 
             # make sure from & to languages different
             rows = dict_conversion(Version.query.filter(Version.id == from_version_id).all())
@@ -2285,6 +2284,7 @@ def action_correction():
             # delete the suggestion
             try:
                 Correction.query.filter(Correction.id == request.form.get('discard_correction')).delete()
+                db.session.commit()
             except RuntimeError:
                 return apology("Couldn't delete the correction.", "Please try again later.")
 
