@@ -6,7 +6,7 @@
 
 {% block main %}
     <br>
-    <div class="container align-center creamy view">
+    <div class="container align-center creamy view" id="project_download">
         <br>
         <strong><h4>Download Project</h4></strong>
         <br>
@@ -26,12 +26,18 @@
                     <td>
                         <img src="{{ project['poster'] }}" alt="poster">
                     </td>
-                    <td class="align-left">
-                        <p>Please select the versions you'd like to download:</p>
-                        {% for version in project["versions"] %}
-                            <input type="checkbox" name="{{ version['id'] }}" value="{{ version['id'] }}" form="project_download">
-                            {{ version["language"].title() }} (by <b>{{ version["user"] }}</b> - {{ version["rating"] }})<br>
-                        {% endfor %}
+                    <td class="align-center">
+                        <p>Please select the version you'd like to download:</p>
+
+                        <select name="version_to_download" form="download_project">
+                            {% for version in project["versions"] %}
+                                <option value="{{ version['id'] }}">
+                                    [{{ version['id'] }}] {{ version["language"].title() }} (by <b>{{ version["user"] }}</b> - {{ version["rating"] }})<br>
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <p>The version will download as an Excel file.</p>
                     </td>
                 </tr>
             </tbody>
@@ -51,15 +57,19 @@
                 <img src="{{ project['poster'] }}" alt="Project poster">
             </p>
             <hr>
-            <p class="align-left">
-                <p>Please select the versions you'd like to download:</p>
+            <p>Please select the version you'd like to download:</p>
+
+            <select name="version_to_download" form="download_project">
                 {% for version in project["versions"] %}
-                    <input type="checkbox" name="{{ version['id'] }}" value="{{ version['id'] }}" form="project_download">
-                    {{ version["language"].title() }} (by <b>{{ version["user"] }}</b> - {{ version["rating"] }})<br>
+                    <option value="{{ version['id'] }}">
+                        {{ version["language"].title() }} (by <b>{{ version["user"] }}</b> - {{ version["rating"] }})<br>
+                    </option>
                 {% endfor %}
-            </p>
+            </select>
+
+            <p>The version will download as an Excel file.</p>
         </div>
-        <form action="{{ url_for('project_download') }}" method="post" id="project_download" class="pl-form">
+        <form action="{{ url_for('project_download') }}" method="post" id="download_project" class="pl-form">
             <button class="btn btn-success" type="submit" name="download_project" value="{{ project['id'] }}">
                 Download
             </button>

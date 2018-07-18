@@ -2318,7 +2318,6 @@ def prepare_download():
             rows = dict_conversion(User.query.filter(User.id == version["user_id"]).all())
             version["user"] = rows[0]["username"]
 
-
         return render_template("prepare_download.html", project=project)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
@@ -2335,23 +2334,14 @@ def project_download():
     if request.method == "POST":
 
         # get the project id
-        project_id = request.form["download_project"]
+        project_id = request.form.get("download_project")
+
+        # get the version id
+        version_id = request.form.get("version_to_download")
 
         # get project
         rows = dict_conversion(Project.query.filter(Project.id == project_id).all())
         project = rows[0]
-
-        # get all its versions
-        project["versions"] = dict_conversion(Version.query.filter(Version.project_id == project_id).all())
-
-        # make sure that at least one version was selected for download
-        selected_versions = []
-        for version in project["versions"]:
-            if request.form.get(str(version["id"])):
-                selected_versions.append(request.form[str(version["id"])])
-
-        if len(selected_versions) == 0:
-            return apology("Couldn't download anything.", "Please select at least one version.")
 
         # create a new workbook
         wb = openpyxl.Workbook()
@@ -2359,38 +2349,18 @@ def project_download():
         # get the active sheet
         ws = wb.active
 
-        # get the lines for the first version
-        lines = dict_conversion(Line.query.filter(Line.version_id == selected_versions[0]).all())
+        # get the lines for the selected version
+        lines = dict_conversion(Line.query.filter(Line.version_id == version_id)
+                                          .order_by(Line.line_index.asc()).all())
 
-        # fill the first sheet
+        # fill the worksheet
         # https://stackoverflow.com/questions/31395058/how-to-write-to-a-new-cell-in-python-using-openpyxl
         for line in lines:
             ws.cell(row=(line["line_index"] + 1), column=1).value = line["line"]
 
-        # create and fill additional sheets if more versions
-        # https://stackoverflow.com/questions/40385689/add-a-new-sheet-to-a-existing-workbook-in-python
-        # https://stackoverflow.com/questions/176918/finding-the-index-of-an-item-given-a-list-containing-it-in-python
-        if len(selected_versions) > 1:
-            for version in selected_versions:
-
-                # skip the first version, it's done
-                if selected_versions.index(version) == 0:
-                    continue
-
-                sheet_name = "Sheet" + str(selected_versions.index(version))
-                ws = wb.create_sheet(sheet_name)
-                lines = dict_conversion(Line.query.filter(Line.version_id == version).all())
-
-                for line in lines:
-                    ws.cell(row=(line["line_index"] + 1), column=1).value = line["line"]
-
-
         # save the workbook
         try:
-            filename = project["title"].title()
-            if project["type"].lower() == "series":
-                filename += (" (s" + str(project["season"]) + "e" + str(project["episode"]) +")")
-            filename += ".xlsx"
+            filename = "parallellearn-version.xlsx"
             wb.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         except RuntimeError:
             return apology("Couldn't download this project.", "Please try again later.")
