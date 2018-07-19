@@ -860,6 +860,10 @@ def new_project_metadata():
             session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")     
 
+        print(filepath)
+        session.pop('new_project', None)
+        return index()
+
         return render_template("new_project_versions.html")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
