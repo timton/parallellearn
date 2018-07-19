@@ -34,10 +34,6 @@ function displayNextLine(from_lines, to_lines, size) {
     var x = document.getElementById("next_line").getAttribute("value");
     var y = parseInt(x);
 
-    // update the progress bar first (it progresses only once the next button is hit)
-    document.getElementById("progress_bar").removeAttribute("value");
-    document.getElementById("progress_bar").setAttribute("value", y);
-
     y += 1;
 
     // alert, if no more lines
@@ -53,6 +49,10 @@ function displayNextLine(from_lines, to_lines, size) {
     var progress_line4 = size.toString();
     var progress_line = progress_line1 + progress_line2 + progress_line3 + progress_line4;
     document.getElementById("progress_line").innerHTML = progress_line;
+
+    // update the progress bar first (it progresses only once the next button is hit)
+    document.getElementById("progress_bar").removeAttribute("value");
+    document.getElementById("progress_bar").setAttribute("value", y);
 
     // update the edit buttons with the new id values
     var from_line_id = from_lines[y - 1].id.toString();

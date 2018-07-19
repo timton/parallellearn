@@ -11,7 +11,7 @@
             <strong>Practice lines</strong>
             - (<span id="progress_line">Line {{ project['starting_line'] + 1 }}/{{ project["line_count"] }}</span>)
         </h5>
-        <progress value="{{ project['starting_line'] }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
+        <progress value="{{ project['starting_line'] + 1 }}" max="{{ project['line_count'] }}" id="progress_bar" ></progress>
         <br>
         <div class="row">
             <div class="col-sm-2 col-lg-1">

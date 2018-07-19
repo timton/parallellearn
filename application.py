@@ -51,11 +51,12 @@ manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 
 # mail configuration
-# http://settings.email/corp.mail.ru-email-settings.html
-app.config["MAIL_SERVER"] = "smtp.mail.ru"
+# https://kstate.service-now.com/kb_view.do?sys_kb_id=2b1c4c7de5fc294c2cae49399a7dc6a7
+# office 365 domain email address
+app.config["MAIL_SERVER"] = "smtp.office365.com"
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USERNAME"] = 'gunter333@mail.ru'
+app.config["MAIL_USERNAME"] = 'contact@parallellearn.com'
 app.config["MAIL_PASSWORD"] = '1qaz@WSX'
 
 mail.init_app(app)
@@ -493,7 +494,7 @@ def register():
 
         # send confirmation email
         msg = Message("Parallellearn Message", 
-        	          sender='gunter333@mail.ru', 
+        	          sender='contact@parallellearn.com', 
         	          recipients=[email])
         msg.body = """
 		Hi %s! 
@@ -669,7 +670,7 @@ def change_email():
 
 		# send confirmation email
         msg = Message("Parallellearn Message", 
-        	          sender='gunter333@mail.ru', 
+        	          sender='contact@parallellearn.com', 
         	          recipients=[new_email])
         msg.body = """
 		Hi! 
@@ -2078,21 +2079,28 @@ def contact():
         # ensure name was submitted
         if not request.form.get("name"):
             return apology("Must provide name.")
+        else:
+            name = request.form.get("name")
 
         # ensure username was submitted
-        elif not request.form.get("email"):
+        if not request.form.get("email"):
             return apology("Must provide email.")
+        else:
+            email = request.form.get("email")
 
         # ensure password was submitted
-        elif not request.form.get("message"):
+        if not request.form.get("message"):
             return apology("Must provide message.")
+        else:
+            message = request.form.get("message")
 
-        msg = Message("Parallellearn Message", sender='gunter333@mail.ru', recipients=['timofei.tonu@gmail.com'])
+        msg = Message("Parallellearn Message", 
+                      sender=email, 
+                      recipients=['contact@parallellearn.com'])
         msg.body = """
-		From: %s <%s>
-		%s
+		From: %s
+		Message: %s
 		""" % (request.form.get("name"), 
-			   request.form.get("email"), 
 			   request.form.get("message"))
 
         try:
