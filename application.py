@@ -850,16 +850,15 @@ def new_project_metadata():
                 return apology("Couldn't upload this project.",
                                "All language versions have to have the same number of lines.")
 
-        # save all the lines
-        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        session["new_project"]["lines"] = []
-        for worksheet in workbook:
-            l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
-                for cell in row:
-                    value = str(cell.value)
-                    l.append(value)
-            session["new_project"]["lines"].append(l)
+        # upload the file, save the path
+        try:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            session["new_project"]["filepath"] = filepath
+        except exc.SQLAlchemyError:
+            session.pop('new_project', None)
+            return apology("Couldn't save this project in the database.")     
 
         return render_template("new_project_versions.html")
 
@@ -889,6 +888,7 @@ def new_project_versions():
 
         # ensure at least two different language versions
         if len(set(session["new_project"]["versions"])) == 1:
+            os.remove(session["new_project"]["filepath"])
             session.pop('new_project', None)
             return apology("Couldn't upload this project.",
                            "At least two different language versions required.")
@@ -910,6 +910,7 @@ def new_project_formatting():
 		# get the new project poster link, store it in the new project object
         # ensure poster link of the project was submitted
         if not request.form.get("new_project_poster"):
+            os.remove(session["new_project"]["filepath"])
             session.pop('new_project', None)
             return apology("Couldn't upload this project.", "Please provide a poster image URL.")
         else:
@@ -917,6 +918,7 @@ def new_project_formatting():
 
         # ensure poster valid
         if forbidden_poster(session["new_project"]["poster"]):
+            os.remove(session["new_project"]["filepath"])
             session.pop('new_project', None)
             return apology("Couldn't upload this project.",
                            "Please provide a valid URL to a png/jpeg/jpg/svg.")
@@ -925,6 +927,7 @@ def new_project_formatting():
         # get the new project description, store it in the new project object
         # ensure description of the project was submitted
         if not request.form.get("new_project_description"):
+            os.remove(session["new_project"]["filepath"])
             session.pop('new_project', None)
             return apology("Couldn't upload this project.", "Please provide a description.")
         else:
@@ -932,6 +935,7 @@ def new_project_formatting():
 
         # make sure description not too long
         if len(session["new_project"]["description"]) > 1000:
+            os.remove(session["new_project"]["filepath"])
             session.pop('new_project', None)
             return apology("Let's not go overboard.", "Description too long (maximum 1000 characters).")
 
@@ -952,6 +956,7 @@ def new_project_formatting():
             db.session.commit()
 
         except exc.SQLAlchemyError:
+            os.remove(session["new_project"]["filepath"])
             session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")
 
@@ -972,6 +977,7 @@ def new_project_formatting():
                 db.session.commit()
                 Version.query.filter(Version.project_id == session["new_project"]["project_id"]).delete()
                 db.session.commit()
+                os.remove(session["new_project"]["filepath"])
                 session.pop('new_project', None)
                 return apology("Couldn't save the language versions in the database.")
 
@@ -987,10 +993,22 @@ def new_project_formatting():
         version_ids = version_ids[:session["new_project"]["number_of_versions"]]
         version_ids = list(reversed(version_ids))
 
+        # save all the lines
+        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
+        workbook = openpyxl.load_workbook(session["new_project"]["filepath"])
+        project_lines = []
+        for worksheet in workbook:
+            l = []
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
+                for cell in row:
+                    value = str(cell.value)
+                    l.append(value)
+            project_lines.append(l)
+        
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
         for i in range(session["new_project"]["number_of_versions"]):
-            for index, line in enumerate(session["new_project"]["lines"][i]):
+            for index, line in enumerate(project_lines[i]):
                 try:
                     line = Line(project_id=session["new_project"]["project_id"],
                                 version_id=version_ids[i], line_index=index, line=line)
@@ -1004,16 +1022,18 @@ def new_project_formatting():
                     db.session.commit()
                     Version.query.filter(Version.project_id == session["new_project"]["project_id"]).delete()
                     db.session.commit()
+                    os.remove(session["new_project"]["filepath"])
                     session.pop('new_project', None)
                     return apology("Couldn't save the lines in the database.")
 
-        # if successful, pop the session variable and inform
+        # if successful, delete the file, pop the session variable and inform
         # personalize the message just to be kewl
         if session["new_project"]["type"].lower() == "series":
                 session["new_project"]["title"] += (" (s" + str(session["new_project"]["season"]) + \
                                                     "/(e" + str(session["new_project"]["episode"]) +")")
         s = "\"" + session["new_project"]["title"].title() + "\"" + " by " + session["new_project"]["author"].title() + \
             " has been successfully uploaded."
+        os.remove(session["new_project"]["filepath"])
         session.pop('new_project', None)
 
         # so that we don't get any close window message
@@ -1077,16 +1097,15 @@ def upload_existing():
                 return apology("Couldn't update the project with your file.",
                                "New versions have to have the same number of lines as the original project (%s)." % line_count)
 
-        # save all the lines
-        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        session["existing_project"]["lines"] = []
-        for worksheet in workbook:
-            l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["existing_project"]["line_count"]):
-                for cell in row:
-                    value = str(cell.value)
-                    l.append(value)
-            session["existing_project"]["lines"].append(l)
+        # upload the file, save the path
+        try:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            session["existing_project"]["filepath"] = filepath
+        except exc.SQLAlchemyError:
+            session.pop('existing_project', None)
+            return apology("Couldn't save this project in the database.")
 
         return render_template("existing_project_versions.html")
 
@@ -1141,6 +1160,7 @@ def existing_project_versions():
                 for vid in vids:
                     Version.query.filter(Version.id == vid).delete()
                     db.session.commit()
+                os.remove(session["new_project"]["filepath"])
                 session.pop('existing_project', None)
                 return apology("Couldn't save the new language versions in the database.")
 
@@ -1156,10 +1176,22 @@ def existing_project_versions():
         version_ids = version_ids[:session["existing_project"]["number_of_versions"]]
         version_ids = list(reversed(version_ids))
 
+        # save all the lines
+        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
+        workbook = openpyxl.load_workbook(session["existing_project"]["filepath"])
+        project_lines = []
+        for worksheet in workbook:
+            l = []
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
+                for cell in row:
+                    value = str(cell.value)
+                    l.append(value)
+            project_lines.append(l)
+
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
         for i in range(session["existing_project"]["number_of_versions"]):
-            for index, line in enumerate(session["existing_project"]["lines"][i]):
+            for index, line in enumerate(project_lines[i]):
                 try:
                     line = Line(project_id=session["existing_project"]["id"],
                                 version_id=version_ids[i], line_index=index, line=line)
@@ -1173,6 +1205,7 @@ def existing_project_versions():
                     db.session.commit()
                     Version.query.filter(Version.project_id == session["existing_project"]["project_id"]).delete()
                     db.session.commit()
+                    os.remove(session["new_project"]["filepath"])
                     session.pop('existing_project', None)
                     return apology("Couldn't save the new lines in the database.")
 
@@ -1183,6 +1216,7 @@ def existing_project_versions():
                                                         "/(e" + str(session["existing_project"]["episode"]) +")")
         s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
             session["existing_project"]["author"].title() + " has been successfully updated."
+        os.remove(session["new_project"]["filepath"])
         session.pop('existing_project', None)
 
         # so that we don't get any close window message
