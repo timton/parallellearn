@@ -829,27 +829,6 @@ def new_project_metadata():
             session.pop('new_project', None)
             return apology("This project already exists.", "Try simply uploading versions for it.")
 
-        # ensure 2 <-> 4 language versions
-        workbook = openpyxl.load_workbook(file)
-        session["new_project"]["number_of_versions"] = len(workbook.worksheets)
-
-        if session["new_project"]["number_of_versions"] > 4:
-            session.pop('new_project', None)
-            return apology("Couldn't upload this project.",
-                           "Maximum 4 versions per file allowed.")
-        elif session["new_project"]["number_of_versions"] < 2:
-            session.pop('new_project', None)
-            return apology("Couldn't upload this project.",
-                           "Minimum 2 versions required.")
-
-        # make sure all versions have the same number of lines
-        session["new_project"]["line_count"] = workbook.worksheets[0].max_row
-        for worksheet in workbook:
-            if worksheet.max_row != session["new_project"]["line_count"]:
-                session.pop('new_project', None)
-                return apology("Couldn't upload this project.",
-                               "All language versions have to have the same number of lines.")
-
         # upload the file, save the path
         try:
             filename = secure_filename(file.filename)
@@ -860,9 +839,29 @@ def new_project_metadata():
             session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")     
 
-        print(filepath)
-        session.pop('new_project', None)
-        return index()
+        # ensure 2 <-> 4 language versions
+        workbook = openpyxl.load_workbook(file)
+        session["new_project"]["number_of_versions"] = len(workbook.worksheets)
+
+        if session["new_project"]["number_of_versions"] > 4:
+            os.remove(session["new_project"]["filepath"])
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "Maximum 4 versions per file allowed.")
+        elif session["new_project"]["number_of_versions"] < 2:
+            os.remove(session["new_project"]["filepath"])
+            session.pop('new_project', None)
+            return apology("Couldn't upload this project.",
+                           "Minimum 2 versions required.")
+
+        # make sure all versions have the same number of lines
+        session["new_project"]["line_count"] = workbook.worksheets[0].max_row
+        for worksheet in workbook:
+            if worksheet.max_row != session["new_project"]["line_count"]:
+                os.remove(session["new_project"]["filepath"])
+                session.pop('new_project', None)
+                return apology("Couldn't upload this project.",
+                               "All language versions have to have the same number of lines.")     
 
         return render_template("new_project_versions.html")
 
@@ -1080,27 +1079,6 @@ def upload_existing():
             return apology("Couldn't update this project.",
                            "Allowed extensions: xls/xlsx/xlsm/xltx/xltm.")
 
-        # ensure 1 <-> 4 language versions
-        workbook = openpyxl.load_workbook(file)
-        session["existing_project"]["number_of_versions"] = len(workbook.worksheets)
-
-        if session["existing_project"]["number_of_versions"] > 4:
-            session.pop('existing_project', None)
-            return apology("Couldn't update the project with your file.",
-                           "Maximum four versions allowed.")
-        elif session["existing_project"]["number_of_versions"] < 1:
-            session.pop('existing_project', None)
-            return apology("Couldn't update the project with your file.",
-                           "At least one version required.")
-
-        # make sure all the new versions have the same number of lines as the original project
-        for worksheet in workbook:
-            if worksheet.max_row != session["existing_project"]["line_count"]:
-                line_count = session["existing_project"]["line_count"]
-                session.pop('existing_project', None)
-                return apology("Couldn't update the project with your file.",
-                               "New versions have to have the same number of lines as the original project (%s)." % line_count)
-
         # upload the file, save the path
         try:
             filename = secure_filename(file.filename)
@@ -1110,6 +1088,29 @@ def upload_existing():
         except exc.SQLAlchemyError:
             session.pop('existing_project', None)
             return apology("Couldn't save this project in the database.")
+
+        # ensure 1 <-> 4 language versions
+        workbook = openpyxl.load_workbook(file)
+        session["existing_project"]["number_of_versions"] = len(workbook.worksheets)
+
+        if session["existing_project"]["number_of_versions"] > 4:
+            os.remove(session["existing_project"]["filepath"])
+            session.pop('existing_project', None)
+            return apology("Couldn't update the project with your file.",
+                           "Maximum four versions allowed.")
+        elif session["existing_project"]["number_of_versions"] < 1:
+            os.remove(session["existing_project"]["filepath"])
+            session.pop('existing_project', None)
+            return apology("Couldn't update the project with your file.",
+                           "At least one version required.")
+
+        # make sure all the new versions have the same number of lines as the original project
+        for worksheet in workbook:
+            if worksheet.max_row != session["existing_project"]["line_count"]:
+                os.remove(session["existing_project"]["filepath"])
+                session.pop('existing_project', None)
+                return apology("Couldn't update the project with your file.",
+                               "New versions have to have the same number of lines as the original project (%s)." % line_count)
 
         return render_template("existing_project_versions.html")
 
@@ -1164,7 +1165,7 @@ def existing_project_versions():
                 for vid in vids:
                     Version.query.filter(Version.id == vid).delete()
                     db.session.commit()
-                os.remove(session["new_project"]["filepath"])
+                os.remove(session["existing_project"]["filepath"])
                 session.pop('existing_project', None)
                 return apology("Couldn't save the new language versions in the database.")
 
@@ -1186,7 +1187,7 @@ def existing_project_versions():
         project_lines = []
         for worksheet in workbook:
             l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["existing_project"]["line_count"]):
                 for cell in row:
                     value = str(cell.value)
                     l.append(value)
@@ -1209,7 +1210,7 @@ def existing_project_versions():
                     db.session.commit()
                     Version.query.filter(Version.project_id == session["existing_project"]["project_id"]).delete()
                     db.session.commit()
-                    os.remove(session["new_project"]["filepath"])
+                    os.remove(session["existing_project"]["filepath"])
                     session.pop('existing_project', None)
                     return apology("Couldn't save the new lines in the database.")
 
@@ -1220,7 +1221,7 @@ def existing_project_versions():
                                                         "/(e" + str(session["existing_project"]["episode"]) +")")
         s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
             session["existing_project"]["author"].title() + " has been successfully updated."
-        os.remove(session["new_project"]["filepath"])
+        os.remove(session["existing_project"]["filepath"])
         session.pop('existing_project', None)
 
         # so that we don't get any close window message
