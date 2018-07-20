@@ -845,7 +845,7 @@ def new_project_metadata():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             session["new_project"]["filepath"] = filepath
-        except exc.SQLAlchemyError:
+        except RuntimeError:
             session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")     
 
@@ -884,6 +884,10 @@ def new_project_metadata():
 @app.route("/new_project_versions", methods=["GET", "POST"])
 @login_required
 def new_project_versions():
+
+    print(os.path.isfile(session["new_project"]["filepath"]))
+    os.remove(session["new_project"]["filepath"])
+    return index()
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
