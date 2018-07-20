@@ -885,10 +885,6 @@ def new_project_metadata():
 @login_required
 def new_project_versions():
 
-    print(os.path.isfile(session["new_project"]["filepath"]))
-    os.remove(session["new_project"]["filepath"])
-    return index()
-
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
@@ -920,6 +916,10 @@ def new_project_versions():
 @app.route("/new_project_formatting", methods=["GET", "POST"])
 @login_required
 def new_project_formatting():
+
+    print(os.path.isfile(session["new_project"]["filepath"]))
+    os.remove(session["new_project"]["filepath"])
+    return index()
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
