@@ -7,6 +7,7 @@ from passlib.apps import custom_app_context as pwd_context
 from tempfile import mkdtemp
 from datetime import datetime, timedelta
 from random import shuffle, choice
+from time import sleep
 
 # for file uploading, manipulation
 import os
@@ -951,23 +952,40 @@ def new_project_formatting():
             session.pop('new_project', None)
             return apology("Let's not go overboard.", "Description too long (maximum 1000 characters).")
 
-        # call the helper function performed by workers
-        successfull_upload = q.enqueue(upload, 'new_project')
+        project = {}
+        project["state"] = 'new'
+        project["type"] = session["new_project"]["type"]
+        project["title"] = session["new_project"]["title"]
+        project["author"] = session["new_project"]["author"]
+        project["year"] = session["new_project"]["year"]
+        project["user_id"] = session["user_id"]
+        project["line_count"] = session["new_project"]["line_count"]
+        project["poster"] = session["new_project"]["poster"]
+        project["description"] = session["new_project"]["description"]
+        if project["type"] == 'series':                
+            project["season"] = session["new_project"]["season"]
+            project["episode"] = session["new_project"]["episode"]
+        project["filepath"] = session["new_project"]["filepath"]
+        project["number_of_versions"] = session["new_project"]["number_of_versions"]
+        project["versions"] = session["new_project"]["versions"]
+        project["sources"] = session["new_project"]["sources"]
+        
+        job = q.enqueue(upload, project)
+        sleep(10)
 
-        if successfull_upload:
-            # if successful, delete the file, pop the session variable and inform
-            # personalize the message just to be kewl
-            if session["new_project"]["type"].lower() == "series":
-                    session["new_project"]["title"] += (" (s" + str(session["new_project"]["season"]) + \
-                                                        "/(e" + str(session["new_project"]["episode"]) +")")
-            s = "\"" + session["new_project"]["title"].title() + "\"" + " by " + session["new_project"]["author"].title() + \
-                " has been successfully uploaded."
-            os.remove(session["new_project"]["filepath"])
-            session.pop('new_project', None)
+        # if successful, delete the file, pop the session variable and inform
+        # personalize the message just to be kewl
+        if session["new_project"]["type"].lower() == "series":
+                session["new_project"]["title"] += (" (s" + str(session["new_project"]["season"]) + \
+                                                    "/(e" + str(session["new_project"]["episode"]) +")")
+        s = "\"" + session["new_project"]["title"].title() + "\"" + " by " + session["new_project"]["author"].title() + \
+            " has been successfully uploaded."
+        os.remove(session["new_project"]["filepath"])
+        session.pop('new_project', None)
 
-            # so that we don't get any close window message
-            session['next'] = ""
-            return success(s)
+        # so that we don't get any close window message
+        session['next'] = ""
+        return success(s)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -1076,23 +1094,32 @@ def existing_project_versions():
             else:
                 session["existing_project"]["sources"].append(None)
 
-        # call the helper function performed by workers
-        successfull_upload = q.enqueue(upload, 'existing_project')
+        project = {}
+        project["state"] = 'existing'
+        project["id"] = session["existing_project"]["id"]
+        project["user_id"] = session["user_id"]
+        project["line_count"] = session["existing_project"]["line_count"]
+        project["filepath"] = session["existing_project"]["filepath"]
+        project["number_of_versions"] = session["existing_project"]["number_of_versions"]
+        project["versions"] = session["existing_project"]["versions"]
+        project["sources"] = session["existing_project"]["sources"]
+        
+        job = q.enqueue(upload, project)
+        sleep(10)
 
-        if successfull_upload:
-            # if successful, pop the session variable and inform
-            # personalize the message just to be kewl
-            if session["existing_project"]["type"].lower() == "series":
-                    session["existing_project"]["title"] += (" (s" + str(session["existing_project"]["season"]) + \
-                                                            "/(e" + str(session["existing_project"]["episode"]) +")")
-            s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
-                session["existing_project"]["author"].title() + " has been successfully updated."
-            os.remove(session["existing_project"]["filepath"])
-            session.pop('existing_project', None)
+        # if successful, pop the session variable and inform
+        # personalize the message just to be kewl
+        if session["existing_project"]["type"].lower() == "series":
+                session["existing_project"]["title"] += (" (s" + str(session["existing_project"]["season"]) + \
+                                                        "/(e" + str(session["existing_project"]["episode"]) +")")
+        s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
+            session["existing_project"]["author"].title() + " has been successfully updated."
+        os.remove(session["existing_project"]["filepath"])
+        session.pop('existing_project', None)
 
-            # so that we don't get any close window message
-            session['next'] = ""
-            return success(s)
+        # so that we don't get any close window message
+        session['next'] = ""
+        return success(s)
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -2545,50 +2572,50 @@ def rate():
     else:
         return render_template("browse.html")
 
-
 # helper function performed by workers
 def upload(project):
-    if project == 'new_project':
+
+    if project["state"] == 'new':
 
         # upload new project metadata
         try:
-            if session["new_project"]["type"] != "series":
-                project = Project(type=session["new_project"]["type"], title=session["new_project"]["title"],
-                                  author=session["new_project"]["author"], year=session["new_project"]["year"],
-                                  user_id=session["user_id"], line_count=session["new_project"]["line_count"],
-                                  poster=session["new_project"]["poster"], description=session["new_project"]["description"])
+            if project["type"] != "series":
+                addedpj = Project(type=project["type"], title=project["title"],
+                                  author=project["author"], year=project["year"],
+                                  user_id=project["user_id"], line_count=project["line_count"],
+                                  poster=project["poster"], description=project["description"])
             else:
-                project = Project(type=session["new_project"]["type"], title=session["new_project"]["title"],
-                                  author=session["new_project"]["author"], year=session["new_project"]["year"],
-                                  user_id=session["user_id"], line_count=session["new_project"]["line_count"],
-                                  season=session["new_project"]["season"], episode=session["new_project"]["episode"],
-                                  poster=session["new_project"]["poster"], description=session["new_project"]["description"])
-            db.session.add(project)
+                addedpj = Project(type=project["type"], title=project["title"],
+                                  author=project["author"], year=project["year"],
+                                  user_id=project["user_id"], line_count=project["line_count"],
+                                  season=project["season"], episode=project["episode"],
+                                  poster=project["poster"], description=project["description"])
+            db.session.add(addedpj)
             db.session.commit()
 
         except exc.SQLAlchemyError:
-            os.remove(session["new_project"]["filepath"])
+            os.remove(project["filepath"])
             session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")
 
         # get the id of the new project
-        session["new_project"]["project_id"]=project.id
+        project["id"]=addedpj.id
 
         # upload new project language versions
-        for i in range(session["new_project"]["number_of_versions"]):
+        for i in range(project["number_of_versions"]):
             try:
-                version = Version(project_id=session["new_project"]["project_id"],
-                                  user_id=session["user_id"],
-                                  language=session["new_project"]["versions"][i],                                
-                                  source=session["new_project"]["sources"][i])
+                version = Version(project_id=project["id"],
+                                  user_id=project["user_id"],
+                                  language=project["versions"][i],                                
+                                  source=project["sources"][i])
                 db.session.add(version)
                 db.session.commit()
             except exc.SQLAlchemyError:
-                Project.query.filter(Project.id == session["new_project"]["project_id"]).delete()
+                Project.query.filter(Project.id == project["id"]).delete()
                 db.session.commit()
-                Version.query.filter(Version.project_id == session["new_project"]["project_id"]).delete()
+                Version.query.filter(Version.project_id == project["id"]).delete()
                 db.session.commit()
-                os.remove(session["new_project"]["filepath"])
+                os.remove(project["filepath"])
                 session.pop('new_project', None)
                 return apology("Couldn't save the language versions in the database.")
 
@@ -2596,21 +2623,21 @@ def upload(project):
         # https://stackoverflow.com/questions/10897339/python-fetch-first-10-results-from-a-list
         # https://stackoverflow.com/questions/3940128/how-can-i-reverse-a-list-in-python
         version_ids = []
-        rows = dict_conversion(Version.query.filter(Version.project_id == session["new_project"]["project_id"])
+        rows = dict_conversion(Version.query.filter(Version.project_id == project["id"])
                                             .order_by(Version.id.desc()).all())
 
         for row in rows:
             version_ids.append(row["id"])
-        version_ids = version_ids[:session["new_project"]["number_of_versions"]]
+        version_ids = version_ids[:project["number_of_versions"]]
         version_ids = list(reversed(version_ids))
 
         # save all the lines
         # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        workbook = openpyxl.load_workbook(session["new_project"]["filepath"])
+        workbook = openpyxl.load_workbook(project["filepath"])
         project_lines = []
         for worksheet in workbook:
             l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
                 for cell in row:
                     value = str(cell.value)
                     l.append(value)
@@ -2618,10 +2645,10 @@ def upload(project):
         
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
-        for i in range(session["new_project"]["number_of_versions"]):
+        for i in range(project["number_of_versions"]):
             for index, line in enumerate(project_lines[i]):
                 try:
-                    line = Line(project_id=session["new_project"]["project_id"],
+                    line = Line(project_id=project["id"],
                                 version_id=version_ids[i], line_index=index, line=line)
                     db.session.add(line)
                     db.session.commit()
@@ -2629,24 +2656,24 @@ def upload(project):
                     for id in version_ids:
                         Line.query.filter(Line.version_id == id).delete()
                         db.session.commit()
-                    Project.query.filter(Project.id == session["new_project"]["project_id"]).delete()
+                    Project.query.filter(Project.id == project["id"]).delete()
                     db.session.commit()
-                    Version.query.filter(Version.project_id == session["new_project"]["project_id"]).delete()
+                    Version.query.filter(Version.project_id == project["id"]).delete()
                     db.session.commit()
-                    os.remove(session["new_project"]["filepath"])
+                    os.remove(project["filepath"])
                     session.pop('new_project', None)
                     return apology("Couldn't save the lines in the database.")
 
-    elif project == 'existing_project':
+    elif project["state"] == 'existing':
 
         # upload new language versions
         # prepare to delete, if something goes wrong
         vids = []
-        for i in range(session["existing_project"]["number_of_versions"]):
+        for i in range(project["number_of_versions"]):
             try:
-                version = Version(project_id=session["existing_project"]["id"],
-                                  user_id=session["user_id"], language=session["existing_project"]["versions"][i],
-                                  source=session["existing_project"]["sources"][i])
+                version = Version(project_id=project["id"],
+                                  user_id=project["user_id"], language=project["versions"][i],
+                                  source=project["sources"][i])
                 db.session.add(version)
                 db.session.commit()
                 vids.append(version.id)
@@ -2654,7 +2681,7 @@ def upload(project):
                 for vid in vids:
                     Version.query.filter(Version.id == vid).delete()
                     db.session.commit()
-                os.remove(session["existing_project"]["filepath"])
+                os.remove(project["filepath"])
                 session.pop('existing_project', None)
                 return apology("Couldn't save the new language versions in the database.")
 
@@ -2662,21 +2689,21 @@ def upload(project):
         # https://stackoverflow.com/questions/10897339/python-fetch-first-10-results-from-a-list
         # https://stackoverflow.com/questions/3940128/how-can-i-reverse-a-list-in-python
         version_ids = []
-        rows = dict_conversion(Version.query.filter(Version.project_id == session["existing_project"]["id"])
+        rows = dict_conversion(Version.query.filter(Version.project_id == project["id"])
                                             .order_by(Version.id.desc()).all())
 
         for row in rows:
             version_ids.append(row["id"])
-        version_ids = version_ids[:session["existing_project"]["number_of_versions"]]
+        version_ids = version_ids[:project["number_of_versions"]]
         version_ids = list(reversed(version_ids))
 
         # save all the lines
         # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        workbook = openpyxl.load_workbook(session["existing_project"]["filepath"])
+        workbook = openpyxl.load_workbook(project["filepath"])
         project_lines = []
         for worksheet in workbook:
             l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["existing_project"]["line_count"]):
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
                 for cell in row:
                     value = str(cell.value)
                     l.append(value)
@@ -2684,10 +2711,10 @@ def upload(project):
 
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
-        for i in range(session["existing_project"]["number_of_versions"]):
+        for i in range(project["number_of_versions"]):
             for index, line in enumerate(project_lines[i]):
                 try:
-                    line = Line(project_id=session["existing_project"]["id"],
+                    line = Line(project_id=project["id"],
                                 version_id=version_ids[i], line_index=index, line=line)
                     db.session.add(line)
                     db.session.commit()
@@ -2695,11 +2722,11 @@ def upload(project):
                     for id in version_ids:
                         Line.query.filter(Line.version_id == id).delete()
                         db.session.commit()
-                    Project.query.filter(Project.id == session["existing_project"]["project_id"]).delete()
+                    Project.query.filter(Project.id == project["id"]).delete()
                     db.session.commit()
-                    Version.query.filter(Version.project_id == session["existing_project"]["project_id"]).delete()
+                    Version.query.filter(Version.project_id == project["id"]).delete()
                     db.session.commit()
-                    os.remove(session["existing_project"]["filepath"])
+                    os.remove(project["filepath"])
                     session.pop('existing_project', None)
                     return apology("Couldn't save the new lines in the database.")
 
