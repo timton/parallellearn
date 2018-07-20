@@ -917,10 +917,6 @@ def new_project_versions():
 @login_required
 def new_project_formatting():
 
-    print(os.path.isfile(session["new_project"]["filepath"]))
-    os.remove(session["new_project"]["filepath"])
-    return index()
-
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
@@ -975,26 +971,6 @@ def new_project_formatting():
         project["sources"] = session["new_project"]["sources"]
         
         job = q.enqueue(upload, project)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
-        sleep(5)
-        print(job.result)
 
         # if successful, delete the file, pop the session variable and inform
         # personalize the message just to be kewl
@@ -2597,6 +2573,10 @@ def rate():
 
 # helper function performed by workers
 def upload(project):
+
+    print(os.path.isfile(project["filepath"]))
+    os.remove(project["filepath"])
+    return 2
 
     if project["state"] == 'new':
 
