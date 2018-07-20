@@ -971,7 +971,26 @@ def new_project_formatting():
         project["sources"] = session["new_project"]["sources"]
         
         job = q.enqueue(upload, project)
-        sleep(10)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
+        sleep(5)
+        print(job.result)
 
         # if successful, delete the file, pop the session variable and inform
         # personalize the message just to be kewl
