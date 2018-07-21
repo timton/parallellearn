@@ -952,6 +952,19 @@ def new_project_formatting():
             session.pop('new_project', None)
             return apology("Let's not go overboard.", "Description too long (maximum 1000 characters).")
 
+        # for some reason, file not found if location passed to worker
+        # so saving all the lines now
+        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
+        workbook = openpyxl.load_workbook(session["new_project"]["filepath"])
+        project_lines = []
+        for worksheet in workbook:
+            l = []
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["new_project"]["line_count"]):
+                for cell in row:
+                    value = str(cell.value)
+                    l.append(value)
+            project_lines.append(l)
+
         project = {}
         project["state"] = 'new'
         project["type"] = session["new_project"]["type"]
@@ -965,26 +978,20 @@ def new_project_formatting():
         if project["type"] == 'series':                
             project["season"] = session["new_project"]["season"]
             project["episode"] = session["new_project"]["episode"]
-        project["filepath"] = session["new_project"]["filepath"]
+        project["lines"] = project_lines
         project["number_of_versions"] = session["new_project"]["number_of_versions"]
         project["versions"] = session["new_project"]["versions"]
         project["sources"] = session["new_project"]["sources"]
         
-        job = q.enqueue(upload, project)
-
-        # if successful, delete the file, pop the session variable and inform
-        # personalize the message just to be kewl
-        if session["new_project"]["type"].lower() == "series":
-                session["new_project"]["title"] += (" (s" + str(session["new_project"]["season"]) + \
-                                                    "/(e" + str(session["new_project"]["episode"]) +")")
-        s = "\"" + session["new_project"]["title"].title() + "\"" + " by " + session["new_project"]["author"].title() + \
-            " has been successfully uploaded."
+        # no need for the file anymore, nor for the session pj data
         os.remove(session["new_project"]["filepath"])
-        session.pop('new_project', None)
+        session.pop('new_project', None)        
+
+        job = q.enqueue(upload, project)
 
         # so that we don't get any close window message
         session['next'] = ""
-        return success(s)
+        return success("Project successfully uploaded.")
 
     # else if user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -1093,28 +1100,38 @@ def existing_project_versions():
             else:
                 session["existing_project"]["sources"].append(None)
 
+        # save all the lines
+        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
+        workbook = openpyxl.load_workbook(session["existing_project"]["filepath"])
+        project_lines = []
+        for worksheet in workbook:
+            l = []
+            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=session["existing_project"]["line_count"]):
+                for cell in row:
+                    value = str(cell.value)
+                    l.append(value)
+            project_lines.append(l)
+
+        # prepare the personalized success message
+        if session["existing_project"]["number_of_versions"] == 1:
+            s = "Version successfully uploaded."
+        else:
+            s = "Version successfully uploaded."
+
         project = {}
         project["state"] = 'existing'
         project["id"] = session["existing_project"]["id"]
         project["user_id"] = session["user_id"]
         project["line_count"] = session["existing_project"]["line_count"]
-        project["filepath"] = session["existing_project"]["filepath"]
+        project["lines"] = project_lines
         project["number_of_versions"] = session["existing_project"]["number_of_versions"]
         project["versions"] = session["existing_project"]["versions"]
         project["sources"] = session["existing_project"]["sources"]
         
-        job = q.enqueue(upload, project)
-        sleep(10)
-
-        # if successful, pop the session variable and inform
-        # personalize the message just to be kewl
-        if session["existing_project"]["type"].lower() == "series":
-                session["existing_project"]["title"] += (" (s" + str(session["existing_project"]["season"]) + \
-                                                        "/(e" + str(session["existing_project"]["episode"]) +")")
-        s = "\"" + session["existing_project"]["title"].title() + "\"" + " by " + \
-            session["existing_project"]["author"].title() + " has been successfully updated."
         os.remove(session["existing_project"]["filepath"])
         session.pop('existing_project', None)
+
+        job = q.enqueue(upload, project)
 
         # so that we don't get any close window message
         session['next'] = ""
@@ -2574,10 +2591,6 @@ def rate():
 # helper function performed by workers
 def upload(project):
 
-    print(os.path.isfile(project["filepath"]))
-    os.remove(project["filepath"])
-    return 2
-
     if project["state"] == 'new':
 
         # upload new project metadata
@@ -2597,8 +2610,6 @@ def upload(project):
             db.session.commit()
 
         except exc.SQLAlchemyError:
-            os.remove(project["filepath"])
-            session.pop('new_project', None)
             return apology("Couldn't save this project in the database.")
 
         # get the id of the new project
@@ -2618,8 +2629,6 @@ def upload(project):
                 db.session.commit()
                 Version.query.filter(Version.project_id == project["id"]).delete()
                 db.session.commit()
-                os.remove(project["filepath"])
-                session.pop('new_project', None)
                 return apology("Couldn't save the language versions in the database.")
 
         # get the IDs of the new versions
@@ -2633,23 +2642,11 @@ def upload(project):
             version_ids.append(row["id"])
         version_ids = version_ids[:project["number_of_versions"]]
         version_ids = list(reversed(version_ids))
-
-        # save all the lines
-        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        workbook = openpyxl.load_workbook(project["filepath"])
-        project_lines = []
-        for worksheet in workbook:
-            l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
-                for cell in row:
-                    value = str(cell.value)
-                    l.append(value)
-            project_lines.append(l)
         
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
         for i in range(project["number_of_versions"]):
-            for index, line in enumerate(project_lines[i]):
+            for index, line in enumerate(project["lines"][i]):
                 try:
                     line = Line(project_id=project["id"],
                                 version_id=version_ids[i], line_index=index, line=line)
@@ -2663,8 +2660,6 @@ def upload(project):
                     db.session.commit()
                     Version.query.filter(Version.project_id == project["id"]).delete()
                     db.session.commit()
-                    os.remove(project["filepath"])
-                    session.pop('new_project', None)
                     return apology("Couldn't save the lines in the database.")
 
     elif project["state"] == 'existing':
@@ -2684,8 +2679,6 @@ def upload(project):
                 for vid in vids:
                     Version.query.filter(Version.id == vid).delete()
                     db.session.commit()
-                os.remove(project["filepath"])
-                session.pop('existing_project', None)
                 return apology("Couldn't save the new language versions in the database.")
 
         # get the IDs of the new versions
@@ -2700,22 +2693,10 @@ def upload(project):
         version_ids = version_ids[:project["number_of_versions"]]
         version_ids = list(reversed(version_ids))
 
-        # save all the lines
-        # https://stackoverflow.com/questions/13377793/is-it-possible-to-get-an-excel-documents-row-count-without-loading-the-entire-d
-        workbook = openpyxl.load_workbook(project["filepath"])
-        project_lines = []
-        for worksheet in workbook:
-            l = []
-            for row in worksheet.iter_rows(min_row=1, max_col=1, max_row=project["line_count"]):
-                for cell in row:
-                    value = str(cell.value)
-                    l.append(value)
-            project_lines.append(l)
-
         # upload the lines for each version
         # https://stackoverflow.com/questions/522563/accessing-the-index-in-python-for-loops
         for i in range(project["number_of_versions"]):
-            for index, line in enumerate(project_lines[i]):
+            for index, line in enumerate(project["lines"][i]):
                 try:
                     line = Line(project_id=project["id"],
                                 version_id=version_ids[i], line_index=index, line=line)
@@ -2729,12 +2710,7 @@ def upload(project):
                     db.session.commit()
                     Version.query.filter(Version.project_id == project["id"]).delete()
                     db.session.commit()
-                    os.remove(project["filepath"])
-                    session.pop('existing_project', None)
                     return apology("Couldn't save the new lines in the database.")
-
-    return True
-
 
 if __name__ == '__main__':
 	manager.run()
