@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Welcome
+    One Language Good, Two Better
 {% endblock %}
 
 {% block main %}
@@ -34,7 +34,7 @@
                             </br>
                             </p>
                             <form action="{{ url_for('quick_practice') }}" method="post" id="quick_practice_form">
-                                <p><button type="submit" class="btn btn-default btn-sm">Go!</button></p>
+                                <p><button type="submit" class="btn btn-warning btn-sm"><b>Go</b></button></p>
                             </form>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
                         <label class="sr-only" for="comment">Comment</label>
                         <input type="text" class="form-control form-control-sm" id="comment"
                                placeholder="Your feedback here..." name="comment" required>
-                        <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                        <button type="submit" class="btn btn-primary btn-sm"><b>Post</b></button>
                     <form>
                 </div>
 

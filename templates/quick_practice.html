@@ -71,5 +71,6 @@
               onsubmit="event.preventDefault(); displayNextLine({{ project['from_lines'] }}, {{ project['to_lines'] }}, {{ project['line_count'] }}); ">
             <button class="btn btn-success" type="submit" id="next_line" value="{{ project['starting_line'] + 1}}">Next</button>
         </form>
+        <br>
     </div>
 {% endblock %}
