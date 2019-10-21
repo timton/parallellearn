@@ -9,7 +9,7 @@ Jinja2==2.10
 Mako==1.0.7
 MarkupSafe==1.0
 SQLAlchemy==1.1.15
-Werkzeug==0.12.2
+Werkzeug==0.15.3
 acme==0.26.1
 alembic==0.9.9
 asn1crypto==0.24.0
